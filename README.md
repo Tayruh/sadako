@@ -1,1 +1,7 @@
 # sadako
+
+Sadako is a javascript library for creating hyperlink based interactive fiction similar to [Twine](https://twinery.org/), [ChoiceScript](https://www.choiceofgames.com/), and [Ink](https://www.inklestudios.com/ink/). Those engines are great at doing what they do and I highly encourage checking them out. However, I found that each of them focused on a specific area (Twine was HTML-like markup and Ink was choice based flow of dialogue) and did them really well, but make it quite difficult to emulate the functionality of the other without basically bending the framework beyond what it was intended to do. Sadako is my attempt of merging the two ideologies into a cohesive scripting language.
+
+That was my first project goal. My second goal is to leave this library fairly open ended so that it may easily fit into a node.js project or something similar instead of being hardcoded to work for HTML. So even though it comes with a few functions used to make working with HTML easier, it's not reliant upon them. In fact, the functions like the ones for text displaying are purposelly exposed to be overwritten to suit your needs.
+
+The third goal was to shoot for the high compatibility for javascript. It should be fully ECMAScript 5 compatible with everything fully functioning in Internet Explorer and Microsoft Edge (along with more modern browsers like Chrome and Firefox) and mobile browsers. 
