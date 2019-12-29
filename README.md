@@ -6,4 +6,8 @@ This library is intended to be fairly open ended so that it may easily fit into 
 
 A goal of this project was to shoot for the high compatibility for browsers and javascript. It should be fully ECMAScript 5 compatible and  fully functioning in Internet Explorer and Microsoft Edge, and mobile browsers, along with more modern browsers like Chrome and Firefox.
 
+A final note: The syntax to Sadako's scripting language shares a few commonalities with Twine and Ink's syntax due to my desire to merge the two. Sadako's concept is the result of my time spent toying around with each of the engines and reading their tutorials, and the implimentation of its syntax was derived from my understanding of each language and not based on their source code.
+
+#### Tutorial
+
 You can find the documentation [here](tutorial.md).
