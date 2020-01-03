@@ -29,8 +29,6 @@ So write whatever you want.
 
 Any line beginning with this token will be ignored by the script.
 
-Be sure not to confuse this with the `//` tag token described below. If this token begins a line, it's a comment. If it is preceded by any text, it'll be considered a tag token. If you dislike this or find it confusing, feel free to change the token string to something you find more desirable. 
-
 Unlike JavaScript, a `//` comment token will never comment out half a line of text. If you need to do this, use the `/* */` comment block.
 
 **variable**: _sadako.token.comment_
@@ -291,7 +289,7 @@ Span token. This is used to easily attach a CSS class to a block of text. You se
 
 ### Tags
 
-`//`
+`*:`
 
 Tags are used to alter the output or display of a line. Any number of tags can be added to a line. 
 
@@ -301,14 +299,14 @@ There are also two hardcoded tags in **Sadako**:
 * `choice`: Displays the current line as though it were a choice. Useful for links that run javascript.
 
 ```
-This will be displayed using the "test" class. //class:test
+This will be displayed using the "test" class. *:class:test
 
 // outputs
 <p class="test">This will be displayed using the "test" class.</p>
 ```
 
 ```
-[:& alert("Boo!") @: Fake Choice.:] //choice
+[:& alert("Boo!") @: Fake Choice.:] *:choice
 
 // outputs (output is simplified for example purposes)
 <ul><li class="choice"><a onclick='alert("Boo!")'>Fake Choice</a></li></ul>
@@ -332,7 +330,7 @@ sadako.doLineTag = function(text, tag) {
 }
 
 // in story script
-Hi! //ayren
+Hi! *:ayren
 
 
 // outputs
@@ -344,7 +342,7 @@ This function is called once per tag with the current text and tag (converted to
 Tags must come before a `::` conditional token since it's considered part of the line. Conditionals will be explained in a little bit.
 
 ```
-Write it just like this. //test1 //test2 :: $.blah == 1
+Write it just like this. *:test1 *:test2 :: $.blah == 1
 ```
 
 **variable**: _sadako.token.tag_
