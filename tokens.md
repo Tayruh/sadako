@@ -66,7 +66,7 @@ An escape token is used to prevent **Sadako** from recognizing a token that begi
 
 ```
 ## Page1
-	This is the first page. 
+    This is the first page. 
     
 ## Page2
     This is the second page.
@@ -599,9 +599,9 @@ When the script is processed, it goes line by line through a depth level until i
 ```
 Hello world!
 * [Finish]
-	You have selected "finish".
-	The End.
-	
+    You have selected "finish".
+    The End.
+    
 // outputs (choice is shown in <> brackets)
 Hello world!
 <Finish>
@@ -617,9 +617,9 @@ When you select a choice, the script increases its depth by 1. Since "Finish" is
 ```
 Hello world!
 ** [Finish]
-	The End.
+    The End.
 
-	
+    
 // outputs
 Hello world!
 ```
@@ -636,9 +636,9 @@ Regardless of indentation, script between a choice and the next depth transition
 ```
 Hello world!
 * [Finish]
-	You have selected "finish".
+    You have selected "finish".
 The End.
-	
+    
 
 // outputs (choice is shown in <> brackets)
 Hello world!
@@ -655,14 +655,14 @@ The script will display all choices within that depth level until it reaches a l
 
 ```
 * [Choice One] 
-	This was the first choice.
+    This was the first choice.
 * [Choice Two] 
-	This was the second choice.
+    This was the second choice.
 - 
 * [Choice Three]
-	This choice is not shown in the example.
+    This choice is not shown in the example.
 
-	
+    
 // outputs
 <Choice One>
 <Choice Two>
@@ -680,15 +680,15 @@ You can place any number of choices inside each other as long you use the correc
 
 ```
 * [Choice 1]
-	Next choice. 
-	** [Choice 1.1]
-		Another choice.
-	** [Choice 1.2]
-		One more.
+    Next choice. 
+    ** [Choice 1.1]
+    Another choice.
+    ** [Choice 1.2]
+    One more.
 * [Choice 2]
-	Foo
+    Foo
 
-	
+    
 // outputs
 <Choice 1>
 <Choice 2>
@@ -791,7 +791,7 @@ All done.
     
 **variable**: _sadako.token.choice_
 
-	
+    
 ### Static choice
 
 `+`
@@ -820,15 +820,15 @@ The flow of story script goes like this:
 ```
 This is level 1.
 * [Choice 1]
-	Choice 1, level 2.
-	** [Choice 1.1]
-		Choice 1.1, level 3.
-	** [Choice 1.2]
-		Choice 1.1, level 3.
-	-- Level 2 again.
-	Still level 2.
+    Choice 1, level 2.
+    ** [Choice 1.1]
+    Choice 1.1, level 3.
+    ** [Choice 1.2]
+    Choice 1.1, level 3.
+    -- Level 2 again.
+    Still level 2.
 * [Choice 2]
-	Choice 2, level 2.
+    Choice 2, level 2.
 - Level 1 again.
 
 
@@ -874,8 +874,8 @@ One convenient use of the `-` depth token is forcing a separation between multip
 ```
 
 ** variable**: _sadako.token.depth_
-	
-	
+    
+    
 ### Depth labels
 
 `=`
@@ -906,7 +906,7 @@ Some stuff to write
 Note that since the `=` label marker shares the same properties as a `-` depth marker, processing of choices will stop once the script sees this token.
 
 **variable**: _sadako.token.label_
-	
+    
 
 ### Condition Block
 
