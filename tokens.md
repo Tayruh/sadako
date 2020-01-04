@@ -475,6 +475,8 @@ You carefully pick up the vase and put it back on the shelf.
 
 ### Script block
 
+#### Redirects
+
 `[:` `:]`
 
 A standard script block inserts a link to a page. 
@@ -501,6 +503,8 @@ You can lead the script block with a token and it will do things besides linking
 * `%` Links to a label.
 * `&` Executes javascript. Does not print result.
 * `=` Evaluates a variable or javascript and prints the text.
+* `>` Creates a single line input box for storing text into a variable.
+* `>>` Creates a multiline input box for storing text into variables.
 
 **Sadako** assumes that a label is local unless otherwise stated. If you want to access a label that is not local, you must include the page with the label, like `some_page.some_label`.
 
@@ -517,6 +521,8 @@ You can lead the script block with a token and it will do things besides linking
 <a onclick='sadako.doJump("Page1.bleh")'>bleh</a>
 <a onclick='sadako.doJump("Page2.foo")'>bleh</a>
 ```
+
+#### Javscript
 
 As an example of executable javascript, the following opens the javascript alert box with the "Hello world!" message.
 
@@ -557,9 +563,55 @@ It's also important to note that the `[: :]` script block is the only block to i
 <a onclick"sadako.doPage("Page1")>meh</a>
 ```
 
+#### Input boxes
+
+The input boxes can be a bit tricky. They go like this.
+
+```
+What is your name? [:> $.player_name:]
+
+// outputs (brackets represent the input box)
+What is your name? [                       ]
+```
+
+The variable defined in script block will be set to whatever the input text is. **Sadako** sets the variable whenever the input box loses focus.
+
+Instead of displaying the input description using standard text, you can use the HTML `label` tag by using the `@:` rename label and following it with the text to display.
+
+```
+[:> $.player_name @: What is your name?:]
+
+// outputs
+What is your name? [                       ]
+```
+
+Visually this looks the same, but under the hood it works differently, especially for those with screen readers. Feel free to check out [this information](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/label) to get an idea on why labels are helpful.
+
+Finally, if you begin the script block with two `>` input tokens instead of one, it becomes a multiline input box. A single input box will only accept the first line of text, no matter how much you write. A multiline text box will accept all lines. Also, the CSS class `multiline` will automatically be assigned to a multiline box so that you may resize it in CSS without having to affect single line input boxes.
+
+Here's an example.
+
+```
+// CSS
+textarea.multiline { height: 5em; width: 20em; }
+
+// in story script
+[:>> $.test_val @: Please type something.^^:]
+
+
+// outputs
+Please type something.
+[                                   ]
+[                                   ]
+[                                   ]
+[                                   ]
+[                                   ]
+[                                   ]
+```
+
 **variables**: 
 * _sadako.token.tag_open_, _sadako.token.tag_close_
-* _sadako.token.page_embed_, _sadako.token.label_embed_
+* _sadako.token.page_embed_, _sadako.token.label_embed_, _sadako.token.input_embed_
 * _sadako.token.eval_code_, _sadako.token.eval_value_
 * _sadako.token.rename_
 
