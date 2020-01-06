@@ -615,6 +615,51 @@ Please type something.
 * _sadako.token.eval_code_, _sadako.token.eval_value_
 * _sadako.token.rename_
 
+### Macros
+
+`(:` `:)`
+
+Macros are simply shortcuts for javascript functions. Their only real benefit is clarity of code and slightly less typing for constantly used functions.
+
+To create a macro, create a new function member of `sadako.macros`, like this:
+
+```
+sadako.macros.say = function(who, what) { 
+    sadako.text += who + ' says, "' + what + '"'; 
+}
+
+sadako.macros.blargh = function() { sadako.text += "bleh"; }
+
+sadako.macros.doMath = function(x, y) { return x + y; }
+```
+
+Then to use them, you do this:
+
+```
+(:say "Ayren", "Hi!":)
+(:blargh:)
+(:=doMath 1, 2:)
+
+// outputs
+Ayren says, "Hi!"
+bleh
+3
+```
+
+If you look at the `doMath` macro, you'll see that it begins with the `=` value token as in a `[: :]` script block. This is treated in the same manner and adds the result to the output. Like always, the other option is to use the `sadako.text` variable for output. The choice is yours. If you don't always require output, I'd suggest the `=` value method.
+
+Basically a macro is just a text replacement for a `[: :]` script block call to a `sadako.macros` function.
+
+```
+// this
+(:say "Ayren", "Hi!":)
+
+// is the same as
+[:& sadako.macros.say("Ayren", "Hi!"):]
+```
+
+Please be aware that `sadako.macros` is not saved when you save your game. Because of this, any macros defined during game will not be saved and the game will crash when you reload. Therefore, always defined your macros in your javascript before you call `sadako.startGame()`.
+
 
 ## Choices and Depths 
 
