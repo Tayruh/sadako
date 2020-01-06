@@ -617,7 +617,7 @@
 		var writeOutput = function() {
 			clear();
 			var temp, a;
-
+			
 			for (a = 0; a < sadako.lines.length; ++a) {
 				temp = processTags(sadako.lines[a], sadako.doLineTag);
 				
@@ -818,12 +818,14 @@
 			
 			text = replaceVar(text, t.tmp_embed + t.value_embed, format('$1{0}{1} sadako.tmp.$2{2}', t.tag_open, t.eval_value, t.tag_close));
 			
-			text = replaceVar(text, t.write_embed + t.cond_embed, "$1sadako.text = $2");
-			text = replaceVar(text, t.write2_embed, "$1sadako.text = '$2");
-			text = replaceVar(text, t.write3_embed, '$1sadako.text = "$2');
-			text = replaceVar(text, t.pluswrite_embed + t.cond_embed, "$1sadako.text += $2");
-			text = replaceVar(text, t.pluswrite2_embed, "$1sadako.text += '$2");
-			text = replaceVar(text, t.pluswrite3_embed, '$1sadako.text += "$2');
+			text = replaceVar(text, t.write_embed, "$1sadako.text = $2");
+			text = replaceVar(text, t.write_embed + t.cond_embed, "$1sadako.text = sadako.var.$2");
+			text = text.replace(RegExp(t.write2_embed, 'g'), "sadako.text = '");
+			text = text.replace(RegExp(t.write3_embed, 'g'), 'sadako.text = "');
+			text = replaceVar(text, t.pluswrite_embed, "$1sadako.text += $2");
+			text = replaceVar(text, t.pluswrite_embed + t.cond_embed, "$1sadako.text += sadako.var.$2");
+			text = text.replace(RegExp(t.pluswrite2_embed, 'g'), "sadako.text += '");
+			text = text.replace(RegExp(t.pluswrite3_embed, 'g'), 'sadako.text += "');
 			
 
 			return text;
@@ -866,10 +868,41 @@
 			if (temp.length < 2) return text;
 
 			text = "";
-			for (var a = 0; a < temp.length; ++a) {
-				var temp2 = temp[a].split(sadako.token.span_close);
+			var a, temp2;
+			for (a = 0; a < temp.length; ++a) {
+				temp2 = temp[a].split(sadako.token.span_close);
 				if (temp2.length < 2) text += temp2[0];
 				else text += parseSpan(temp2[0]) + temp2[1];
+			}
+			return text;
+		}
+		
+		var doMacro = function(text) {
+			var parseMacro = function(text) {
+				var type = sadako.token.eval_code;
+				var temp;
+				if ((temp = isToken(text, sadako.token.eval_value)) !== false) {
+					text = temp;
+					type = sadako.token.eval_value;
+				}
+				var pre = sadako.token.tag_open + type + " ";
+				var index = text.indexOf(" ");
+				if (index === -1) return pre + "sadako.macros." + text + "()" + sadako.token.tag_close;
+				
+				var command = text.substring(index + 1);
+				text = text.substring(0, index);
+				return pre + "sadako.macros." + text + "(" + command + ")" + sadako.token.tag_close;
+			}
+
+			var temp = text.split(sadako.token.macro_open);
+			if (temp.length < 2) return text;
+			
+			text = "";
+			var a, temp2;
+			for (a = 0; a < temp.length; ++a) {
+				temp2 = temp[a].split(sadako.token.macro_close);
+				if (temp2.length < 2) text += temp2[0];
+				else text += parseMacro(temp2[0]) + temp2[1];
 			}
 			return text;
 		}
@@ -878,6 +911,7 @@
 			line = doReplace(line);
 			line = doInline(line);
 			line = doSpan(line);
+			line = doMacro(line);
 			
 			var index = line.lastIndexOf(sadako.token.cond);
 			if (index === -1) sections = [line];
@@ -977,7 +1011,10 @@
 
 			if ((temp = isToken(text, sadako.token.jump)) !== false) {
 				var label = temp;
-				if ((temp = isToken(label, sadako.token.page_embed)) !== false) return [JUMP, temp, 0, 0];
+				if ((temp = isToken(label, sadako.token.page_embed)) !== false) {
+					if (!(temp in sadako.story)) throw new Error("Can't find page '" + temp + "'");
+					return [JUMP, temp, 0, 0];
+				}
 
 				var jump
 				if (label.indexOf(".") === -1 || !(label in sadako.labels)) label = page + "." + label;
@@ -1223,7 +1260,15 @@
 			}
 
 			if (a == 20) console.error("Too many loops reached.");
-
+			
+			if (sadako.lines.length) {
+				var last = sadako.lines.length - 1;
+				var last_chars = sadako.lines[last].length - sadako.token.attach.length;
+				if (sadako.lines[last].substring(last_chars) === sadako.token.attach) {
+					sadako.lines[last] = sadako.lines[last].substring(0, last_chars);
+				}
+			}
+			
 			sadako.writeOutput();
 			
 			sadako.in_script = false;
@@ -1555,6 +1600,8 @@
 			"inline_close": ":}",
 			"span_open": "<:",
 			"span_close": ":>",
+			"macro_open": "(:",
+			"macro_close": ":)",
 			
 			// begins line
 			"comment": "//",
@@ -1593,7 +1640,7 @@
 
 		// global variables intended to changed
 		sadako.savename = "sadako";
-		sadako.text_delay = 200.0;
+		sadako.text_delay = 150.0;
 		sadako.output_id = id || "#output";
 		sadako.autosave_enabled = false;
 
@@ -1612,6 +1659,7 @@
 		sadako.in_script = false;
 		sadako.dialog_ids = {};
 		sadako.onDialogClose = null;
+		sadako.macros = {};
 
 		// global variables saved to state
 		sadako.page = "1";
