@@ -1,7 +1,7 @@
 	## cloak_intro
 		[:& 
 			$.message = 0;
-			$.cloak_worn = true; 
+			$.cloak_worn = true;
 			sadako.add($.items, "cloak");
 		:]
 		
@@ -15,8 +15,7 @@
 		[:= game.listInventory():]
 		
 	## foyer
-		[:& game.title("Foyer"):]
-
+		(:title "Foyer":)
 		[:& _.foyer = (sadako.has($.items, "cloak")) ? "darkness" : "foyer_bar":]
 		You are standing in a spacious hall, splendidly decorated in red and gold, with glittering chandeliers overhead. The entrance from the street is to the [:% north:], and there are doorways [:#= _.foyer @: south:] and [:cloakroom @: west:].
 		
@@ -30,9 +29,9 @@
 		+ [Back]., << RETURN
 	   
 	## cloakroom
-		[:& game.title("Cloakroom"); $.hooks = false:]
-
+		(:title "Cloakroom":)
 		The walls of this small room were clearly once lined with [:% hooks:], though now only one remains. The exit is a door to the [:foyer @: east:].
+		[:& $.hooks = false:]
 		
 		[:foyer @: Foyer:] *:choice
 		<< END
@@ -86,7 +85,7 @@
 		- <<
 		
 	## darkness
-		[:& game.title("Darkness"):]
+		(:title "Darkness":)
 
 		It is pitch dark, and you can't see a thing.
 		
@@ -99,8 +98,7 @@
 		+ [Back]., << RETURN
 
 	## foyer_bar
-		[:& game.title("Foyer Bar"):]
-
+		(:title "Foyer Bar":)
 		The bar, much rougher than you'd have guessed after the opulence of the foyer to the [:foyer @: north:], is completely empty. There seems to be some sort of [:% message:] scrawled in the sawdust on the floor.
 		
 		[:foyer @: Foyer:] *:choice
