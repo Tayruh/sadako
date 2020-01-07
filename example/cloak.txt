@@ -19,9 +19,9 @@
 		[:& _.foyer = (sadako.has($.items, "cloak")) ? "darkness" : "foyer_bar":]
 		You are standing in a spacious hall, splendidly decorated in red and gold, with glittering chandeliers overhead. The entrance from the street is to the [:% north:], and there are doorways [:#= _.foyer @: south:] and [:cloakroom @: west:].
 		
-		[:% foyer.north @: Entrance:] *:choice :: %.foyer.north
-		[:#= _.foyer @: Foyer Bar:] *:choice :: #.foyer_bar
-		[:cloakroom @: Cloakroom:] *:choice :: #.cloakroom
+		[:% foyer.north @: Entrance:] ~:choice :: %.foyer.north
+		[:#= _.foyer @: Foyer Bar:] ~:choice :: #.foyer_bar
+		[:cloakroom @: Cloakroom:] ~:choice :: #.cloakroom
 		<< END
 	   
 		= north
@@ -33,7 +33,7 @@
 		The walls of this small room were clearly once lined with [:% hooks:], though now only one remains. The exit is a door to the [:foyer @: east:].
 		[:& $.hooks = false:]
 		
-		[:foyer @: Foyer:] *:choice
+		[:foyer @: Foyer:] ~:choice
 		<< END
 	   
 		= hooks
@@ -68,7 +68,7 @@
 				sadako.remove($.items, "cloak");
 				sadako.onDialogClose = function() { if ($.hooks) sadako.doJump('cloakroom.hooks'); }
 			:]
-			[:& sadako.closeDialog() @: Back:] *:choice
+			[:& sadako.closeDialog() @: Back:] ~:choice
 			<< END
 		+ [Drop] :: $.room !== "cloakroom"
 			This isn't the best place to leave a smart cloak lying around.
@@ -101,7 +101,7 @@
 		(:title "Foyer Bar":)
 		The bar, much rougher than you'd have guessed after the opulence of the foyer to the [:foyer @: north:], is completely empty. There seems to be some sort of [:% message:] scrawled in the sawdust on the floor.
 		
-		[:foyer @: Foyer:] *:choice
+		[:foyer @: Foyer:] ~:choice
 		<< END
 			
 		= message
