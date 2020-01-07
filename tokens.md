@@ -554,7 +554,7 @@ You can lead the script block with a token and it will do things besides linking
 **Sadako** assumes that a label is local unless otherwise stated. If you want to access a label that is not local, you must include the page with the label, like `some_page.some_label`.
 
 ```
-#Page1
+## Page1
     // local label
     [:% bleh:]
     
