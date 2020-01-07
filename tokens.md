@@ -73,8 +73,37 @@ An escape token is used to prevent **Sadako** from recognizing a token that begi
 When you redirect to a page, **Sadako** will proceed line by line through the script within that page. When it reaches the end, it will stop. A page can be written simply and only display a full screen of text, or it can be complex and full of links, choices, and jumps. The only way out of a page is through a jump of some sort, which will be explained shortly.
 
 Every time you're redirected to a page that differs from the current page, the *seen* counter increases by 1. This is stored in `sadako.page_seen["Page1"]` (using "Page1" as an example). This value can be used to check whether a page has been visited and how many times.
+
+#### Tags ####
+
+Pages may also have tags using the `~:` tag token after the page name.
+
+```
+## Page1 ~:test
+```
+
+In this example, the page is assigned a tag called `test`. Unless a value is assigned, a tag is always assigned the value of `true`. If you wish to assign a value, place a `:` between the tag name and its value.
+
+```
+## Page1 ~:blah:some text ~:test:20 
+```
+
+In the example above, `Page1` is given a `blah` tag with the value of `some text` and a `test` tag with the value of `20`. Spaces are allowed, as you can see.
+
+On their own, tags don't do anything. However, you can check for them and their value in `sadako.tags[<page_name>]`. For example:
+
+```
+//
+## Page1 ~:blah:some text
+
+// in javascript
+if ("blah" in sadako.tags.Page1) console.log(sadako.tags.Page1.blah);
+
+// outputs
+some text
+```
         
-**variable**: _sadako.token.page_
+**variable**: _sadako.token.page_, _sadako.token.tag_
 
 
 ### Inline Labels
@@ -95,9 +124,9 @@ Because of the way that page names, label names, and variable names are handled 
 
 `>>`
 
-The jump token is used to redirect the story script to a defined label or page.
+The jump token is used to redirect the story script to a defined label or page. Jumping to a page or label increases its *seen* count stored in `sadako.page_seen["page_name"]` and `sadako.label_seen["label_name"]` respectively.
 
-**Sadako** assumes that a label that does not include the page is local. In order to jump outside that page, include the page in the jump command. Page jumps must include the `#` page token before its name.
+**Sadako** assumes that a label that does not include the page is local. In order to jump outside that page, include the page in the jump command. The following is an example of label jumping.
 
 ```
 ## Page1
@@ -115,6 +144,7 @@ The jump token is used to redirect the story script to a defined label or page.
     >> Page3.bleh
     
 ## Page2
+    {asdf}
     This is page 2.
     
 ## Page3
@@ -122,7 +152,7 @@ The jump token is used to redirect the story script to a defined label or page.
     This is page 3.
     
     // jumps to "Page2"
-    >> #Page2
+    >> Page2.asdf
 
 
 // outputs
@@ -132,7 +162,22 @@ This is page 3.
 This is page 2.
 ```
 
-Jumping to a page or label increases its *seen* count stored in `sadako.page_seen["page_name"]` and `sadako.label_seen["label_name"]` respectively. 
+Page jumps must include the `#` page token before its name.
+
+```
+## Page1
+    You won't see this text.
+    >> #Page2
+## Page2
+    Hello!
+    
+// outputs
+Hello!
+```
+
+Jumping to a page is not the same as jumping a label. Jumping to a label continues adding to the current output, like in the label jump example. However, jumping to a page (even if it's the same page) clears the output and the jump stack, meaning the `<<` token described below will not work. The reason only `Hello!` was seen in the example output is because the output was cleared upon jumping to `Page2`.
+
+If you want to include a page in the current flow of text, I suggest adding a label to the top of the page and jumping to that instead, like in the example above.
 
 **variable**: _sadako.token.jump_, _sadako.token.page_embed_
 
@@ -289,7 +334,7 @@ Span token. This is used to easily attach a CSS class to a block of text. You se
 
 ### Tags
 
-`*:`
+`~:`
 
 Tags are used to alter the output or display of a line. Any number of tags can be added to a line. 
 
@@ -299,14 +344,14 @@ There are also two hardcoded tags in **Sadako**:
 * `choice`: Displays the current line as though it were a choice. Useful for links that run javascript.
 
 ```
-This will be displayed using the "test" class. *:class:test
+This will be displayed using the "test" class. ~:class:test
 
 // outputs
 <p class="test">This will be displayed using the "test" class.</p>
 ```
 
 ```
-[:& alert("Boo!") @: Fake Choice.:] *:choice
+[:& alert("Boo!") @: Fake Choice.:] ~:choice
 
 // outputs (output is simplified for example purposes)
 <ul><li class="choice"><a onclick='alert("Boo!")'>Fake Choice</a></li></ul>
@@ -330,7 +375,7 @@ sadako.doLineTag = function(text, tag) {
 }
 
 // in story script
-Hi! *:ayren
+Hi! ~:ayren
 
 
 // outputs
@@ -342,7 +387,7 @@ This function is called once per tag with the current text and tag (converted to
 Tags must come before a `::` conditional token since it's considered part of the line. Conditionals will be explained in a little bit.
 
 ```
-Write it just like this. *:test1 *:test2 :: $.blah == 1
+Write it just like this. ~:test1 ~:test2 :: $.blah == 1
 ```
 
 **variable**: _sadako.token.tag_
@@ -610,7 +655,7 @@ Please type something.
 ```
 
 **variables**: 
-* _sadako.token.tag_open_, _sadako.token.tag_close_
+* _sadako.token.script_open, _sadako.token.script_close_
 * _sadako.token.page_embed_, _sadako.token.label_embed_, _sadako.token.input_embed_
 * _sadako.token.eval_code_, _sadako.token.eval_value_
 * _sadako.token.rename_
@@ -658,7 +703,7 @@ Basically a macro is just a text replacement for a `[: :]` script block call to 
 [:& sadako.macros.say("Ayren", "Hi!"):]
 ```
 
-Please be aware that `sadako.macros` is not saved when you save your game. Because of this, any macros defined during game will not be saved and the game will crash when you reload. Therefore, always defined your macros in your javascript before you call `sadako.startGame()`.
+Please be aware that `sadako.macros` is not saved when you save your game. Because of this, any macros defined during game will not be saved and the game will crash when you reload. Therefore, always define your macros in your javascript before you call `sadako.startGame()`.
 
 
 ## Choices and Depths 
