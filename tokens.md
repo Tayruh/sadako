@@ -179,6 +179,74 @@ Jumping to a page is not the same as jumping a label. Jumping to a label continu
 
 If you want to include a page in the current flow of text, I suggest adding a label to the top of the page and jumping to that instead, like in the example above.
 
+#### Includes
+
+There is an exception to the previous statement. If you include the `=` value token before the page or label to jump to, **Sadako** will jump to that page or label, but instead of ending output when it reaches the end of the script, it will jump back to where it was.
+
+```
+This ends early.
+>> test
+You won't see this.
+<< END
+
+= test
+Something to print.
+<< END
+
+
+// outputs
+This ends early.
+Something to print.
+```
+
+The above stops processing the script once it sees `<< END` in `test`.
+
+```
+This won't exit early.
+>>= test
+You'll be able to see this now.
+<< END
+
+= test
+Something to print.
+<< END
+
+
+// outputs
+This ends early.
+Something to print.
+You'll be able to see this now.
+```
+
+By using the `=` value token, it won't stop processing the script when it sees `<< END`. Similarly, using it in conjunction with page jumps, it won't display a fresh page, but will instead include that page's contents in with the current page.
+
+```
+## Page1
+    This won't be seen.
+    >> #Page2
+    This won't be displayed either.
+    
+## Page2
+    Hello!
+    
+// outputs
+Hello!
+```
+```
+## Page1
+    You will see this.
+    >>= #Page2
+    You will see this also.
+    
+## Page2
+    Hello!
+    
+// outputs
+You will see this.
+Hello!
+You will see this also.
+```
+
 **variable**: _sadako.token.jump_, _sadako.token.page_embed_
 
 ### Returns
@@ -242,9 +310,9 @@ It has a few different functions when followed by keywords. They are case sensit
     
     Stops the current block of story script from proceeding past this line. Useful for including labels below main script and using them like functions as in the example above.
     
-* `<< EXIT`
+* `<< ABORT`
 
-    Same as `<< END` but more aggressive. It quits the current script and does not display any text. All script blocks and jumps will still be executed but no output will be displayed. The `EXIT` call is useful helping avoid some pitfalls that arise when calling `sadako.doPage()`, `sadako.doLabel()`, and `sadako.closeDialog()` from within a `[: :]` script block.
+    Same as `<< END` but more aggressive. It quits the current script and does not display any text. All script blocks and jumps before this command will still be executed but no output will be displayed. The `ABORT` call is useful helping avoid some pitfalls that arise when calling `sadako.doPage()`, `sadako.doLabel()`, and `sadako.closeDialog()` from within a `[: :]` script block.
 
 
 ## Text Formatting
@@ -338,10 +406,11 @@ Span token. This is used to easily attach a CSS class to a block of text. You se
 
 Tags are used to alter the output or display of a line. Any number of tags can be added to a line. 
 
-There are also two hardcoded tags in **Sadako**:
+There are also three hardcoded tags in **Sadako**:
 
 * `class:<classname>` (alias `c:<classname>`): Adds a CSS class to the line.
 * `choice`: Displays the current line as though it were a choice. Useful for links that run javascript.
+* `delay:<XXXX.X>`: Amount of time in milliseconds (5000.0 = 5 seconds) to delay the display of this line and all lines following it.
 
 ```
 This will be displayed using the "test" class. ~:class:test
@@ -356,6 +425,23 @@ This will be displayed using the "test" class. ~:class:test
 // outputs (output is simplified for example purposes)
 <ul><li class="choice"><a onclick='alert("Boo!")'>Fake Choice</a></li></ul>
 ```
+
+The `delay` tag can be tricky. Basically, as each line is printed, it's set to delay for the amount of this delay plus `sadako.text_delay`.
+
+```
+Normal text.
+This will take 5 seconds to display. ~:delay:5000
+This will take 3 seconds to display. ~:delay:3000
+This will also take 3 seconds.
+
+// the choice will take 6 seconds to display
+- ~:delay:6000
++ [Some Choice]
+```
+
+In the above example, the second line of text will actually take longer to display than the third line of text. 
+
+Also, notice how it uses an empty `-` depth token to set the delay for the choice. Unlike `class` tags, `delay` will not work on choices because of the way they are displayed. Therefore, you should set it before displaying the choice. This trick also works with doing things like jumps which also don't allow tags. To remove the additional delay, just use the `delay` tag with a value of `0`.
     
 **Sadako** provides two functions intended to be overwritten by the user. These are `sadako.doLineTags()` and `sadako.doChoiceTags()`. The return value is an array containing the text to display as the first element and classes to be added to the line as the remaining elements. Classes do not have to be provided, and if nothing is returned from the function, no text will be printed.
 
@@ -952,7 +1038,7 @@ The depth can also changed using `*` choice tokens, `+` static choice tokens, `=
 The flow of story script goes like this:
 
 1. All non-choice story script lines are processed. 
-2. If the script sees `<< END` or `<< EXIT`, it stops processing any further lines of script.
+2. If the script sees `<< END` or `<< ABORT`, it stops processing any further lines of script.
 3. If the script runs out of content in that depth, it looks for a depth changing token (listed above) in the next line and sets the depth to that. If there is not a depth token, the script stops processing.
 4. If the script sees any choices, it will process all choices until it sees a non-choice depth token.
 5. After a choice is selected, the script will jump to the story block with that choice and start again at step 1.
