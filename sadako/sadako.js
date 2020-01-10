@@ -13,37 +13,41 @@
 		if ((temp = isToken(id, "#"))) return document.getElementById(temp);
 		else if ((temp = isToken(id, "\\."))) return document.getElementsByClassName(temp);
 	}
-	
-	var copy = function(list, deep) {
-		var getDeepCopy = function(what) {
-			var x = copy(what, true);
-			if (x === null) x = what;
-			return x;
-		}
-
-		var getCopy = function() {
-			var a, new_list;
-
-			if (isArray(list)) {
-				new_list = [];
-				for (a = 0; a < list.length; ++a) {
-					if (deep === true) new_list.push(getDeepCopy(list[a]));
-					else new_list.push(list[a]);
-				}
+ 
+	var copy = function(item, deep) {
+		var getArray = function(list, deep) {
+			var a;
+			var new_list = [];
+			for (a = 0; a < list.length; ++a) {
+				if (deep) new_list.push(getValue(list[a], true));
+				else new_list.push(list[a]);
 			}
-			else if (isObj(list)) {
-				new_list = {};
-				for (a in list) {
-					if (deep === true) new_list[a] = getDeepCopy(list[a]);
-					else new_list[a] = list[a];
-				}
-			}
-			else new_list = null;
-
 			return new_list;
 		}
+		
+		var getObj = function(list, deep) {
+			var a;
+			var new_list = {};
+			for (a in list) {
+				if (deep === true) new_list[a] = getValue(list[a], true);
+				else new_list[a] = list[a];
+			}
+			return new_list;
+		}
+		
+		var getValue = function(item, deep) {
+			if (isArray(item)) {
+				if (deep) return getArray(item, deep);
+				return item;
+			}
+			if (isObj(item)) {
+				if (deep) return getObj(item, deep);
+				return item;
+			}
+			return item;
+		}
 
-		return getCopy();
+		return getValue(item, deep);
 	}
 
 	var find = function(list, func) {
@@ -103,6 +107,7 @@
 	};
 
 	var isObj = function(val) {
+		if (val === true || val === false || val === undefined || val === null) return false;
 		if (isDef(val) && !isStr(val) && !isNum(val) && !isArray(val)
 				&& !isFunc(val) && val !== null) {
 			return true;
@@ -508,7 +513,7 @@
 		
 		if (sadako.dialog_ids.title) sadako.dom(sadako.dialog_ids.title).innerHTML = title;
 		
-		if ((temp = sadako.isToken(text, sadako.token.page_embed))) doPage(temp);
+		if ((temp = sadako.isToken(text, sadako.token.page_embed))) doJump("#" + temp);
 		else if ((temp = sadako.isToken(text, sadako.token.label_embed))) sadako.doLabel(temp);
 		else sadako.dom(sadako.dialog_ids.output).innerHTML = text;
 		
@@ -776,7 +781,7 @@
 			temp = isToken(script, sadako.token.eval_value);
 			if (temp) script = eval(temp);
 
-			var command = 'sadako.doPage("' + script + '")';
+			var command = 'sadako.doJump("#' + script + '")';
 			
 			return sadako.writeLink(name, command, (script in sadako.story) ? false : true);
 		}
@@ -976,45 +981,63 @@
 	}
 
 	var doJump = function(label, include) {
-		if (label.indexOf(".") === -1 || !(label in sadako.labels)) label = sadako.page + "." + label;
-		if (!(label in sadako.labels)) throw new Error("Can't find label '" + label + "'");
+		var doJump = function(label, include) {
+			if (label.indexOf(".") === -1 || !(label in sadako.labels)) label = sadako.page + "." + label;
+			if (!(label in sadako.labels)) throw new Error("Can't find label '" + label + "'");
 
-		var jump = sadako.labels[label];
+			var jump = sadako.labels[label];
 
-		var token = sadako.story[jump[0]][jump[1]][jump[2]].token;
-		if (token === sadako.token.choice || token === sadako.token.static) {
-			jump = [jump[0], jump[1] + "." + jump[2], 0];
-			sadako.label_seen[label] += 1;
+			var token = sadako.story[jump[0]][jump[1]][jump[2]].token;
+			if (token === sadako.token.choice || token === sadako.token.static) {
+				jump = [jump[0], jump[1] + "." + jump[2], 0];
+				sadako.label_seen[label] += 1;
+			}
+			
+			if (include) {
+				doLines(jump[0], jump[1], jump[2]);
+				return;
+			}
+
+			sadako.jumps = [];
+			sadako.conditions = {};
+			doScript(jump[0], jump[1], jump[2]);
 		}
 		
-		if (include) {
-			doLines(jump[0], jump[1], jump[2]);
-			return;
+		var doPage = function(page, include) {
+			sadako.page_seen[page] += 1;
+			
+			if (include) {
+				doLines(page, 0, 0);
+				return;
+			}
+			
+			sadako.jumps = [];
+			sadako.conditions = {};
+			doScript(page, 0, 0);
 		}
-
-		sadako.jumps = [];
-		sadako.conditions = {};
-		doScript(jump[0], jump[1], jump[2]);
+		
+		if (label.charAt(0) === "#") doPage(label.substring(1), include);
+		else doJump(label, include);
 	}
 	
 	var doInclude = function(where) {
 		var temp;
-		if ((temp = isToken(where, sadako.token.page_embed)) !== false) return doPage(temp, true);
+		if ((temp = isToken(where, sadako.token.page_embed)) !== false) return doJump("#" + temp, true);
 		doJump(where, true);
 	}
-	
-	var doPage = function(page, include) {
-		sadako.page_seen[page] += 1;
-		
-		if (include) {
-			doLines(page, 0, 0);
-			return;
-		}
-		
-		sadako.jumps = [];
-		sadako.conditions = {};
-		doScript(page, 0, 0);
-	}
+
+	// var doPage = function(page, include) {
+	// 	sadako.page_seen[page] += 1;
+	// 
+	// 	if (include) {
+	// 		doLines(page, 0, 0);
+	// 		return;
+	// 	}
+	// 
+	// 	sadako.jumps = [];
+	// 	sadako.conditions = {};
+	// 	doScript(page, 0, 0);
+	// }
 	
 	var isToken = function(text, token) {
 		text = text.trimStart();
@@ -1089,11 +1112,12 @@
 				if ((temp = isToken(label, sadako.token.page_embed)) !== false) {
 					if (!(temp in sadako.story)) throw new Error("Can't find page '" + temp + "'");
 					// return [JUMP, temp, 0, 0];
+					temp = "#" + temp;
 					if (include_text) {
-						doPage(temp, true);
+						doJump(temp, true);
 						return [CONTINUE];
 					}
-					doPage(temp);
+					doJump(temp);
 					return [ABORT];
 				}
 
@@ -1126,8 +1150,6 @@
 					sadako.page_seen[page] += 1;
 					sadako.jumps = [];
 					return [JUMP, page, 0, 0];
-					// doPage(page);
-					// return [ABORT];
 				}
 				if (temp === "BACK") {
 					back();
@@ -1764,7 +1786,7 @@
 		sadako.conditions = {};
 
 		// functions intended to be used as-is
-		sadako.doPage = doPage;
+		// sadako.doPage = doPage;
 		sadako.doJump = doJump;
 		sadako.doInclude = doInclude;
 		sadako.back = back;

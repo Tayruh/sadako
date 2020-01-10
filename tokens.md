@@ -312,7 +312,7 @@ It has a few different functions when followed by keywords. They are case sensit
     
 * `<< ABORT`
 
-    Same as `<< END` but more aggressive. It quits the current script and does not display any text. All script blocks and jumps before this command will still be executed but no output will be displayed. The `ABORT` call is useful helping avoid some pitfalls that arise when calling `sadako.doPage()`, `sadako.doLabel()`, and `sadako.closeDialog()` from within a `[: :]` script block.
+    Same as `<< END` but more aggressive. It quits the current script and does not display any text. All script blocks and jumps before this command will still be executed but no output will be displayed. The `ABORT` call is useful helping avoid some pitfalls that arise when calling `sadako.doJump()`, `sadako.doLabel()`, and `sadako.closeDialog()` from within a `[: :]` script block.
 
 
 ## Text Formatting
@@ -516,7 +516,7 @@ To make sense of this, a few things should be explained briefly.
 
 `sadako.var` is an object variable that contains user defined variables. These variables are automatically saved to disk when you save the game.
 
-`sadako.tmp` is also an object variable that contains user defined variables. However, these variables are cleared every time `sadako.doPage()`, `sadako.doJump()`, `sadako.doChoice()`, and `sadako.doScript()` are called. That is to say, any time you click a link or call a function that progresses the story script.
+`sadako.tmp` is also an object variable that contains user defined variables. However, these variables are cleared every time `sadako.doJump()`, `sadako.doChoice()`, and `sadako.doScript()` are called. That is to say, any time you click a link or call a function that progresses the story script.
     
 `sadako.text` is the variable that holds the text being processed for the current line. Just returning text from a function will not work unless you use the `=` value token inside the `[: :]` script block (which hopefully explains how the story script text replacements work). If you are inside a function and want to replace or add to the text output for the current line, `sadako.text` is the variable to use.
 
@@ -616,7 +616,7 @@ A standard script block inserts a link to a page.
 [:blargh:]
 
 // outputs
-<a onclick='sadako.doPage("blargh")'>blargh</a>
+<a onclick='sadako.doJump("#blargh")'>blargh</a>
 ```
 
 If you follow the page name with the `@:` rename token, you can rename the link.
@@ -625,7 +625,7 @@ If you follow the page name with the `@:` rename token, you can rename the link.
 [:some_annnoying_title @: the next room:]
 
 // outputs
-<a onclick='sadako.doPage("some_annnoying_title")'>the next room</a>
+<a onclick='sadako.doJump("#some_annnoying_title")'>the next room</a>
 ```
 
 You can lead the script block with a token and it will do things besides linking to a page.
@@ -667,7 +667,7 @@ For `#`, `%`, and even the `@:` token used for renaming, you can follow it with 
 [:#= "Page " + (2 - 1) @:= (1==1) ? "bleh" : "meh":]
 
 // outputs
-<a onclick='sadako.doPage("Page1")'>bleh</a>
+<a onclick='sadako.doJump("#Page1")'>bleh</a>
 ```
 
 It's also important to note that the `[: :]` script block is the only block to ignore line breaks. This is so that you can include properly formatted javascript. The space between `[:` and the leading tokens are also ignored. Because of that, script like this won't break, even though it's an exercise in poor formatting.
@@ -691,7 +691,7 @@ It's also important to note that the `[: :]` script block is the only block to i
 
 
 // outputs
-<a onclick"sadako.doPage("Page1")>meh</a>
+<a onclick"sadako.doJump("Page1")>meh</a>
 ```
 
 #### Input boxes
