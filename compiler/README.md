@@ -1,4 +1,4 @@
-The compiler can be run or compiled on the command-line using node.js.
+The compiler **Kayako** can be run or compiled on the command-line using node.js.
 
 Node.js can be grabbed from here: https://nodejs.org
 
