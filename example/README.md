@@ -1,0 +1,1 @@
+This example was compiled with the kayako compiler using "cloak.txt" as the source file.

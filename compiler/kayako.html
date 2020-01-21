@@ -1,0 +1,36 @@
+<html>
+    <head>
+        <style type="text/css">
+            #input, #output {
+                width: 960px;
+                height: 480px;
+                resize: none;
+            }
+            
+            #compile {
+                margin: 10px;
+                padding: 10px;
+            }
+            
+            #output {
+                read-only: true;
+            }
+        </style>
+    </head>
+    <body>
+        <center>
+            <textarea id="input"></textarea><br>
+            <button type="button" id="compile" onclick="compileScript()">Compile</button><br>
+            <textarea id="output" readonly="readonly"></textarea>
+        </center>
+    </body>
+    <script src="sadako.js" type="text/javascript"></script>
+    <script src="kayako.js" type="text/javascript"></script>
+	<script type="text/javascript">
+        compileScript = function() {
+            var source = document.getElementById("input").value;
+            var story = "sadako.story = " + JSON.stringify(sadako.parseStory(source)) + ";";
+            document.getElementById("output").value = story;
+        }
+    </script>
+</html>

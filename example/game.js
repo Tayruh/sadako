@@ -6,7 +6,8 @@
 
 		game.showItem = function(name, page) {
 			sadako.dom("#dialog-title").innerHTML = name;
-			sadako.doPage(page);
+			if ((page + ".inventory") in sadako.labels) sadako.doLink(page + ".inventory");
+			else sadako.doLink("#" + page);
 		}
 
 		game.listInventory = function() {
@@ -16,7 +17,7 @@
 			for (a = 0; a < sadako.var.items.length; ++a) {
 				text += "<li><span class='listed-object'>";
 				item = game.items[sadako.var.items[a]];
-				text += sadako.processScript(sadako.format('[:& game.showItem("{0}", "{1}") @: {2}:]', item[0], item[1], item[0]));
+				text += sadako.processScript(sadako.format('[:& game.showItem("{0}", "{1}") @: {2}:]', item[0], sadako.var.items[a], item[0]));
 				text += "</li></span>";
 			}
 			if (sadako.var.items.length < 1) text = "<span class='inventory-empty'>Empty</span>";
@@ -34,12 +35,6 @@
 			sadako.text += '<div id="room-title">' + title + '</div>';
 			if (subtitle) sadako.text += '<div id="room-subtitle">' + subtitle + '</div>';
 		}
-
-		// function exportStory() {
-		//  var el = document.getElementById("story");
-		//  el.innerText = "(function(){sadako.JSON=" +JSON.stringify(sadako.story) + "}());";
-		//  el.style.display = "block";
-		// }
 
 		window.onload = function() {
 			sadako.init();

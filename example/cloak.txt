@@ -9,7 +9,7 @@
 		
 		<i>This demo is based on <a target="_blank" href="http://www.firthworks.com/roger/cloak/">Cloak of Darkness</a> by Roger Firth.</i>
 		
-		* [Start]., >> #foyer
+		+ [Start]., >> #foyer
 		
 	## inventory 
 		[:= game.listInventory():]
@@ -66,7 +66,7 @@
 			[:& 
 				$.cloak_worn = false;
 				sadako.remove($.items, "cloak");
-				sadako.onDialogClose = function() { if ($.hooks) sadako.doJump('cloakroom.hooks'); }
+				sadako.onDialogClose = function() { if ($.hooks) sadako.doLink('cloakroom.hooks'); }
 			:]
 			[:& sadako.closeDialog() @: Back:] ~:choice
 			<< END

@@ -928,6 +928,8 @@ Next choice.
 One more.
 ```
 
+#### Labels
+
 Simply displaying the choice does not increase its *seen* count, unlike other script lines assigned a label. Selecting a choice is the only way that its *seen* count is increased.
 
 Jumping to a choice that has been assigned a label is the equivalent of selecting that choice. In other words, the *seen* count for the label assigned to that choice is increased and **Sadako** begins processing the lines inside that choice's story block.
@@ -955,13 +957,13 @@ Times choice 1 has been seen: 1
 Times choice 2 has been seen: 0
 ```
 
-Choices using a `*` choice token (as opposed to a `+` static choice token) will disappear after being clicked once.
+Choices using a `*` choice token (as opposed to a `+` static choice token) that have an associated label will disappear after being clicked once.
 
 ```
 {loop}
-* Choice 1
-* Choice 2
-* Choice 3
+* {c1} [Choice 1] 
+* {c2} [Choice 2] 
+* {c3} [Choice 3] 
     The End
     << END    
 - >> loop
@@ -983,13 +985,15 @@ Choices using a `*` choice token (as opposed to a `+` static choice token) will 
 The End
 ```
 
-Choices also come with a method for a default fallthrough when all other options have been chosen. All you need to do is have a choice without a text description. Once all visible choices have been exhausted, Sadako will then select the first unnamed choice that it sees. You can use this to safely exit a loop.
+Choices also come with a method for a default fallthrough when all other options have been chosen. All you need to do is have a choice without a text description. Once all visible choices have been exhausted, Sadako will then select the first unnamed choice that it sees. You can use this to safely exit a loop. 
+
+Regardless of whether this is a `*` choice, `+` static, or has an `{ }`inline label, this choice will never disappear.
 
 ```
 {loop}        
-* [Choice 1]
-* [Choice 2]
-* [Choice 3]
+* {c1} [Choice 1]
+* {c2} [Choice 2]
+* {c3} [Choice 3]
 *
     Exiting loop.
     >> finish
@@ -1014,6 +1018,8 @@ Choices also come with a method for a default fallthrough when all other options
 Exiting loop.
 All done.
 ```
+
+Normally the game does not save progress in a choice tree. It only saves progress when you click a link that leads to a label or page (using `sadako.doLink()`). However, if you give a choice an inline label, the game will allow you to save progress after that choice has been selected.
     
 **variable**: _sadako.token.choice_
 
@@ -1022,7 +1028,7 @@ All done.
 
 `+`
 
-A choice using `*` will be hidden once it's been chosen. To avoid thus behavior, use `+` instead. A choice using `+` will never be hidden. 
+A choice using `*` and an associated `{ }` inline label will be hidden once it's been chosen. To avoid thus behavior, use `+` instead. A choice using `+` will never be hidden. 
 
 **variable**: _sadako.token.static_
 
@@ -1214,3 +1220,27 @@ eval: (1 == 1)
 ```
 
 **variable**: _sadako.token.cond_block_
+
+
+### Saving Checkpoints
+
+The way that **Sadako** manages saves is that whenever you reach a "checkpoint", it stores the current state (all of **Sadako**'s necessary variables along with whatever you store inside `sadako.var`) into a data object variable. When you decide to save your game, it writes the contents of that data to the disk. It only saves whatever the values of the data was at the time of last checkpoint, so it's entirely possible to progress through multiple choices without it saving your progress.
+
+To manage this correctly, you must pay attention to what triggers a checkpoint. There are three things that do this.
+
+* Clicking a link that navigates to a new label using `sadako.doLink()`. (Example:
+`[:% some_label:]`)
+* Clicking a link that navigates to a new page using `sadako.doLink()`. (Example: `[: some_page:]`)
+* Clicking a choice that has an associated `{ }` inline label. (Example: `* {cp} Some Choice`)
+
+`>>` jumps in the story script will not trigger a checkpoint. You can however trigger this manually with `sadako.doLink()` which will act exactly like clicking a link. That is to say, no text leading up to this call will be displayed and it will not process any lines following this story block since it is an immediate redirect to that label or page.
+
+The `sadako.doLink()` function accepts an argument in the same format as a `>>` jump token.
+
+```
+// jumps to a label 
+[:& sadako.doLink("some_label"):]
+
+// jumps to a page 
+[:& sadako.doLink("#some_page"):]
+```
