@@ -1,10 +1,5 @@
 # Tokens
 
-Note: **Sadako** offers the ability to customize the tokens use for parsing the story script. I did my best to select tokens that were short in length, easy on the eyes, and avoided potential conflicts with javascript and a normal writing style. The information in this documentation is based on the default assignment for each token.
-
-If you are unhappy with my choices, I provide the variable names of each token. You may change their values to suit your needs. Be aware that if you change them, you may need to escape special characters with `\\` in order for them to work correctly. Some but not all of them are used inside [regular expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions).
-
-
 ## Comments
 
 ### Comment block
