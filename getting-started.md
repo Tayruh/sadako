@@ -21,6 +21,7 @@
         </textarea>
     </body>
     <script src="sadako.js" type="text/javascript"></script>
+    <script src="kayako.js" type="text/javascript"></script>
 	<script type="text/javascript">
         sadako.init();
         sadako.startGame("demo");
