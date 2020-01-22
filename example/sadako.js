@@ -72,6 +72,7 @@
 
 	// global variables not saved to state
 	sadako.version = "0.9.0";
+	sadako.kayako_version = "0.9.0";
 	sadako.tmp = {};
 	sadako.evals = [];
 	// sadako.story = {};
@@ -1577,7 +1578,7 @@
 	
 	var checkVersion = function() {
 		var src_ver = sadako.story.story_data.version.split(".");
-		var sad_ver = sadako.version.split(".");
+		var sad_ver = sadako.kayako_version.split(".");
 		
 		if (src_ver.length !== sad_ver.length) throw new Error("Invalid version number");
 		
@@ -1585,8 +1586,9 @@
 		for (a = 0; a < sad_ver.length; ++a) {
 			if (sad_ver[a] > src_ver[a]) {
 				console.error("Sadako Version: " + sadako.version);
+				console.error("Kayako Version: " + sadako.kayako_version);
 				console.error("Source Version: " + sadako.story.story_data.version);
-				throw new Error("Compiled source is from an older version. Please recompile.");
+				throw new Error("Compiled Sadako source is from an older version of Kayako. Please recompile.");
 			}
 		}
 	}
@@ -1602,15 +1604,7 @@
 
 		checkLocalStorage();
 		
-		if (sadako.story === undefined) {
-			if (isStr(story)) {
-				if (story.charAt(0) === "#") story = dom(story).value;
-			}
-			else if (dom("#source")) story = dom("#source").value;
-
-			if (story !== undefined) sadako.story = sadako.parseStory(story);
-		}
-		else {
+		if (sadako.story !== undefined) {
 			sadako.tags = sadako.story.story_data.tags;
 			sadako.labels = sadako.story.story_data.labels;
 			sadako.depths = sadako.story.story_data.depths;
@@ -1622,9 +1616,17 @@
 			for (a in sadako.labels) {
 				sadako.label_seen[a] = 0;
 			}
+			
+			checkVersion();
 		}
+		else {
+			if (isStr(story) && story.charAt(0) === "#") story = dom(story).value;
+			else if (dom("#source")) story = dom("#source").value;
+
+			if (story !== undefined) sadako.story = sadako.parseStory(story);
+		} 
 		
-		checkVersion();
+		if (sadako.story === undefined) console.error("Sadako script not found");
 	}
 	
 	// functions intended to be used as-is
