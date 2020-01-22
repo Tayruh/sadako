@@ -1,5 +1,3 @@
-
-
 ### Setting up the HTML
 
 **Sadako** doesn't require much to run. Just a few lines of HTML and two javascript function calls.
