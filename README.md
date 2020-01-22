@@ -8,8 +8,4 @@ This library is intended to be fairly open ended so that it may easily fit into 
 
 A goal of this project was to shoot for high compatibility with browsers. It should be fully ECMAScript 5 compatible (avoiding javascript introduced in later versions) and fully functioning in Internet Explorer, Microsoft Edge, and mobile browsers, along with more modern browsers like Chrome and Firefox.
 
-A guide on getting started can be found [here](getting-started.md).
-
-A reference and guide on how to use Sadako script can be viewed [here](reference.md).
-
-
+A reference and guide on how to use Sadako script can be viewed [here](tokens.md).
