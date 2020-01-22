@@ -19,8 +19,6 @@ None of this will matter.
 So write whatever you want.
 */
 ```
-    
-**variables**: _sadako.token.comment_open_, _sadako.token.comment_close_
 
 
 ### Line comment
@@ -31,7 +29,6 @@ Any line beginning with this token will be ignored by the script.
 
 Unlike JavaScript, a `//` comment token will never comment out half a line of text. If you need to do this, use the `/* */` comment block.
 
-**variable**: _sadako.token.comment_
 
 ### Escape
 
@@ -52,7 +49,6 @@ An escape token is used to prevent **Sadako** from recognizing a token that begi
 *** You win! ***
 ```
 
-**variable**: none (hardcoded)
 
 ## Story sections 
 
@@ -102,8 +98,6 @@ if ("blah" in sadako.tags.Page1) console.log(sadako.tags.Page1.blah);
 // outputs
 some text
 ```
-        
-**variable**: _sadako.token.page_, _sadako.token.tag_
 
 
 ### Inline Labels
@@ -118,7 +112,6 @@ Whenever the script processes a line with the `{ }` label tokens, the *seen* cou
 
 Because of the way that page names, label names, and variable names are handled by **Sadako**, it is recommended that you do not include spaces or periods in them. Use underscores, dashes, or camel-casing instead.
 
-**variables**: _sadako.token.label_open_, _sadako.token.label_close_
 
 ### Jumps
 
@@ -247,8 +240,6 @@ Hello!
 You will see this also.
 ```
 
-**variable**: _sadako.token.jump_, _sadako.token.page_embed_
-
 ### Returns
 
 `<<`
@@ -334,8 +325,6 @@ Hello world!
 This is the second line
 ```
 
-**variable**: _sadako.token.line_
-
 
 ### Line break
 
@@ -354,8 +343,6 @@ This is a separate paragraph.
 <p>Hello world!<br>This is still within the paragraph.</p>
 <p>This is a separate paragraph.</p>
 ```
-
-**variable**: _sadako.token.break_
 
 
 ### Text attachment
@@ -382,8 +369,6 @@ So will this one.
 You can do both at once.
 ```
 
-**variables**: _sadako.token.attach_
-
 
 ### Span markup
 
@@ -395,9 +380,6 @@ Span token. This is used to easily attach a CSS class to a block of text. You se
     
     // outputs
     <span class="test">This will use the "test" class.</span>
-
-
-**variables**: _sadako.token.span_open_, _sadako.token.span_close_, _sadako.token.cond_
 
 
 ### Tags
@@ -476,8 +458,6 @@ Tags must come before a `::` conditional token since it's considered part of the
 Write it just like this. ~:test1 ~:test2 :: $.blah == 1
 ```
 
-**variable**: _sadako.token.tag_
-
 
 ## Variables and Conditionals
 
@@ -542,15 +522,6 @@ You found a bright [:& ~+.$.color:] gem.
 
 Regarding `sadako.page_seen` and `sadako.label_seen`, every time you  transition to a new page, progress past a label in the script, or select a choice that is preceded by a label, the counter for that page or label is increased by 1. This is convenient for checking whether you've seen a part of the script and how many times.
 
-**variables**: 
-* _sadako.token.var_embed_, _sadako.token.tmp_embed_
-* _sadako.token.page_embed_, _sadako.token.label_embed_
-* _sadako.token.write_embed_, _sadako.token.write2_embed_, _sadako.token.write3_embed_
-* _sadako.token.pluswrite_embed_, _sadako.token.pluswrite2_embed_, _sadako.token.pluswrite3_embed_
-
-The `.` (variable) and `:` (value) tokens may also be changed.
-* _cond_embed_, _value_embed_
-
 
 ### Conditional display
 
@@ -563,8 +534,6 @@ In the following example, the line will not be displayed if *money* is less than
 ```
 You don't have enough money. :: $.money < 100
 ```
-
-**variable**: _sadako.token.cond_
 
 
 ### Inline text options
@@ -600,8 +569,6 @@ You carefully pick up the cracked vase and put it back on the shelf.
 // if not:
 You carefully pick up the vase and put it back on the shelf.
 ```
-
-**variables**: _sadako.token.inline_open_, _sadako.token.inline_close_, _sadako.token.cond_
 
 
 ### Script block
@@ -740,11 +707,6 @@ Please type something.
 [                                   ]
 ```
 
-**variables**: 
-* _sadako.token.script_open, _sadako.token.script_close_
-* _sadako.token.page_embed_, _sadako.token.label_embed_, _sadako.token.input_embed_
-* _sadako.token.eval_code_, _sadako.token.eval_value_
-* _sadako.token.rename_
 
 ### Macros
 
@@ -810,8 +772,6 @@ When displaying the choice, the text before and inside the tokens will be displa
 ```
 
 A handy trick is to put `[ ]` around all of the choice text. Doing so will prevent the choice text from displaying at all on the newly rendered page. This trick is used for most examples on this guide to make the example output easier to read.
-
-**variables**: _sadako.token.choice_format_open_, _sadako.token.choice_format_close_
 
 
 ### Choice 
@@ -1020,8 +980,6 @@ All done.
 ```
 
 Normally the game does not save progress in a choice tree. It only saves progress when you click a link that leads to a label or page (using `sadako.doLink()`). However, if you give a choice an inline label, the game will allow you to save progress after that choice has been selected.
-    
-**variable**: _sadako.token.choice_
 
     
 ### Static choice
@@ -1029,8 +987,6 @@ Normally the game does not save progress in a choice tree. It only saves progres
 `+`
 
 A choice using `*` and an associated `{ }` inline label will be hidden once it's been chosen. To avoid thus behavior, use `+` instead. A choice using `+` will never be hidden. 
-
-**variable**: _sadako.token.static_
 
 
 ### Depth token
@@ -1136,8 +1092,6 @@ Some stuff to write
 ```
 
 Note that since the `=` label marker shares the same properties as a `-` depth marker, processing of choices will stop once the script sees this token.
-
-**variable**: _sadako.token.label_
     
 
 ### Condition Block
@@ -1218,8 +1172,6 @@ This gives the following error.
 story: [Page1] [0] [2]
 eval: (1 == 1)
 ```
-
-**variable**: _sadako.token.cond_block_
 
 
 ### Saving Checkpoints
