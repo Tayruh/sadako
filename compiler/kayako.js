@@ -150,12 +150,16 @@
 						text = text.substring(text.indexOf(sadako.token.label_close) + sadako.token.label_close.length).trimStart();
 					}
 
+                    /*
 					line = {
 						"token": lines[a][b][2],
 						"text": text //parseParts(text)
 					}
+                    */
+                    line = {"t": text };
+                    if (lines[a][b][2] !== null) line.k = lines[a][b][2];
 
-					if (line.token === sadako.token.label) {
+					if (line.k === sadako.token.label) {
 						if (text.length < 1) continue;
 						if (!depth_seen) {
 							depth_seen = true;
@@ -164,11 +168,11 @@
 							choice_seen = false;
 						}
 
-						label = page + "." + line.text.trim();
+						label = page + "." + line.t.trim();
 						sadako.labels[label] = [page, a, b];
 						sadako.label_seen[label] = 0;
 					}
-					else if (line.token === sadako.token.choice || line.token === sadako.token.static) {
+					else if (line.k === sadako.token.choice || line.k === sadako.token.static) {
 						if (!choice_seen) {
 							setDepths(choices, [page, a, b]);
 							choices = [];
@@ -177,7 +181,7 @@
 						choices.push(page + "." + a + "." + b);
 						choice_seen = true;
 					}
-					else if (line.token === sadako.token.cond_block) {
+					else if (line.k === sadako.token.cond_block) {
 						if (sadako.isToken(text, "if") !== false) {
 							setDepths(choices, [page, a, b]);
 							choices = [];
@@ -186,15 +190,15 @@
 						depth_seen = false;
 						choices.push(page + "." + a + "." + b);
 					}
-					else if (line.token === sadako.token.depth && !depth_seen) {
+					else if (line.k === sadako.token.depth && !depth_seen) {
 						depth_seen = true;
 						setDepths(choices, [page, a, b]);
 						choices = [];
 						choice_seen = true;
 					}
 
-					if (label) line.label = label;
-					if (line.token === sadako.token.choice && !label && text.length > 1) console.error(sadako.format("Choice found without associated label.\n[{0}] [{1}] [{2}]: {3}", page, a, b, text));
+					if (label) line.l = label;
+					if (line.k === sadako.token.choice && !label && text.length > 1) console.error(sadako.format("Choice found without associated label.\n[{0}] [{1}] [{2}]: {3}", page, a, b, text));
 
 					parts.push(line);
 				}

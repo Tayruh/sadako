@@ -71,8 +71,8 @@
 	sadako.autosave_enabled = false;
 
 	// global variables not saved to state
-	sadako.version = "0.9.0";
-	sadako.kayako_version = "0.9.0";
+	sadako.version = "0.9.1";
+	sadako.kayako_version = "0.9.1";
 	sadako.tmp = {};
 	sadako.evals = [];
 	// sadako.story = {};
@@ -315,7 +315,7 @@
 	var random = function(limit) { return Math.floor(Math.random() * Math.floor(limit)); }
 
 	var percentCheck = function(success) {
-		if (success > random(100) + 1) return true;
+		if (success >= random(100) + 1) return true;
 		return false;
 	}
 
@@ -1218,7 +1218,7 @@
 			if (!(label in sadako.labels)) throw new Error("Can't find label '" + label + "'");
 
 			var line = sadako.labels[label];
-			var token = sadako.story[line[0]][line[1]][line[2]].token;
+			var token = sadako.story[line[0]][line[1]][line[2]].k;
 
 			if (token === sadako.token.choice || token === sadako.token.static) return [line[0], line[1] + "." + line[2], 0];
 
@@ -1249,7 +1249,7 @@
 
 		if (label.charAt(0) === "#") sadako.page_seen[label.substring(1)] += 1;
 		else {
-			var token = sadako.story[line[0]][line[1]][line[2]].token;
+			var token = sadako.story[line[0]][line[1]][line[2]].k;
 			if (token === sadako.token.choice || token === sadako.token.static) {
 				sadako.label_seen[label] += 1;
 			}
@@ -1348,7 +1348,7 @@
 				if (!(label in sadako.labels)) throw new Error("Can't find label '" + label + "'");
 
 				var jump = sadako.labels[label];
-				var token = sadako.story[jump[0]][jump[1]][jump[2]].token;
+				var token = sadako.story[jump[0]][jump[1]][jump[2]].k;
 
 				if (include_text) {
 					doJump(label, true);
@@ -1436,25 +1436,31 @@
 			var choice_seen = false;
 
 			if (part === undefined) part = 0;
+			
+			var is_choice, is_not_choice;
 
 			for (a = part; a < this_page.length; ++a) {
-				token = this_page[a].token;
+				token = ("k" in this_page[a]) ? this_page[a].k : null;
+				is_choice = (token === sadako.token.choice || token === sadako.token.static);
+				is_not_choice = (token !== sadako.token.choice && token !== sadako.token.static);
 
-				if (token === sadako.token.choice || token === sadako.token.static || token === sadako.token.depth || token === sadako.token.label) {
+				// if (token === sadako.token.choice || token === sadako.token.static || token === sadako.token.depth || token === sadako.token.label) {
+				if (token !== sadako.token.cond_block && token !== null) {
 					sadako.conditions[page + "." + start] = false;
 				}
 
-				if (token === sadako.token.choice && this_page[a].label in sadako.label_seen && sadako.label_seen[this_page[a].label]) continue;
+				if (token === sadako.token.choice && this_page[a].l in sadako.label_seen && sadako.label_seen[this_page[a].l]) continue;
 
-				text = processScript(this_page[a].text);
+				text = processScript(this_page[a].t);
 
 				if (sadako.script_status !== RUN) return [sadako.script_status];
 
-				if (token === sadako.token.choice || token === sadako.token.static) {
-					if (!text.length && this_page[a].text.trim().length > 1) continue;
+				if (is_choice) {
+					if (!text.length && this_page[a].t.trim().length > 1) continue;
 					choice_seen = true;
 				}
-				else if (choice_seen === true && (token === sadako.token.depth || token === sadako.token.label || token == sadako.token.cond_block || token === null)) {
+				// else if (choice_seen === true && (token === sadako.token.depth || token === sadako.token.label || token == sadako.token.cond_block || token === null)) {
+				else if (choice_seen === true && is_not_choice) {
 					if (sadako.choices[0].text.trim().length < 1) {
 						var choice = sadako.choices[0].line;
 						if (sadako.choices[0].label) sadako.label_seen[sadako.choices[0].label] += 1;
@@ -1464,7 +1470,7 @@
 					return [END];
 				}
 
-				if (token !== sadako.token.choice && token !== sadako.token.static && "label" in this_page[a]) sadako.label_seen[this_page[a].label] += 1;
+				if (is_not_choice && "l" in this_page[a]) sadako.label_seen[this_page[a].l] += 1;
 
 				if (token === sadako.token.label) continue;
 
@@ -1479,8 +1485,8 @@
 					return temp;
 				}
 
-				if (token === sadako.token.choice || token === sadako.token.static) {
-					sadako.choices.push({line: [page, start, a], text: text, label: this_page[a].label});
+				if (is_choice) {
+					sadako.choices.push({line: [page, start, a], text: text, label: this_page[a].l});
 					continue;
 				}
 
