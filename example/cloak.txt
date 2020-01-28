@@ -1,4 +1,4 @@
-	## cloak_intro
+	## init
 		[:& 
 			$.message = 0;
 			$.cloak_worn = true;

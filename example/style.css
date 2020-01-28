@@ -51,12 +51,16 @@
 		color: darkgray;
 		background: #333;
 	}
+	div:not(:first-of-type) > #room-title {
+		margin-top: 2em;
+	}
 	#room-subtitle {
 		/* margin-left: .75em; */
 		width: 100%;
 		text-align: center;
 		font-size: 0.9em;
 		color: darkgray;
+		/* margin-block-start: -1em; */
 	}
 	
 	#dialog-text {
@@ -94,6 +98,10 @@
 		text-align: justify;
 		text-justify: auto;
 	}
+	.story-text > div {
+		margin-block-start: 1em;
+		margin-block-end: 1em;
+	}
 	.story-text * {
 		transition: opacity 400ms ease-in;
 	}
@@ -123,8 +131,15 @@
 		margin-top: 3em;
 	}
 	.story-text td { vertical-align: top; }
-	.story-text textarea { resize: none; font-size: 1.3em; height: 1.3em; }
-	.story-text textarea.multiline { height: 6.5em; width: 26em;}
+	.story-text label {
+		margin-right: 3px;
+	}
+	.story-text input { 
+		font-size: 1em; height: 1.3em; width: 14em; 
+		margin-right: 1em;
+	}
+	.story-text textarea { resize: none; font-size: 12pt; height: 1.3em; width: 14em; }
+	.story-text textarea.multiline { height: 6.5em; width: 30em;}
     
 	a { cursor: pointer; }
 	a.broken, #story-output a.broken { color: red; }
@@ -135,6 +150,7 @@
 		top: 0px;
 		left: 0px;
 		height: 30px;
+		z-index: 100;
 	}
 	#banner {
 		position: relative;
@@ -193,6 +209,7 @@
 		left: -50%;
 		height: 200%;
 		width: 200%;
+		z-index: 200;
 	}
 	#overlay:not(.open) {
 		transition: visibility 200ms step-end, opacity 200ms ease-in;
@@ -212,7 +229,8 @@
 		top: 50px;
 		padding: 0;
 		box-sizing: border-box;
-		transform: translateX(-50%)
+		transform: translateX(-50%);
+		z-index: 300;
 	}
 	#dialog * {
 		box-sizing: border-box;
@@ -289,4 +307,6 @@
 			text-align: left;
 			text-justify: none;
 		}
+		.story-text input { width: 10em; }
+		.story-text textarea.multiline { height: 6.5em; width: 18em;}
 	}

@@ -54,6 +54,6 @@
 
 			sadako.dom("#banner-status").innerHTML = "Cloak of Darkness";
 
-			sadako.startGame("cloak_intro");
+			sadako.startGame("init");
 		};
 	}(window.sadako, window.game = window.game || {}));
