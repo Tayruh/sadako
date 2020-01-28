@@ -169,6 +169,7 @@
 						}
 
 						label = page + "." + line.t.trim();
+                        if (label in sadako.labels) console.error("Duplicate label for '" + label + "' found!");
 						sadako.labels[label] = [page, a, b];
 						sadako.label_seen[label] = 0;
 					}
@@ -264,6 +265,9 @@
 				// text = text.substring(text.indexOf(sadako.token.line) + sadako.token.line.length);
 				data = parseData(lines);
 				data = parseLines(data, title);
+                
+                if (title in storyData) console.error("Duplicate page '" + title + "' found!'");
+                
 				storyData[title] = data;
 				sadako.page_seen[title] = 0;
 			}
