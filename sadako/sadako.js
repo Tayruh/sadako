@@ -236,7 +236,7 @@
 	};
 
 	var list = function() {
-		// returns a list of items so you can say: if (val in l("apple", "banana", "orange"))
+		// returns a list of items so you can say: if (val in list("apple", "banana", "orange"))
 
 		var obj = {};
 		var a;
@@ -644,7 +644,8 @@
 
 		sadako.run();
 
-		doScript(sadako.page, sadako.start, sadako.part);
+		doJump(sadako.current);
+		// doScript(sadako.page, sadako.start, sadako.part);
 		return true;
 	}
 
@@ -963,6 +964,10 @@
 		sadako.choices = [];
 		sadako.script_status = ABORT;
 	}
+	
+	var doReturn = function() {
+		doLink(sadako.page);
+	}
 
 	var isPageTop = function() {
 		if ((sadako.start === 0 || sadako.start === undefined) && (sadako.part === 0 || sadako.part === undefined)) return true;
@@ -1257,9 +1262,9 @@
 
 		if (label) {
 			sadako.current = label;
-			sadako.label_seen[label] += 1;
 			doSaveState();
 			doSaveData();
+			sadako.label_seen[label] += 1;
 		}
 		else doSaveState();
 
@@ -1306,7 +1311,9 @@
 
 		if (label.charAt(0) === "#") sadako.page_seen[label.substring(1)] += 1;
 		else {
-			var token = sadako.story[line[0]][line[1]][line[2]].k;
+			var c_line = sadako.labels[label];
+			var token = sadako.story[c_line[0]][c_line[1]][c_line[2]].k;
+			console.log(token)
 			if (token === sadako.token.choice || token === sadako.token.static) {
 				sadako.label_seen[label] += 1;
 			}
@@ -1720,6 +1727,7 @@
 	// sadako.doPage = doPage;
 	sadako.doJump = doJump;
 	sadako.doLink = doLink;
+	sadako.doReturn = doReturn;
 	sadako.back = back;
 	sadako.startGame = startGame;
 	sadako.restart = restart;

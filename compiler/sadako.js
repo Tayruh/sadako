@@ -70,11 +70,12 @@
 	sadako.output_id = "#output";
 	sadako.autosave_enabled = false;
 
-	// global variables not saved to state
-	sadako.version = "0.9.1";
+	// global variables not saved to storage
+	sadako.version = "0.9.2";
 	sadako.kayako_version = "0.9.1";
 	sadako.tmp = {};
 	sadako.evals = [];
+	sadako.defaultData = {};
 	// sadako.story = {};
 	sadako.tags = {};
 	sadako.labels = {};
@@ -94,6 +95,8 @@
 	sadako.is_frozen = false;
 	sadako.save_data = {};
 	sadako.current_line = [];
+	sadako.script_level = 1;
+	sadako.in_dialog = false;
 
 	// global variables saved to state
 	sadako.current = null;
@@ -107,6 +110,7 @@
 	sadako.choices = [];
 	sadako.chosen = null;
 	sadako.conditions = {};
+	sadako.cond_states = [];
 	sadako.enter_text = [];
 
 	/* Utility Functions */
@@ -232,7 +236,7 @@
 	};
 
 	var list = function() {
-		// returns a list of items so you can say: if (val in l("apple", "banana", "orange"))
+		// returns a list of items so you can say: if (val in list("apple", "banana", "orange"))
 
 		var obj = {};
 		var a;
@@ -312,10 +316,15 @@
 		return classes;
 	}
 
-	var random = function(limit) { return Math.floor(Math.random() * Math.floor(limit)); }
+	var random = function(min, max) { 
+		min = Math.ceil(min);
+		max = Math.floor(max);
+		return Math.floor(Math.random() * (max - min + 1)) + min;
+	}
 
 	var percentCheck = function(success) {
-		if (success >= random(100) + 1) return true;
+		var chance = random(1, 100);
+		if (success >= chance) return true;
 		return false;
 	}
 
@@ -323,22 +332,31 @@
 		/*
 		Simulates rolling a die.
 
-		die (string): foramted as "2D6" (for two six-sided dice)
+		die (string): foramted as "2D6+1" (for two six-sided dice, with 1 added to total)
 
 		returns (integer): total value of rolled die
 		*/
 
 		var dice = die.toUpperCase().split("D");
+		var plus = dice[1].split("+");
+		if (plus.length > 1) {
+			dice[1] = plus[0];
+			plus = parseInt(plus[1]);
+		}
+		else plus = 0;
+		dice[0] = parseInt(dice[0]);
+		dice[1] = parseInt(dice[1]);
 
 		var total = 0;
 		var a;
 		for (a = 0; a < dice[0]; ++a) {
-			total += Math.round(Math.random()*(dice[1]-1))+1;
+			total += random(1, dice[1]);
 		}
+		total += plus;
 		return total;
 	}
 
-	var randomItem = function(list) { return list[random(list.length)]; };
+	var randomItem = function(list) { return list[random(0, list.length - 1)]; };
 
 	var arrayToString = function(list, quote) {
 		if (!isStr(quote)) { quote = '"'; }
@@ -449,7 +467,9 @@
 			page_seen: copy(sadako.page_seen, true),
 			label_seen: copy(sadako.label_seen, true),
 			conditions: copy(sadako.conditions, true),
+			cond_states: copy(sadako.cond_states, true),
 			choices: copy(sadako.choices, true),
+			evals: copy(sadako.evals, true),
 			var: copy(sadako.var, true)
 		}
 
@@ -477,7 +497,9 @@
 		sadako.page_seen = copy(data.page_seen, true);
 		sadako.label_seen = copy(data.label_seen, true);
 		sadako.conditions = copy(data.conditions, true);
+		sadako.cond_states = copy(data.cond_states, true);
 		sadako.choices = copy(data.choices, true);
+		sadako.evals = copy(data.evals, true);
 		sadako.enter_text = copy(data.lines, true);
 
 		sadako.state = copy(data, true);
@@ -507,17 +529,40 @@
 			var: copy(sadako.var, true)
 		}
 	}
+	
+	var updateData = function(pages, labels, data) {
+		var a;
+		
+		for (a in sadako.story) {
+			sadako.page_seen[a] = (pages && a in pages) ? pages[a] : 0;
+		}
+		
+		for (a in sadako.labels) {
+			sadako.label_seen[a] = (labels && a in labels) ? labels[a] : 0;
+		}
+		
+		sadako.var = copy(sadako.defaultData.var, true);
+		if (data) {
+			for (a in data) {
+				sadako.var[a] = data[a];
+			}
+		}
+	}
 
 	var loadData = function(data) {
 		sadako.current = data.current;
 		sadako.lines = copy(data.lines, true);
-		sadako.page_seen = copy(data.page_seen, true);
-		sadako.label_seen = copy(data.label_seen, true);
-		sadako.var = copy(data.var, true);
+		
+		// sadako.page_seen = copy(data.page_seen, true);
+		// sadako.label_seen = copy(data.label_seen, true);
+		// sadako.var = copy(data.var, true);
+		
+		updateData(data.page_seen, data.label_seen, data.var);
 
 		sadako.enter_text = copy(data.lines, true);
 
 		sadako.current_line = getLineByLabel(sadako.current);
+		
 		sadako.page = sadako.current_line[0];
 		sadako.start = sadako.current_line[1];
 		sadako.part = sadako.current_line[2];
@@ -528,6 +573,8 @@
 		sadako.jumps = [];
 		sadako.conditions = {};
 		sadako.history = [getCurrentState()];
+		saveData();
+		// sadako.save_data = copy(data, true);
 	}
 
 	var doSaveData = function() {
@@ -597,17 +644,18 @@
 
 		sadako.run();
 
-		doScript(sadako.page, sadako.start, sadako.part);
+		doJump(sadako.current);
+		// doScript(sadako.page, sadako.start, sadako.part);
 		return true;
 	}
 
 	var startGame = function(page) {
 		if (page !== undefined) sadako.page = page;
 
-		if (defaultData === undefined) {
-			defaultData = copy(getCurrentState(), true);
+		if (sadako.defaultData === undefined || isEmpty(sadako.defaultData)) {
+			sadako.defaultData = copy(getCurrentState(), true);
 		}
-		else loadState(defaultData);
+		else loadState(sadako.defaultData);
 
 		if (!sadako.autosave_enabled) {
 			if (localStorage.getItem(sadako.savename + "_savedata_auto") !== null) {
@@ -677,8 +725,15 @@
 		sadako.dialog_ids.display = display_ids;
 	}
 
-	sadako.closeDialog = function() {
+	sadako.closeDialog = function(cleanup) {
 		sadako.unfreezeData();
+		
+		sadako.in_dialog = false;
+		
+		if (cleanup) {
+			sadako.lines = [];
+			sadako.choices = [];
+		}
 
 		var a;
 		for (a = 0; a < sadako.dialog_ids.display.length; ++a) {
@@ -693,6 +748,8 @@
 
 	sadako.showDialog = function(title, text) {
 		var temp;
+		
+		sadako.in_dialog = true;
 
 		sadako.run();
 
@@ -807,9 +864,7 @@
 		var delay_adjust = 0;
 
 		var displayText = function(text, tags) {
-			var paragraphElement = document.createElement('p');
-
-			dom(sadako.output_id).appendChild(paragraphElement);
+			var el = document.createElement('div');
 
 			var classes = [];
 
@@ -824,12 +879,14 @@
 
 			classes.push("hide");
 
-			paragraphElement.className = classes.join(" ");
-			paragraphElement.innerHTML = text;
+			el.className = classes.join(" ");
+			el.innerHTML = text;
+			
+			dom(sadako.output_id).appendChild(el);
 
 			// Fade in paragraph after a short delay
 			setTimeout(function() {
-				paragraphElement.className = remove(paragraphElement.className.split(" "), "hide").join(" ");
+				el.className = remove(el.className.split(" "), "hide").join(" ");
 			}, delay + delay_adjust);
 
 			delay += sadako.text_delay;
@@ -894,6 +951,7 @@
 	/* Story Rendering */
 	
 	var run = function() { 
+		sadako.script_level = 1;
 		sadako.script_status = RUN;
 	}
 
@@ -905,6 +963,10 @@
 		sadako.lines = [];
 		sadako.choices = [];
 		sadako.script_status = ABORT;
+	}
+	
+	var doReturn = function() {
+		doLink(sadako.page);
 	}
 
 	var isPageTop = function() {
@@ -1200,9 +1262,9 @@
 
 		if (label) {
 			sadako.current = label;
-			sadako.label_seen[label] += 1;
 			doSaveState();
 			doSaveData();
+			sadako.label_seen[label] += 1;
 		}
 		else doSaveState();
 
@@ -1249,7 +1311,9 @@
 
 		if (label.charAt(0) === "#") sadako.page_seen[label.substring(1)] += 1;
 		else {
-			var token = sadako.story[line[0]][line[1]][line[2]].k;
+			var c_line = sadako.labels[label];
+			var token = sadako.story[c_line[0]][c_line[1]][c_line[2]].k;
+			console.log(token)
 			if (token === sadako.token.choice || token === sadako.token.static) {
 				sadako.label_seen[label] += 1;
 			}
@@ -1316,6 +1380,19 @@
 		page (string): page to render
 		start (string): section of page to start
 		*/
+		
+		var setJump = function(line) {
+			sadako.jumps.push(line);
+			sadako.cond_states.push(sadako.copy(sadako.conditions, true));
+			sadako.conditions = [];
+			
+			return line;
+		}
+		
+		var getJump = function() {
+			sadako.conditions = sadako.copy(sadako.cond_states.pop(), true);
+			return sadako.jumps.pop();
+		}
 
 		var parseJump = function(text, page, start, part) {
 			var temp;
@@ -1360,7 +1437,8 @@
 					sadako.label_seen[label] += 1;
 				}
 
-				sadako.jumps.push([page, start, part + 1]);
+				// sadako.jumps.push([page, start, part + 1]);
+				setJump([page, start, part + 1]);
 
 				return [JUMP].concat(jump);
 			}
@@ -1381,7 +1459,8 @@
 					return [CONTINUE];
 				}
 				if (sadako.jumps.length < 1) return [END];
-				return [JUMP].concat(sadako.jumps.pop());
+
+				return [JUMP].concat(getJump());
 			}
 
 			return false;
@@ -1505,7 +1584,7 @@
 			if (sadako.script_status === END) return END;
 
 			var a, index, result;
-			for (a = 0; a < 20; ++a) {
+			for (a = 0; a < 200; ++a) {
 				result = processLines(page, start, part);
 
 				if (result[0] === END || sadako.script_status === END) {
@@ -1539,7 +1618,7 @@
 				if (index.indexOf(".") === -1) break;
 			}
 
-			if (a == 20) console.error("Too many loops reached.");
+			if (a === 200) console.error("Too many loops reached.");
 
 			return sadako.script_status;
 		}
@@ -1557,9 +1636,11 @@
 		// console.log(page, start, part)
 
 		sadako.tmp = {};
-		sadako.evals = new Array();
+		sadako.evals = [];
 
 		if (start === undefined) start = 0;
+		
+		sadako.script_level += 1;
 
 		if ("ALL" in sadako.before) { sadako.before.ALL(); }
 		if (page in sadako.before) sadako.before[page]();
@@ -1573,11 +1654,18 @@
 				sadako.lines[last] = sadako.lines[last].substring(0, last_chars);
 			}
 		}
+		
+		sadako.script_level -= 1;
+		
+		if (sadako.script_level === 1) {
+			if (sadako.page in sadako.after) sadako.after[sadako.page]();
+			if (sadako.script_status === ABORT) return;
+			
+			if ("ALL" in sadako.after) sadako.after.ALL();
+			if (sadako.script_status === ABORT) return;
 
-		if ("ALL" in sadako.after) sadako.after.ALL();
-		if (page in sadako.after) sadako.after[page]();
-
-		sadako.writeOutput();
+			sadako.writeOutput();
+		}
 	}
 
 	/* Initialization */
@@ -1639,6 +1727,7 @@
 	// sadako.doPage = doPage;
 	sadako.doJump = doJump;
 	sadako.doLink = doLink;
+	sadako.doReturn = doReturn;
 	sadako.back = back;
 	sadako.startGame = startGame;
 	sadako.restart = restart;
@@ -1685,6 +1774,7 @@
 	sadako.addClass = addClass;
 	sadako.removeClass = removeClass;
 	sadako.percentCheck = percentCheck;
+	sadako.random = random;
 	sadako.randomItem = randomItem;
 	sadako.arrayToString = arrayToString;
 	sadako.cap = cap;
