@@ -1,8 +1,8 @@
 /* global */
 
 (function(sadako) {
-    
-    var checkConflicts = function(text, token) {
+	
+	var checkConflicts = function(text, token) {
 		var t = sadako.token;
 		var conflicts = [t.choice_format_open, t.script_open, t.comment_open, t.inline_open, t.span_open];
 
@@ -14,8 +14,8 @@
 		}
 		return true;
 	}
-    
-    var parseData = function(lines) {
+	
+	var parseData = function(lines) {
 		var countStartToken = function(text, token) {
 			var match = text.match(RegExp("^((?:\\s*)" + token + ")+", "g"));
 			var count = (match) ? match[0].replace(/\s/g, "").length : 0;
@@ -109,7 +109,7 @@
 		return data;
 	}
 
-    var parseStory = function(text) {
+	var parseStory = function(text) {
 		var setDepths = function(choices, depth) {
 			var a;
 			for (a = 0; a < choices.length; ++a) {
@@ -144,20 +144,26 @@
 						label = text.substring(sadako.token.label_open.length, text.indexOf(sadako.token.label_close)).trim();
 						if (label.length) {
 							label = page + "." + label;
-							sadako.labels[label] = [page, a, b];
-							sadako.label_seen[label] = 0;
+							if (label in sadako.labels) {
+								console.error("Duplicate label for '" + label + "' found!");
+							}
+							else {
+								
+								sadako.labels[label] = [page, a, b];
+								sadako.label_seen[label] = 0;
+							}
 						}
 						text = text.substring(text.indexOf(sadako.token.label_close) + sadako.token.label_close.length).trimStart();
 					}
 
-                    /*
+					/*
 					line = {
 						"token": lines[a][b][2],
 						"text": text //parseParts(text)
 					}
-                    */
-                    line = {"t": text };
-                    if (lines[a][b][2] !== null) line.k = lines[a][b][2];
+					*/
+					line = {"t": text };
+					if (lines[a][b][2] !== null) line.k = lines[a][b][2];
 
 					if (line.k === sadako.token.label) {
 						if (text.length < 1) continue;
@@ -167,11 +173,15 @@
 							choices = [];
 							choice_seen = false;
 						}
-
+						
 						label = page + "." + line.t.trim();
-                        if (label in sadako.labels) console.error("Duplicate label for '" + label + "' found!");
-						sadako.labels[label] = [page, a, b];
-						sadako.label_seen[label] = 0;
+						if (label in sadako.labels) {
+							console.error("Duplicate label for '" + label + "' found!");
+						}
+						else {
+							sadako.labels[label] = [page, a, b];
+							sadako.label_seen[label] = 0;
+						}
 					}
 					else if (line.k === sadako.token.choice || line.k === sadako.token.static) {
 						if (!choice_seen) {
@@ -265,10 +275,9 @@
 				// text = text.substring(text.indexOf(sadako.token.line) + sadako.token.line.length);
 				data = parseData(lines);
 				data = parseLines(data, title);
-                
-                if (title in storyData) console.error("Duplicate page '" + title + "' found!'");
-                
-				storyData[title] = data;
+				
+				if (title in storyData) console.error("Duplicate page '" + title + "' found!'");
+				else storyData[title] = data;
 				sadako.page_seen[title] = 0;
 			}
 
@@ -296,20 +305,20 @@
 			text = text.replace("  ", " ");
 			text = removeComments(text);
 			var data = parsePages(text);
-            
-            data["story_data"] = {
-                "tags": sadako.tags,
-                "labels": sadako.labels,
-                "depths": sadako.depths,
-                "version": sadako.version
-            };
-            
+			
+			data["story_data"] = {
+				"tags": sadako.tags,
+				"labels": sadako.labels,
+				"depths": sadako.depths,
+				"version": sadako.version
+			};
+			
 			return data;
 		}
 
 		return parseStory(text);
 	}
-    
-    sadako.parseStory = parseStory;
+	
+	sadako.parseStory = parseStory;
 
 }(window.sadako = window.sadako || {}));
