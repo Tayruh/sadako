@@ -2,7 +2,6 @@
 (function(sadako) {
 
 	var localStorage;
-	var defaultData;
 
 	var JUMP = "JUMP";
 	var END = "END";
@@ -71,8 +70,8 @@
 	sadako.autosave_enabled = false;
 
 	// global variables not saved to storage
-	sadako.version = "0.9.2";
-	sadako.kayako_version = "0.9.1";
+	sadako.version = "0.9.3";
+	sadako.kayako_version = "0.9.2";
 	sadako.tmp = {};
 	sadako.evals = [];
 	sadako.defaultData = {};
@@ -478,7 +477,7 @@
 		return state;
 	}
 
-	var loadState = function(data, no_vars) {
+	var loadState = function(data, keep_values) {
 		/*
 		Copies values from 'data' to state object and global variables.
 
@@ -494,8 +493,6 @@
 		sadako.lines = copy(data.lines, true);
 		sadako.jumps = copy(data.jumps, true);
 		sadako.current_line = copy(data.current_line, true);
-		sadako.page_seen = copy(data.page_seen, true);
-		sadako.label_seen = copy(data.label_seen, true);
 		sadako.conditions = copy(data.conditions, true);
 		sadako.cond_states = copy(data.cond_states, true);
 		sadako.choices = copy(data.choices, true);
@@ -503,7 +500,11 @@
 		sadako.enter_text = copy(data.lines, true);
 
 		sadako.state = copy(data, true);
-		if (!no_vars) sadako.var = copy(data.var, true);
+		if (!keep_values) {
+			sadako.page_seen = copy(data.page_seen, true);
+			sadako.label_seen = copy(data.label_seen, true);
+			sadako.var = copy(data.var, true);
+		}
 	}
 
 	var doSaveState = function() {
@@ -864,8 +865,6 @@
 		var delay_adjust = 0;
 
 		var displayText = function(text, tags) {
-			var el = document.createElement('div');
-
 			var classes = [];
 
 			var a, temp;
@@ -876,8 +875,12 @@
 				}
 				classes.push(tags[a]);
 			}
-
+			
 			classes.push("hide");
+			
+			if (text.length < 1) return;
+			
+			var el = document.createElement('div');
 
 			el.className = classes.join(" ");
 			el.innerHTML = text;
@@ -898,7 +901,7 @@
 
 			for (a = 0; a < sadako.lines.length; ++a) {
 				temp = processTags(sadako.lines[a], sadako.doLineTag);
-				if (temp[0].trim().length < 1) continue;
+				// if (temp[0].trim().length < 1) continue;
 
 				// add link to list to display as a choice instead of in main text
 				if (has(temp[1], "choice")) {
@@ -919,7 +922,7 @@
 					temp = processTags(sadako.choices[a].text, sadako.doChoiceTag);
 
 					name = sadako.parseLink(temp[0]);
-					if (name.trim().length < 1) continue;
+					// if (name.trim().length < 1) continue;
 
 					text += sadako.format("<li class='choice'><span class='{0}'><a onclick='sadako.doChoice({1})'>{2}</a></span></li>", temp[1].join(" "), a, name);
 				}
@@ -966,7 +969,7 @@
 	}
 	
 	var doReturn = function() {
-		doLink(sadako.page);
+		doLink("#" + sadako.page);
 	}
 
 	var isPageTop = function() {
