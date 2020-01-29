@@ -229,6 +229,7 @@
 			for (a = 0; a < pages.length; ++a) {
 				text = pages[a];
 				if (!text.trim().length) continue;
+				if (sadako.isToken(text, sadako.token.comment) !== false) continue;
 
 				lines = [];
 
@@ -310,7 +311,7 @@
 				"tags": sadako.tags,
 				"labels": sadako.labels,
 				"depths": sadako.depths,
-				"version": sadako.version
+				"version": sadako.kayako_version
 			};
 			
 			return data;
