@@ -776,17 +776,9 @@
 
 	/* Text Output */
 
-	sadako.write = function(output) {
-		/*
-		This is function used to display text output.
-
-		- It can be easily overwritten to display it in another manner.
-		- Text is always appended to current text. Use clear() to remove existing text.
-
-		output (string) text to write
-		*/
-
-		dom(sadako.output_id).innerHTML += output;
+	var write = function(output) {
+		if (isArray(output)) sadako.lines.concat(output);
+		else sadako.lines.push(output);
 	}
 
 	var processTags = function(text, func) {
@@ -913,20 +905,20 @@
 			}
 
 			if (choices.length || sadako.choices.length) {
-				var text = "<hr><ul>";
+				var text = "";
 				var name;
 				for (a = 0; a < choices.length; ++a) {
+					if (choices[a].length < 1) continue;
 					text += "<li class='choice'><span class='" + choices[a].tags.join(" ") + "'>" + choices[a].text + "</span></li>";
 				}
 				for (a = 0; a < sadako.choices.length; ++a) {
 					temp = processTags(sadako.choices[a].text, sadako.doChoiceTag);
 
 					name = sadako.parseLink(temp[0]);
-					// if (name.trim().length < 1) continue;
-
+					if (name.trim().length < 1) continue;
 					text += sadako.format("<li class='choice'><span class='{0}'><a onclick='sadako.doChoice({1})'>{2}</a></span></li>", temp[1].join(" "), a, name);
 				}
-				text += "</ul>";
+				if (text.length) text = "<hr><ul>" + text + "</ul>";
 
 				displayText(text, []);
 			}
@@ -1254,6 +1246,7 @@
 
 		sadako.lines = [];
 		sadako.choices = [];
+		sadako.tmp = {};
 		sadako.chosen = null;
 
 		sadako.current_line = [line[0], line[1] + "." + line[2], 0];
@@ -1297,6 +1290,7 @@
 
 		sadako.lines = [];
 		sadako.choices = [];
+		sadako.tmp = {};
 		sadako.chosen = null;
 
 		sadako.current = label;
@@ -1316,7 +1310,6 @@
 		else {
 			var c_line = sadako.labels[label];
 			var token = sadako.story[c_line[0]][c_line[1]][c_line[2]].k;
-			console.log(token)
 			if (token === sadako.token.choice || token === sadako.token.static) {
 				sadako.label_seen[label] += 1;
 			}
@@ -1357,7 +1350,7 @@
 		var line = sadako.lines[sadako.lines.length - 1];
 
 		if (line === undefined) {
-			sadako.lines.push(text);
+			write(text);
 			return;
 		}
 
@@ -1373,7 +1366,7 @@
 			line += text.substring(start);
 			sadako.lines[sadako.lines.length - 1] = line;
 		}
-		else sadako.lines.push(text);
+		else write(text);
 	}
 
 	var doLines = function(page, start, part) {
@@ -1638,7 +1631,7 @@
 
 		// console.log(page, start, part)
 
-		sadako.tmp = {};
+		// sadako.tmp = {};
 		sadako.evals = [];
 
 		if (start === undefined) start = 0;
@@ -1740,6 +1733,7 @@
 	sadako.run = run;
 	sadako.end = end;
 	sadako.abort = abort;
+	sadako.write = write;
 
 	// functions intended to be overridden
 	// sadako.write = write;
@@ -1760,7 +1754,7 @@
 	// sadako.parseStory = parseStory;
 	sadako.parseLink = parseLink;
 
-	// convenient utilitity functions
+	// convenient utility functions
 	sadako.rollDice = rollDice;
 	sadako.find = find;
 	sadako.isEmpty = isEmpty;
