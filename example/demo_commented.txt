@@ -1,0 +1,408 @@
+/* Pages are defined with the ## token. */
+## init
+
+	Welcome.
+
+	// This a label. You can return here with '>> enter_name'.
+	= enter_name
+	Please tell me your name.
+
+	// The following <> tokens are necessary for not breaking the table. 
+	// 
+	// Sadako normally cuts each new line into separate DIVs. However, you can
+	// place a <> at the start, end, or both of a line and it'll combine them
+	// into a single line.
+	<table><>
+		<tr><>
+		
+			// The [: :] block that begins with a > is for text input. It'll
+			// take the value given and store it into the variable given before
+			// the @: whenever the textbox loses focus.
+			// 
+			// The part after the @: is the HTML label tag associated with the
+			// text box.
+			// 
+			// The ^^ is just a replacement for the <br> tag. It's not very
+			// effective here, but it normally makes the text a bit easier to
+			// read instead of random HTML tags inserted into your text.
+			// 
+			// The $ token is a shortcut for the sadako.var variable, so $.name
+			// is the same as sadako.var.name. The sadako.var object is special
+			// because its data is saved to disk when you save.
+			<td>[:> $.name @: <b>First</b>^^:]</td><>
+			<td>[:> $.lname @: <b>Last</b>^^:]</td><>
+		</tr><>
+	</table>
+	
+	// This is how you create a multiline text box. It's just two > tokens
+	// instead of one.
+	[:>> $.bleh @: <b>Favorite Foods</b> (not needed)^^:]
+
+	// This is a static choice. Choices can begin with a + or * token, with the
+	// difference being that * choices will disappear after one use.  
+	// 
+	// The [] brackets alter the way the text is display in the choice link and
+	// also the first line on the next page. This will be explained later, but
+	// for now just know that placing text only inside the brackets prevents the
+	// choice text from begin displayed after the choice is selected.
+	+ [Continue]
+		// Sadako does not use indentation (like python) or open and close tags
+		// (like javascript) to track nesting. Instead, it uses depth tokens.
+		// The number of those tokens is its depth level.
+		// 
+		// Since the choice was a depth of 1 (only one + token), this is now
+		// block is now depth 2. Because of that, all depth tokens at this level
+		// must be a quantity of 2 to remain at this level.
+		
+		// The following line is a condition block. It also has its own depth
+		// level. Conditions checks are just evaluated javascript so they should
+		// be written as such.
+		~~ if (!$.name || !$.lname)
+		
+			// Everything inside this condition is at depth 3 until the depth is
+			// altered with another depth token.
+			Name is invalid.
+			
+			// Since the name is invalid, we jump back to the 'enter_name' label
+			// in orderto repeat the process.
+			>> enter_name
+		
+		// We reset the depth level to 2, effectively ending the condition
+		// block. This is the - depth token's sole purpose. It can be used
+		// inline as it is here, or on a line by itself.
+		-- Your name is $:name $:lname. Is this correct?
+		
+		// Remember: We're level 2, so two + choice tokens.
+		// 
+		// The {} label is necessary to add a 'checkpoint' for saving. Otherwise
+		// when you save after continuing on to the living room and then load
+		// it, it'll return you to the top of #init as if you never selected the
+		// choice.
+		// 
+		// Checkpoints are created whenever a page or label link is clicked or
+		// when a choice with assigned label is chosen.
+		++ {y} [Yes]
+			// Story blocks inside choices and conditions continue on until
+			// they reach the end, after which they jump to the next depth token
+			// (+ or * choices, ~ conditions, = labels, or - depth tokens) of
+			// the same or lesser depth level and will resume there.
+			// 
+			// Because of this, this choice will fall through without printing
+			// anything.
+		++ [No]
+			>> enter_name
+
+	// This is the first depth token to be seen after selecting "Yes", so the
+	// script will resume here.
+	- [:& $.fname = $.name + " " + $.lname:]
+	
+	It's a pleasant rainy day outside. You're spending it indoors with your sister Erin.
+
+	// This a jump to a new page because it starts with #. Without #, it'd be a
+	// jump to a label.
+	>> #living_room
+	
+## inventory
+	// When you begin a [: :] script block with = it will evaluate the
+	// javascript and then write the results out to the page.
+	// 
+	// None of the inventory functionality is built in to Sadako, but it
+	// requires very minimal javascript to get running. Check out game.js for
+	// examples.
+	[:= game.displayInventory():]
+	
+// Pages can have tags using the ~: token. If unassigned, the value is is true.
+// You can asssign a value to tag with a : separating the tag name and value.
+// Like '~:title:Living Room'. Tag values may contain spaces, and a page may
+// have as many tags as you want. Sadako does not have any predefined page tags.
+// 
+// The 'room' tag used here is just to allow the ambience messages to display
+// using 'sadako.after'. See 'game.js' for more.
+## living_room ~:room
+	// Macros are defined by adding a function as member to sadako.macros.
+	// This macro is defined in game.js and its purpose is to display the title
+	// for the room and also setting the 'bookmark' variable to the room.
+	(:title "Living Room":) 
+	
+	// You can do single line conditions by adding :: to the end of the line
+	// followed by the condition.
+	<b><i>You've reached the end of the demo! Thanks for playing!</i></b> :: %.remote.gave
+	
+	// Notice that most of these links start with %, which means they're for
+	// labels. Sadako will automatically turn something like 'couch' into
+	// 'living_room.couch'.
+	Your family isn't rich but they provide well enough, as is visible by this room. It comes with your usual furnishings like a [:% couch:] and a [:% television:]. In the middle of the room is a large circular [:% rug @: throw rug:]. The wall to the right of the couch houses a set of [:% windows:] overlooking the yard.
+	
+	// A link without % (or starting with #) is a link to a page. The @: token
+	// displays the following text instead of the page/label name.
+	[:erin @: Erin:] is here, seated comfortably on the throw rug and watching the TV.
+	
+	// The following line stops the rest of the script from processing. This
+	// effectively makes the top of the page to here one solid story block. Now
+	// you can define label sections below this and use them as an additional
+	// blocks within this page, or even call them like a function.
+	<< END
+
+	= television
+	// Text formating using the {: :} tags works on a strictly true or false
+	// basis. The sections are separated by :: tokens, and if the condition of
+	// the first section is true, the second section's text is displayed. The
+	// third section's text is displayed if false. 
+	// 
+	// You can also leave off the third section so that nothing is displayed if
+	// false.
+	The TV is playing {:%.erin.talked::Erin's favorite show::some sort of anime:}. 
+	
+	// The <: :> tags are shortcuts for the HTML span tag. Just put the class in
+	// the first section and the text to alter in the second section, separated
+	// by ::. You can't have <: :> tags instead of <: :> tags at the moment, but
+	// that may change in the future.
+	// 
+	// The class 'demo-tv' is defined in style.css
+	Voices coming from the TV: <:demo-tv::"I was in an accident. I have amnesia!":>
+	
+	It seems like {:%.erin.talked::the relationship between Junji and Miren is getting deeper and::a very tropey show, but:} Erin looks like she's really invested in it.
+	
+	+ {tv_back} [Back]
+	
+		// This causes the script to jump back to the top of the page.
+		<< RETURN
+
+	= erin_watching
+	// Any time a = label is seen, a line with a {} label is seen, or a choice
+	// with a {} is clicked, its label_seen count is increased. All labels start
+	// with a value of zero. You can access its value with %. like below.
+	~ if (%.remote.gave)
+		Erin is completely absorbed in her show and it doesn't look like she wants to be disturbed any further.
+		>> go_back
+	-
+	// This is a jump return. Every time you jump, your last location is pushed
+	// to the stack.  When << is used by itself, it returns to the most recently
+	// location on the jump stack.
+	// 
+	// The jump stack is cleared when page or label links are clicked, but not
+	// when choices are selected.
+	<<
+	
+	= couch
+	The couch isn't anything special, but it's very comfortable and faces TV at the perfect angle. Erin still prefers the floor, for whatever reason.
+	
+	~ if (%.living_room.searched_couch)
+		You're pretty positive there's nothing else in the couch.
+		
+	// Condition blocks support 'else if' and 'else' statements.
+	~ else if (%.erin.talked)
+		There's really only one place you can think of where the remote would be: in the black hole that is the space between the couch cushions.
+		
+		++ {searched_couch} [Search couch]
+			// 'move' is defined in game.js. It moves an item to and from your
+			// inventory.
+			(:move "items", "remote":) 
+			
+			You stick your hand between the cushions and reach deeper into the couch than you think should be possible, but eventually your hand rests upon what you imagine is the remote. You retrieve it and blow off the dust.
+			
+			// Jumps like this are useful for reusing code. This one jumps to a
+			// "Back" choice.
+			>> go_back
+		++ {search_back} [Back]
+			// You can also reference variable values as jump locations. You can
+			// do that like the following line, or with [:= variable:].
+			>> $:bookmark
+			
+		// '<< END' is not necessary here because both choices end in a jump
+		// that goes to a different script location.
+	
+	// This choice is at lower depth level than the previous two choices, and so
+	// it ends the condition block.
+	+ {couch_back} [Back]
+		<< RETURN
+	
+	= rug
+	It's a large colorful rug. You have no idea what material it's made of, but it's very soft to the touch and it feels you sink into it.
+	Erin is currently appreciating its comfort.
+	
+	>> go_back
+	
+	= windows
+	The rain gently taps against the window pane. There's a light mist covering the yard.
+	
+	// The ~: token at the end of the line is a tag. Sadako has a few predefined
+	// tags, and 'delay' is one of them. The value assigned (in this case 2000)
+	// is in miliseconds, so this line is delayed by 2 seconds.
+	A bolt lightning lights up the sky. ~:delay:2000
+	
+	// This line is delayed by 3 seconds.
+	A soft crackle of thunder can be heard moments later. ~:delay:3000
+	
+	// Delays carry to following lines, so this line will also have a delay of 3
+	// seconds, plus its usual text delay.
+	The rain begins to pound the window harder.
+	
+	// Setting a delay to 0 will reset the delay.  Resetting the delay to 0 is
+	// why the choices display before the preceding text.
+	// 
+	// Notice that it begins with the - depth token. Its use here is to prevent
+	// Sadako from thinking that this is a condition block which also begins
+	// with a ~ token. Conditions will also be described later.
+	// 
+	// The ~: tag token does not work with choices, which is why we need to
+	// define the delay on the line before it and let it carry over.
+	- ~:delay:0
+
+	= go_back
+	/*
+		Sadako script separates lines using linebreaks, but you can induce your
+		own linebreak using the ., token (that's a period and comma together).
+		This is useful for minimizing whitespace on simple lines like this one.
+	
+		A quick note about the // comment token: The ., linebreak token takes
+		priority over the // comment token, but not block comments like this
+		one. Also be aware that single line comments only work at the
+		start of a line.
+	*/
+	+ {gb} [Back]., << RETURN
+	
+## erin
+
+	// This line isn't very pratical, but it makes for a good example.
+	// 
+	// For one, this is how you jump to a label that's in another page. You must
+	// include the page name. 
+	// 
+	// And two, if you take a look at 'living_room.erin_watching', you'll see
+	// that it returns using '<<'. After processing its script, it will jump
+	// back here and the script will continue on. That basically turns
+	// 'erin_watching' into a subroutine.
+	>> living_room.erin_watching
+
+	- >> remote :: %.erin.talked
+
+	// $:name write the value of sadako.var.name into the text.
+	// 
+	// Notice that it's $:name and not $.name as it was earlier. $. is for
+	// accessing the variable (useful for javascript) and $: is for displaying
+	// its value (useful for sadako script).
+	Erin looks up at you. "Hey, $:name."
+
+	+ "Hey, Erin."
+		She pats a spot on the rug next to her. "Come sit with me."
+	+ "What you are watching?"
+		"It's my show. It's starting to get really good, but it's commercials right now. Want to watch it with me?"
+	
+	// Sadako collects choices until it sees a depth token that is not a choice, or
+	// see a choice at another lower depth level.
+	// 
+	// Without the following - token, the two choices would be added to the list
+	// of ones before because they're all the same depth level. This token
+	// breaks them up.
+	-
+	+ [Sit with Erin]
+		You plop yourself down next to her.
+		"Nice." She smiles at you. "I think you'll really enjoy this."
+		
+		// For choice text, the [] brackets are special. When displaying the
+		// choice, the text before and inside the brackets are displayed. After
+		// selecting the choice, the text before and after the brackets is
+		// displayed at the top of the new page.
+		// 
+		// The effect that this following line has is that it won't display "you
+		// ask" in the choice but will add it in the new page.
+		++ "What is this show even about?"[] you ask.
+			"You don't remember me explaining it to you? Miren is from the moon and Junji is from Earth. They're both mech pilots and at war with each other, but they fall in love."
+			
+		// The effect that the [] brackets have on this line is that it'll
+		// display the line like it's a full quotation, but then on the new page
+		// it'll remove the quotation mark and extend the quote.
+		++ "I think you told me about this one before.["] It's the one with the two mech pilots from warring nations that fall in love, right?"
+			"That's the one!"
+		
+		// This line will be joined with the text preceding it.
+		-- <> She sighs. "Junji is just so dreamy."
+		
+		// The following is an example of a choice loop. As mentioned earlier,
+		// choices with * disappear after one use and ones with + do not. *
+		// choices should always have an assigned label because  Sadako needs
+		// one for this feature to work.
+		== guess
+		** {g1} "Is he the one with the eyepatch?"
+		"That's Gemini."
+		** {g2} "Does he have the shaved head?"
+			"Ugh. That's Kano. Nobody likes Kano."
+		** {g3} "Is he the one that wears the biker jacket?"
+			"What? That's Asuka. She's a girl."
+		// When you have an empty * choice, Sadako will automatically select
+		// this chioce once the previous choices are have run out. A label isn't
+		// necessary for this choice.
+		**
+			>> done_guessing
+		// We loop after every choice, until the final default choice (the empty
+		// one) is selected which breaks us out of the loop.
+		// 
+		// If we were to return to this loop again, the default choice would
+		// be selected immediately, unless we reset all of the seen values of
+		// the choices (%.g1 for example) to 0.
+		-- >> guess
+		
+		== done_guessing
+		<> She points at the at the TV now that the show has resumed. "<i>That's</i> Junji."
+		There's a young unassuming boy with black hair on the screen. He doesn't look familiar.
+		++ "Hmm. I don't recognize him."
+		++ "Yeah.. Sure. That guy." 
+		-- "Yeah, whatever. I'm going to watch my show now." She waves you away.
+		++ {talked} [Back]
+			As you stand up, she looks up at you. "Since you're getting up, can you find me the remote? I want to turn up the volume."
+			>> #living_room
+	
+	+ "No thanks. Maybe later."
+		"Okay. I hope you change your mind."
+		>> go_back
+		
+	= remote
+	// 'bookmark' is a macro defined in game.js. The 'bookmark' variable is just
+	// a handy tool tracking which label or page we're in when attempting to use
+	// an inventory item. This is not a built-in feature of Sadako.
+	(:bookmark "remote":)
+	"Hey. Did you get the remote yet?"
+
+	= go_back
+	+ {gb} [Back]., >> #living_room
+	
+## remote
+	It's the remote for the television. Erin is looking for this.
+	
+	+ [Use]
+		// We use the 'bookmark' variable to track our location.
+		~~ if ($.bookmark === "erin.remote")
+			// Script blocks starting with & execute javascript.
+			[:&
+				// Notice that the linebreaks are maintained for script blocks.
+				// Sadako doesn't touch the inside of script blocks when parsing
+				// a page.
+			
+				// This closes the dialog window. Passing a value of true
+				// readies Sadako to display new text. Don't pass true if
+				// you're only closing the window.
+				sadako.closeDialog(true);
+				game.move(null, "remote");
+			:]
+			You hand the remote to Erin.
+			"Thanks, $:name!"
+			She points it at the TV and turns the volume up a couple notches. "Ah. Much better."
+			+++ {gave} [Back]
+				>> #living_room
+		~~ else
+			You can't find a use for the remote here.
+			
+			// If you add a @: name token followed by a name, it will create a
+			// link that will execute the  javascript instead of running it
+			// immediately.
+			// 
+			// ~:choice is another predefined tag in Sadako that makes a link
+			// display like it were a choice.
+			[:& sadako.doLink("#inventory") @: Back:] ~:choice
+			
+			// Even thought the link displays like a choice, it still acts like
+			// a link. Therefore an '<< END' call is necessary in order to
+			// prevent it from displaying the following 'Back' choice.
+			<< END
+	+ [Back]., >> #inventory

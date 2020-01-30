@@ -1,0 +1,168 @@
+## init
+	Welcome.
+
+	= enter_name
+	Please tell me your name.
+
+	<table><>
+		<tr><>
+			<td>[:> $.name @: <b>First</b>^^:]</td><>
+			<td>[:> $.lname @: <b>Last</b>^^:]</td><>
+		</tr><>
+	</table>
+
+	[:>> $.bleh @: <b>Favorite Foods</b> (not needed)^^:]
+
+	+ [Continue]
+		~~ if (!$.name || !$.lname)
+			Name is invalid.
+			>> enter_name
+		-- Your name is $:name $:lname. Is this correct?
+		++ {y} [Yes]
+		++ [No]
+			>> enter_name
+	- [:& $.fname = $.name + " " + $.lname:]
+	
+	It's a pleasant rainy day outside. You're spending it indoors with your sister Erin.
+	>> #living_room
+	
+## inventory
+	[:= game.displayInventory():]
+	
+## living_room ~:room
+	(:title "Living Room":) 
+
+	<b><i>You've reached the end of the demo! Thanks for playing!</i></b> :: %.remote.gave
+	Your family isn't rich but they provide well enough, as is visible by this room. It comes with your usual furnishings like a [:% couch:] and a [:% television:]. In the middle of the room is a large circular [:% rug @: throw rug:]. The wall to the right of the couch houses a set of [:% windows:] overlooking the yard.
+	
+	[:erin @: Erin:] is here, seated comfortably on the throw rug and watching the TV.	
+	<< END
+
+	= television
+	The TV is playing {:%.erin.talked::Erin's favorite show::some sort of anime:}. 
+	Voices coming from the TV: <:demo-tv::"I was in an accident. I have amnesia!":>
+	
+	It seems like {:%.erin.talked::the relationship between Junji and Miren is getting deeper and::a very tropey show, but:} Erin looks like she's really invested in it.
+	
+	+ {tv_back} [Back]
+		<< RETURN
+
+	= erin_watching
+	~ if (%.remote.gave)
+		Erin is completely absorbed in her show and it doesn't look like she wants to be disturbed any further.
+		>> go_back
+	-
+	<<
+	
+	= couch
+	The couch isn't anything special, but it's very comfortable and faces TV at the perfect angle. Erin still prefers the floor, for whatever reason.
+	
+	~ if (%.living_room.searched_couch)
+		You're pretty positive there's nothing else in the couch.
+		
+	~ else if (%.erin.talked)
+		There's really only one place you can think of where the remote would be: in the black hole that is the space between the couch cushions.
+		
+		++ {searched_couch} [Search couch]
+			(:move "items", "remote":) 
+			
+			You stick your hand between the cushions and reach deeper into the couch than you think should be possible, but eventually your hand rests upon what you imagine is the remote. You retrieve it and blow off the dust.
+
+			>> go_back
+		++ {search_back} [Back]
+			>> $:bookmark
+	+ {couch_back} [Back]
+		<< RETURN
+	
+	= rug
+	It's a large colorful rug. You have no idea what material it's made of, but it's very soft to the touch and it feels you sink into it.
+	Erin is currently appreciating its comfort.
+	>> go_back
+	
+	= windows
+	The rain gently taps against the window pane. There's a light mist covering the yard.
+	A bolt lightning lights up the sky. ~:delay:2000
+	A soft crackle of thunder can be heard moments later. ~:delay:3000
+	The rain begins to pound the window harder.
+	- ~:delay:0
+
+	= go_back
+	+ {gb} [Back]., << RETURN
+	
+## erin
+	>> living_room.erin_watching
+
+	- >> remote :: %.erin.talked
+
+	Erin looks up at you. "Hey, $:name."
+
+	+ "Hey, Erin."
+		She pats a spot on the rug next to her. "Come sit with me."
+	+ "What you are watching?"
+		"It's my show. It's starting to get really good, but it's commercials right now. Want to watch it with me?"
+	
+	-
+	+ [Sit with Erin]
+		You plop yourself down next to her.
+		"Nice." She smiles at you. "I think you'll really enjoy this."
+		
+		++ "What is this show even about?"[] you ask.
+			"You don't remember me explaining it to you? Miren is from the moon and Junji is from Earth. They're both mech pilots and at war with each other, but they fall in love."
+			
+		++ "I think you told me about this one before.["] It's the one with the two mech pilots from warring nations that fall in love, right?"
+			"That's the one!"
+		
+		-- <> She sighs. "Junji is just so dreamy."
+		
+		== guess
+		** {g1} "Is he the one with the eyepatch?"
+		"That's Gemini."
+		** {g2} "Does he have the shaved head?"
+			"Ugh. That's Kano. Nobody likes Kano."
+		** {g3} "Is he the one that wears the biker jacket?"
+			"What? That's Asuka. She's a girl."
+		**
+			>> done_guessing
+		-- >> guess
+		
+		== done_guessing
+		<> She points at the at the TV now that the show has resumed. "<i>That's</i> Junji."
+		There's a young unassuming boy with black hair on the screen. He doesn't look familiar.
+		++ "Hmm. I don't recognize him."
+		++ "Yeah.. Sure. That guy." 
+		-- "Yeah, whatever. I'm going to watch my show now." She waves you away.
+		++ {talked} [Back]
+			As you stand up, she looks up at you. "Since you're getting up, can you find me the remote? I want to turn up the volume."
+			>> #living_room
+	
+	+ "No thanks. Maybe later."
+		"Okay. I hope you change your mind."
+		>> go_back
+		
+	= remote
+	(:bookmark "remote":)
+	"Hey. Did you get the remote yet?"
+
+	= go_back
+	+ {gb} [Back]., >> #living_room
+	
+## remote
+	It's the remote for the television. Erin is looking for this.
+	
+	+ [Use]
+		~~ if ($.bookmark === "erin.remote")
+			[:&
+				sadako.closeDialog(true);
+				game.move(null, "remote");
+			:]
+			You hand the remote to Erin.
+			"Thanks, $:name!"
+			She points it at the TV and turns the volume up a couple notches. "Ah. Much better."
+			+++ {gave} [Back]
+				>> #living_room
+		~~ else
+			You can't find a use for the remote here.
+			
+			[:& sadako.doLink("#inventory") @: Back:] ~:choice
+			<< END
+	+ [Back]., >> #inventory
