@@ -325,7 +325,7 @@
 		// one for this feature to work.
 		== guess
 		** {g1} "Is he the one with the eyepatch?"
-		"That's Gemini."
+			"That's Gemini."
 		** {g2} "Does he have the shaved head?"
 			"Ugh. That's Kano. Nobody likes Kano."
 		** {g3} "Is he the one that wears the biker jacket?"
@@ -340,7 +340,7 @@
 		// 
 		// If we were to return to this loop again, the default choice would
 		// be selected immediately, unless we reset all of the seen values of
-		// the choices (%.g1 for example) to 0.
+		// the choices (%.erin.g1 for example) to 0.
 		-- >> guess
 		
 		== done_guessing
