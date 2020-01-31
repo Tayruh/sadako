@@ -116,7 +116,7 @@
 		
 		== guess
 		** {g1} "Is he the one with the eyepatch?"
-		"That's Gemini."
+			"That's Gemini."
 		** {g2} "Does he have the shaved head?"
 			"Ugh. That's Kano. Nobody likes Kano."
 		** {g3} "Is he the one that wears the biker jacket?"
