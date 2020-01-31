@@ -50,9 +50,9 @@
 		// (like javascript) to track nesting. Instead, it uses depth tokens.
 		// The number of those tokens is its depth level.
 		// 
-		// Since the choice was a depth of 1 (only one + token), this is now
-		// block is now depth 2. Because of that, all depth tokens at this level
-		// must be a quantity of 2 to remain at this level.
+		// Since the choice was a depth of 1 (only one + token), this block is
+		// now depth 2. Because of that, all depth tokens at this level must be
+		// a quantity of 2 to remain at this level.
 		
 		// The following line is a condition block. It also has its own depth
 		// level. Conditions checks are just evaluated javascript so they should
@@ -218,7 +218,7 @@
 		<< RETURN
 	
 	= rug
-	It's a large colorful rug. You have no idea what material it's made of, but it's very soft to the touch and it feels you sink into it.
+	It's a large colorful rug. You have no idea what material it's made of, but it's very soft to the touch and it feels like you sink into it.
 	Erin is currently appreciating its comfort.
 	
 	>> go_back
