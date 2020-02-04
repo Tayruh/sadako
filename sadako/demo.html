@@ -1,28 +1,28 @@
 <html>
-    <head>
-        <style type="text/css">
-            .choice { 
-                cursor: pointer;
-                color: orange;
-            }
-        </style>
-    </head>
-    <body>
-        <div id="output"></div>
-        <textarea id="source" style="display:none">
-            ## demo
-                Hello world
-                + Choice one[] was chosen.
-                    Maybe try choice two next time?
-                + Choice two[] was chosen.
-                    Maybe try choice one next time?
-                - The End
-        </textarea>
-    </body>
-    <script src="sadako.js" type="text/javascript"></script>
-    <script src="kayako.js" type="text/javascript"></script>
+	<head>
+		<style type="text/css">
+			.choice { 
+				cursor: pointer;
+				color: orange;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="output"></div>
+		<textarea id="source" style="display:none">
+			## demo
+				Hello world
+				+ Choice one[] was chosen.
+					Maybe try choice two next time?
+				+ Choice two[] was chosen.
+					Maybe try choice one next time?
+				- The End
+		</textarea>
+	</body>
+	<script src="sadako.js" type="text/javascript"></script>
+	<script src="kayako.js" type="text/javascript"></script>
 	<script type="text/javascript">
-        sadako.init();
-        sadako.startGame("demo");
-    </script>
+		sadako.init();
+		sadako.startGame("demo");
+	</script>
 </html>
