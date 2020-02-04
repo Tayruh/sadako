@@ -310,3 +310,23 @@
 		.story-text input { width: 10em; }
 		.story-text textarea.multiline { height: 6.5em; width: 18em;}
 	}
+
+	.demo-card {
+		font-style: italic;
+		color: yellow;
+	}
+	
+	.demo-tv {
+		font-family: "Comic Sans MS";
+		font-size: 1.1em;
+		color: yellow;
+	}
+	div > span .demo-win { 
+		text-align: center; 
+	}
+	.demo-won {
+		font-style: italic bold;
+		color: lightblue;
+		text-align: center;
+	}
+	
