@@ -8,7 +8,7 @@
 	var ABORT = "ABORT";
 	var CONTINUE = "CONTINUE";
 	var RUN = "RUN";
-	
+
 	sadako.token = {
 		"line": ".,",
 		"cond": "::",
@@ -61,8 +61,8 @@
 		"pluswrite_embed": "~\\+",
 		"pluswrite2_embed": "~\\+'",
 		"pluswrite3_embed": '~\\+"'
-	}
-	
+	};
+
 	// global variables intended to changed
 	sadako.savename = "sadako";
 	sadako.text_delay = 150.0;
@@ -115,13 +115,33 @@
 	/* Utility Functions */
 
 	var dom = function(id) {
+		/*
+			Gets an HTML element or array of elements.
+
+			id (string): ID if string begins with # or class if not.
+
+			Returns (element or array): Single element with ID or array of
+			elements with class.
+		*/
+
 		var temp;
 
 		if ((temp = isToken(id, "#"))) return document.getElementById(temp);
 		else if ((temp = isToken(id, "\\."))) return document.getElementsByClassName(temp);
-	}
+	};
 
 	var copy = function(item, deep) {
+		/*
+			Creates a copy of an item to break referencing.
+
+			item (any): The variable to copy. It can be any type.
+
+			deep (boolean): If true, it will index through array or object and
+				also create copies of every member instead passing references.
+
+			Returns (any): The copy of the variable.
+		*/
+
 		var getArray = function(list, deep) {
 			var a;
 			var new_list = [];
@@ -155,9 +175,31 @@
 		}
 
 		return getValue(item, deep);
-	}
+	};
 
 	var find = function(list, func) {
+		/*
+			Finds items in the array or object that match the criteria specified.
+
+			list (array or object): The list to compare.
+
+			func (function): The function with the conditional comparison. The
+				only argument for the function is the  variable being compared.
+				If function returns a truthy value, it adds it to the list of
+				items to be returned.
+
+			Returns (array or object): Returns an array or object (determined by
+				'list' type) with the variables that match the criteria in
+				function.
+
+			Example:
+			// bleh will be assigned the values 2, 4, 6.
+			var bleh = find([1, 2, 3, 4, 5, 6], function(x) {
+				// Any even number is accepted.
+				return (x % 2 === 0);
+			});
+		*/
+
 		var result, x;
 		if (list instanceof Array) {
 			result = [];
@@ -179,10 +221,17 @@
 	};
 
 	var isDef = function(val) {
+		// Returns true if argument equals undefined.
+
 		return (val !== (void 0));
 	};
 
 	var isEmpty = function(val) {
+		/*
+			Returns true if argument is an empty array or empty object.
+			Undefined arrays or objects return false.
+		*/
+
 		if (val === undefined || val === null || (!isFunc(val) && val.length === 0)) return true;
 
 		var a;
@@ -190,31 +239,45 @@
 			return false;
 		}
 		return true;
-	}
+	};
 
 	var isStr = function(val) {
+		// Returns true if argument is a string.
+
 		return (typeof val === 'string' || val instanceof String);
 	};
 
 	var isNum = function(val) {
+		// Returns true if argument is a number.
+
 		return (typeof val === 'number' && !isNaN(val - 0));
 	};
 
 	var isValidNum = function(val) {
+		/*
+		 	Returns true if argument is a number or a string containing a valid
+		 	number.
+		*/
+
 		if (isStr(val)) { return /^-?(\d|\.)+(?:e-?\d+)?$/.test(val); }
 		return isNum(val);
 	};
 
 	var isArray = function(val) {
-		// return (typeof val === 'array' || val instanceof Array);
-		return (val instanceof Array);
+		// Returns true if argument is an array.
+
+		return (val instanceof Array || Array.isArray(val));
 	};
 
 	var isFunc = function(val) {
+		// Returns true if argument is a function.
+
 		return (typeof val === 'function' || val instanceof Function);
 	};
 
 	var isObj = function(val) {
+		// Returns true if argument is an object.
+
 		if (val === true || val === false || val === undefined || val === null) return false;
 		if (isDef(val) && !isStr(val) && !isNum(val) && !isArray(val)
 				&& !isFunc(val) && val !== null) {
@@ -224,23 +287,48 @@
 	};
 
 	var getNum = function(val) {
+		// Returns number value is argument is a number, or undefined if not.
+
 		if (!isNum(val)) { return undefined; }
 		if (isStr(val)) { return parseFloat(val); }
 		return val;
 	};
 
-	var printOrDo = function(action, id, arg1, arg2) {
+	var getOrDo = function(action, arg1, arg2) {
+		/*
+			Returns value from string or function.
+
+			action (string or function): Will return vaue of 'action' if string
+			 	or result of 'action' if it's a function.
+
+			arg1 (any), arg2 (any): parameters to pass to 'action' if it's a
+				function.
+
+			Returns (string or any): Returns string if 'action' is string, or
+				returns result of 'action' if it's a function.
+		*/
+
 		if (isFunc(action)) { return action(arg1, arg2); }
 		else { return action; }
 	};
 
 	var list = function() {
-		// returns a list of items so you can say: if (val in list("apple", "banana", "orange"))
+		/*
+		 	Returns a list of items for comparison with the 'in' operator.
+			
+			arguments (strings): List of strings.
+			
+			Returns (object): The object containing list of items.
+			
+			Example: 
+			// resolves to true
+			"banana" in list("apple", "banana", "orange")
+		*/
 
 		var obj = {};
 		var a;
 		for (a = 0; a < arguments.length; ++a) {
-			obj[arguments[a]] = null;
+			obj[arguments[a]] = true;
 		}
 		return obj;
 	};
@@ -281,59 +369,83 @@
 	};
 
 	var has = function(list, id) {
+		/*
+			Determines whether a value is in an array.
+			
+			list (array): The array for comparison.
+			id (any): The value for comparison.
+			
+			Returns (boolean): true if value in array, and false if not.
+		*/
+		
 		var a;
 		for (a = 0; a < list.length; ++a) {
 			if (list[a] === id) return true;
 		}
 		return false;
-	}
+	};
 
 	var add = function(list, id) {
+		// Pushes unique value to an array.
+		
 		if (!has(list, id)) list.push(id);
 		return list;
-	}
+	};
 
 	var remove = function(list, id) {
+		// Removes a value from an array. (Only looks for first instance.)
+		
 		var index = list.indexOf(id);
 		if (index !== -1) list.splice(index, 1);
 		return list;
 	};
 
 	var hasClass = function(id, classname) {
+		// Determines whether HTML has a specific class.
+		
 		return (sadako.has(dom(id).className.split(" "), classname));
-	}
+	};
 
 	var addClass = function(id, classname) {
+		// Adds a class to an HTML element.
+		
 		var classes = add(dom(id).className.split(" "), classname).join(" ");
 		dom(id).className = classes;
 		return classes;
-	}
+	};
 
 	var removeClass = function(id, classname) {
+		// Removes a class from an HTML element.
+		
 		var classes = remove(dom(id).className.split(" "), classname).join(" ");
 		dom(id).className = classes;
 		return classes;
-	}
+	};
 
-	var random = function(min, max) { 
+	var random = function(min, max) {
+		// Returns a random number with min as the low and max as the high.
+		
 		min = Math.ceil(min);
 		max = Math.floor(max);
 		return Math.floor(Math.random() * (max - min + 1)) + min;
-	}
+	};
 
-	var percentCheck = function(success) {
+	var percentCheck = function(success_rate) {
+		// Checks against a perctange and returns true if it passes.
+
 		var chance = random(1, 100);
-		if (success >= chance) return true;
+		if (success_rate >= chance) return true;
 		return false;
-	}
+	};
 
 	var rollDice = function(die) {
 		/*
-		Simulates rolling a die.
+			Simulates rolling a die.
 
-		die (string): foramted as "2D6+1" (for two six-sided dice, with 1 added to total)
+			die (string): foramted as "2D6+1" (for two six-sided dice, with 1
+				added to total)
 
-		returns (integer): total value of rolled die
+			returns (integer): total value of rolled die
 		*/
 
 		var dice = die.toUpperCase().split("D");
@@ -353,11 +465,27 @@
 		}
 		total += plus;
 		return total;
-	}
+	};
 
-	var randomItem = function(list) { return list[random(0, list.length - 1)]; };
+	var randomItem = function(list) {
+		// Returns a random item from an array.
+		
+		return list[random(0, list.length - 1)]; 
+	};
 
 	var arrayToString = function(list, quote) {
+		/*
+			Converts an array to a string representation for inclusion in
+			evalution strings.
+		
+			list (array): Array to convert.
+			
+			quote (string): Specify single quote or double quotes. Default is
+				double.
+				
+			Returns (string): String representation of the array.
+		*/
+		
 		if (!isStr(quote)) { quote = '"'; }
 		var result = "";
 		var a;
@@ -375,6 +503,8 @@
 	};
 
 	var scrollToTop = function() {
+		// Scrolls HTML page to the top.
+		
 		document.body.scrollTop = 0; // For Safari
 		document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
 	}
@@ -444,15 +574,16 @@
 
 	var getCurrentState = function() {
 		/*
-		Saves important values to the state object for saving.
+			Saves important values to the state object for use with history.
 
-		- This function is called every time doScript() is called, which is
-		  generally whenever a choice is clicked or a page is force loaded.
+			- This function is called every time doLink() or doChoice() is
+			  called, which is generally whenever a link or choice is clicked,
+			  or a page is force loaded.
 
-		page (string): page value
-		start (string): start value
+			page (string): page value
+			start (string): start value
 
-		returns (object): state object which contains the saved data
+			returns (object): state object which contains the saved data
 		*/
 
 		var state = {
@@ -479,11 +610,15 @@
 
 	var loadState = function(data, keep_values) {
 		/*
-		Copies values from 'data' to state object and global variables.
+			Copies values from 'data' to state object and global variables.
 
-		- Called when manually loading or restarting.
+			- Called when manually going back in history or unfreezing state.
 
-		data (object): data containing values to copy
+			data (object): data containing values to copy
+			
+			keep_values (boolean): If true then page and labels counts and
+				the variable object are not altered. This is useful when
+				unfreezing data and maintaining current progress.
 		*/
 
 		sadako.current = data.current;
@@ -500,6 +635,7 @@
 		sadako.enter_text = copy(data.lines, true);
 
 		sadako.state = copy(data, true);
+		
 		if (!keep_values) {
 			sadako.page_seen = copy(data.page_seen, true);
 			sadako.label_seen = copy(data.label_seen, true);
@@ -508,6 +644,11 @@
 	}
 
 	var doSaveState = function() {
+		/*
+			Saves the state if saving is currently enabled (ie. state is not
+			frozen).
+		*/
+		
 		if (!sadako.savestate_enabled) return;
 
 		sadako.state = getCurrentState();
@@ -522,6 +663,12 @@
 	}
 
 	var saveData = function() {
+		/*
+			Assigns the current data to the save object. This differs from
+			savestate because this will be saved to localstorage and savestate
+			is not.
+		*/
+		
 		sadako.save_data = {
 			current: sadako.current,
 			lines: copy(sadako.enter_text, true),
@@ -530,18 +677,27 @@
 			var: copy(sadako.var, true)
 		}
 	}
-	
+
 	var updateData = function(pages, labels, data) {
-		var a;
+		/*
+			Updates the data to be current, in case there is an older save
+			loaded that doesn't contain newer variables.
+
+			pages (object): page seen object
+			labels (object): label seen object
+			data (object): save variable object
+		*/
 		
+		var a;
+
 		for (a in sadako.story) {
 			sadako.page_seen[a] = (pages && a in pages) ? pages[a] : 0;
 		}
-		
+
 		for (a in sadako.labels) {
 			sadako.label_seen[a] = (labels && a in labels) ? labels[a] : 0;
 		}
-		
+
 		sadako.var = copy(sadako.defaultData.var, true);
 		if (data) {
 			for (a in data) {
@@ -553,17 +709,17 @@
 	var loadData = function(data) {
 		sadako.current = data.current;
 		sadako.lines = copy(data.lines, true);
-		
+
 		// sadako.page_seen = copy(data.page_seen, true);
 		// sadako.label_seen = copy(data.label_seen, true);
 		// sadako.var = copy(data.var, true);
-		
+
 		updateData(data.page_seen, data.label_seen, data.var);
 
 		sadako.enter_text = copy(data.lines, true);
 
 		sadako.current_line = getLineByLabel(sadako.current);
-		
+
 		sadako.page = sadako.current_line[0];
 		sadako.start = sadako.current_line[1];
 		sadako.part = sadako.current_line[2];
@@ -573,7 +729,9 @@
 		sadako.chosen = null;
 		sadako.jumps = [];
 		sadako.conditions = {};
-		sadako.history = [getCurrentState()];
+		//sadako.history = [getCurrentState()];
+		sadako.history = [];
+		doSaveState();
 		saveData();
 		// sadako.save_data = copy(data, true);
 	}
@@ -674,7 +832,7 @@
 
 	var back = function() {
 		var saveData;
-		
+
 		if (sadako.history_limit < 1) return;
 
 		if (sadako.history.length < 2) return;
@@ -682,6 +840,18 @@
 		saveData = sadako.history[sadako.history.length - 1];
 
 		loadState(saveData);
+		
+		if (sadako.start === undefined) sadako.start = 0;
+		if (sadako.part === undefined) sadako.part = 0;
+		
+		if (sadako.start === 0 && sadako.part === 0) sadako.page_seen[sadako.page] += 1;
+		else if (sadako.start.indexOf(".") !== -1) {
+			var temp = sadako.start.split(".");
+			var line = sadako.story[sadako.page][temp[0]][temp[1]];
+			if ((line.k === sadako.token.choice || line.k === sadako.token.static) && "l" in line) {
+				sadako.label_seen[line.l] += 1;
+			}
+		}
 
 		sadako.run();
 		doScript(sadako.page, sadako.start, sadako.part);
@@ -728,9 +898,9 @@
 
 	sadako.closeDialog = function(cleanup) {
 		sadako.unfreezeData();
-		
+
 		sadako.in_dialog = false;
-		
+
 		if (cleanup) {
 			sadako.lines = [];
 			sadako.choices = [];
@@ -749,7 +919,7 @@
 
 	sadako.showDialog = function(title, text) {
 		var temp;
-		
+
 		sadako.in_dialog = true;
 
 		sadako.run();
@@ -867,16 +1037,16 @@
 				}
 				classes.push(tags[a]);
 			}
-			
+
 			classes.push("hide");
-			
+
 			if (text.length < 1) return;
-			
+
 			var el = document.createElement('div');
 
 			el.className = classes.join(" ");
 			el.innerHTML = text;
-			
+
 			dom(sadako.output_id).appendChild(el);
 
 			// Fade in paragraph after a short delay
@@ -944,8 +1114,8 @@
 
 
 	/* Story Rendering */
-	
-	var run = function() { 
+
+	var run = function() {
 		sadako.script_level = 1;
 		sadako.script_status = RUN;
 	}
@@ -959,7 +1129,7 @@
 		sadako.choices = [];
 		sadako.script_status = ABORT;
 	}
-	
+
 	var doReturn = function() {
 		doLink("#" + sadako.page);
 	}
@@ -1376,15 +1546,15 @@
 		page (string): page to render
 		start (string): section of page to start
 		*/
-		
+
 		var setJump = function(line) {
 			sadako.jumps.push(line);
 			sadako.cond_states.push(sadako.copy(sadako.conditions, true));
 			sadako.conditions = [];
-			
+
 			return line;
 		}
-		
+
 		var getJump = function() {
 			sadako.conditions = sadako.copy(sadako.cond_states.pop(), true);
 			return sadako.jumps.pop();
@@ -1511,7 +1681,7 @@
 			var choice_seen = false;
 
 			if (part === undefined) part = 0;
-			
+
 			var is_choice, is_not_choice;
 
 			for (a = part; a < this_page.length; ++a) {
@@ -1635,7 +1805,7 @@
 		sadako.evals = [];
 
 		if (start === undefined) start = 0;
-		
+
 		sadako.script_level += 1;
 
 		if ("ALL" in sadako.before) { sadako.before.ALL(); }
@@ -1650,13 +1820,13 @@
 				sadako.lines[last] = sadako.lines[last].substring(0, last_chars);
 			}
 		}
-		
+
 		sadako.script_level -= 1;
-		
+
 		if (sadako.script_level === 1) {
 			if (sadako.page in sadako.after) sadako.after[sadako.page]();
 			if (sadako.script_status === ABORT) return;
-			
+
 			if ("ALL" in sadako.after) sadako.after.ALL();
 			if (sadako.script_status === ABORT) return;
 
@@ -1665,13 +1835,13 @@
 	}
 
 	/* Initialization */
-	
+
 	var checkVersion = function() {
 		var src_ver = sadako.story.story_data.version.split(".");
 		var sad_ver = sadako.kayako_version.split(".");
-		
+
 		if (src_ver.length !== sad_ver.length) throw new Error("Invalid version number");
-		
+
 		var a;
 		for (a = 0; a < sad_ver.length; ++a) {
 			if (sad_ver[a] > src_ver[a]) {
@@ -1692,13 +1862,21 @@
 			String.prototype.trimStart = String.prototype.trimLeft || function() { return this.replace(/^\s*/, ''); };
 		}
 
+		// Adds isArray() functionality if not already present
+		// Credit: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray
+		if (Array.isArray === undefined) {
+			Array.isArray = function(arg) {
+				return Object.prototype.toString.call(arg) === '[object Array]';
+			};
+		}
+
 		checkLocalStorage();
-		
+
 		if (sadako.story !== undefined) {
 			sadako.tags = sadako.story.story_data.tags;
 			sadako.labels = sadako.story.story_data.labels;
 			sadako.depths = sadako.story.story_data.depths;
-			
+
 			var a;
 			for (a in sadako.story) {
 				sadako.page_seen[a] = 0;
@@ -1706,7 +1884,7 @@
 			for (a in sadako.labels) {
 				sadako.label_seen[a] = 0;
 			}
-			
+
 			checkVersion();
 		}
 		else {
@@ -1714,11 +1892,11 @@
 			else if (dom("#source")) story = dom("#source").value;
 
 			if (story !== undefined) sadako.story = sadako.parseStory(story);
-		} 
-		
+		}
+
 		if (sadako.story === undefined) console.error("Sadako script not found");
 	}
-	
+
 	// functions intended to be used as-is
 	// sadako.doPage = doPage;
 	sadako.doJump = doJump;
@@ -1760,7 +1938,7 @@
 	sadako.isEmpty = isEmpty;
 	sadako.isValidNum = isValidNum;
 	sadako.getNum = getNum;
-	sadako.printOrDo = printOrDo;
+	sadako.getOrDo = getOrDo;
 	sadako.list = list;
 	sadako.format = format;
 	sadako.has = has;
