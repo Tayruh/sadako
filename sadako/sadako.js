@@ -255,8 +255,8 @@
 
 	var isValidNum = function(val) {
 		/*
-		 	Returns true if argument is a number or a string containing a valid
-		 	number.
+			Returns true if argument is a number or a string containing a valid
+			number.
 		*/
 
 		if (isStr(val)) { return /^-?(\d|\.)+(?:e-?\d+)?$/.test(val); }
@@ -299,7 +299,7 @@
 			Returns value from string or function.
 
 			action (string or function): Will return vaue of 'action' if string
-			 	or result of 'action' if it's a function.
+				or result of 'action' if it's a function.
 
 			arg1 (any), arg2 (any): parameters to pass to 'action' if it's a
 				function.
@@ -314,13 +314,13 @@
 
 	var list = function() {
 		/*
-		 	Returns a list of items for comparison with the 'in' operator.
-			
+			Returns a list of items for comparison with the 'in' operator.
+
 			arguments (strings): List of strings.
-			
+
 			Returns (object): The object containing list of items.
-			
-			Example: 
+
+			Example:
 			// resolves to true
 			"banana" in list("apple", "banana", "orange")
 		*/
@@ -371,13 +371,13 @@
 	var has = function(list, id) {
 		/*
 			Determines whether a value is in an array.
-			
+
 			list (array): The array for comparison.
 			id (any): The value for comparison.
-			
+
 			Returns (boolean): true if value in array, and false if not.
 		*/
-		
+
 		var a;
 		for (a = 0; a < list.length; ++a) {
 			if (list[a] === id) return true;
@@ -387,14 +387,14 @@
 
 	var add = function(list, id) {
 		// Pushes unique value to an array.
-		
+
 		if (!has(list, id)) list.push(id);
 		return list;
 	};
 
 	var remove = function(list, id) {
 		// Removes a value from an array. (Only looks for first instance.)
-		
+
 		var index = list.indexOf(id);
 		if (index !== -1) list.splice(index, 1);
 		return list;
@@ -402,13 +402,13 @@
 
 	var hasClass = function(id, classname) {
 		// Determines whether HTML has a specific class.
-		
+
 		return (sadako.has(dom(id).className.split(" "), classname));
 	};
 
 	var addClass = function(id, classname) {
 		// Adds a class to an HTML element.
-		
+
 		var classes = add(dom(id).className.split(" "), classname).join(" ");
 		dom(id).className = classes;
 		return classes;
@@ -416,7 +416,7 @@
 
 	var removeClass = function(id, classname) {
 		// Removes a class from an HTML element.
-		
+
 		var classes = remove(dom(id).className.split(" "), classname).join(" ");
 		dom(id).className = classes;
 		return classes;
@@ -424,7 +424,7 @@
 
 	var random = function(min, max) {
 		// Returns a random number with min as the low and max as the high.
-		
+
 		min = Math.ceil(min);
 		max = Math.floor(max);
 		return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -469,23 +469,23 @@
 
 	var randomItem = function(list) {
 		// Returns a random item from an array.
-		
-		return list[random(0, list.length - 1)]; 
+
+		return list[random(0, list.length - 1)];
 	};
 
 	var arrayToString = function(list, quote) {
 		/*
 			Converts an array to a string representation for inclusion in
 			evalution strings.
-		
+
 			list (array): Array to convert.
-			
+
 			quote (string): Specify single quote or double quotes. Default is
 				double.
-				
+
 			Returns (string): String representation of the array.
 		*/
-		
+
 		if (!isStr(quote)) { quote = '"'; }
 		var result = "";
 		var a;
@@ -504,7 +504,7 @@
 
 	var scrollToTop = function() {
 		// Scrolls HTML page to the top.
-		
+
 		document.body.scrollTop = 0; // For Safari
 		document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
 	}
@@ -615,7 +615,7 @@
 			- Called when manually going back in history or unfreezing state.
 
 			data (object): data containing values to copy
-			
+
 			keep_values (boolean): If true then page and labels counts and
 				the variable object are not altered. This is useful when
 				unfreezing data and maintaining current progress.
@@ -635,7 +635,7 @@
 		sadako.enter_text = copy(data.lines, true);
 
 		sadako.state = copy(data, true);
-		
+
 		if (!keep_values) {
 			sadako.page_seen = copy(data.page_seen, true);
 			sadako.label_seen = copy(data.label_seen, true);
@@ -648,7 +648,7 @@
 			Saves the state if saving is currently enabled (ie. state is not
 			frozen).
 		*/
-		
+
 		if (!sadako.savestate_enabled) return;
 
 		sadako.state = getCurrentState();
@@ -668,7 +668,7 @@
 			savestate because this will be saved to localstorage and savestate
 			is not.
 		*/
-		
+
 		sadako.save_data = {
 			current: sadako.current,
 			lines: copy(sadako.enter_text, true),
@@ -687,7 +687,7 @@
 			labels (object): label seen object
 			data (object): save variable object
 		*/
-		
+
 		var a;
 
 		for (a in sadako.story) {
@@ -840,10 +840,10 @@
 		saveData = sadako.history[sadako.history.length - 1];
 
 		loadState(saveData);
-		
+
 		if (sadako.start === undefined) sadako.start = 0;
 		if (sadako.part === undefined) sadako.part = 0;
-		
+
 		if (sadako.start === 0 && sadako.part === 0) sadako.page_seen[sadako.page] += 1;
 		else if (sadako.start.indexOf(".") !== -1) {
 			var temp = sadako.start.split(".");
@@ -1267,16 +1267,15 @@
 
 			var t = sadako.token;
 
-			text = replaceVar(text, t.label_embed + t.cond_embed, function (match, p1, p2) { return p1 + 'sadako.label_seen["' + p2 + '"]'; });
-			text = replaceVar(text, t.page_embed + t.cond_embed, function (match, p1, p2) { return p1 + 'sadako.page_seen["' + p2 + '"]'; });
-			text = replaceVar(text, t.var_embed + t.cond_embed, function (match, p1, p2) { return p1 + 'sadako.var.' + p2; });
-			text = replaceVar(text, t.tmp_embed + t.cond_embed, function (match, p1, p2) { return p1 + 'sadako.tmp.' + p2; });
+			text = replaceVar(text, t.label_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.label_seen["' + p2 + '"]'; });
+			text = replaceVar(text, t.page_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.page_seen["' + p2 + '"]'; });
+			text = replaceVar(text, t.var_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.var.' + p2; });
+			text = replaceVar(text, t.tmp_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.tmp.' + p2; });
 
-			text = replaceVar(text, t.label_embed + t.value_embed, format('$1{0}{1} sadako.label_seen["$2"]{2}', t.script_open, t.eval_value, t.script_close));
-			text = replaceVar(text, t.page_embed + t.value_embed, format('$1{0}{1} sadako.page_seen["$2"]{2}', t.script_open, t.eval_value, t.script_close));
-			text = replaceVar(text, t.var_embed + t.value_embed, format('$1{0}{1} sadako.var.$2{2}', t.script_open, t.eval_value, t.script_close));
-
-			text = replaceVar(text, t.tmp_embed + t.value_embed, format('$1{0}{1} sadako.tmp.$2{2}', t.script_open, t.eval_value, t.script_close));
+			text = replaceVar(text, t.label_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.label_seen[p2]; });
+			text = replaceVar(text, t.page_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.page_seen[p2]; });
+			text = replaceVar(text, t.var_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.var[p2]; });
+			text = replaceVar(text, t.tmp_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.tmp[p2]; });
 
 			text = replaceVar(text, t.write_embed, "$1sadako.text = $2");
 			text = replaceVar(text, t.write_embed + t.cond_embed, "$1sadako.text = sadako.var.$2");
