@@ -947,8 +947,21 @@
 	/* Text Output */
 
 	var write = function(output) {
-		if (isArray(output)) sadako.lines.concat(output);
+		if (isArray(output)) sadako.lines = sadako.lines.concat(output);
 		else sadako.lines.push(output);
+	}
+	
+	var overwrite = function(text) {
+		sadako.lines = [];
+		sadako.write(text);
+		sadako.writeOutput();
+	}
+	
+	var addChoice = function(name, command, tags) {
+		sadako.choices.push({
+			"text": sadako.writeLink(name, command), 
+			"tags": tags 
+		});
 	}
 
 	var processTags = function(text, func) {
@@ -1274,8 +1287,8 @@
 
 			text = replaceVar(text, t.label_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.label_seen[p2]; });
 			text = replaceVar(text, t.page_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.page_seen[p2]; });
-			text = replaceVar(text, t.var_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.var[p2]; });
-			text = replaceVar(text, t.tmp_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.tmp[p2]; });
+			text = replaceVar(text, t.var_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.var." + p2); });
+			text = replaceVar(text, t.tmp_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.tmp." + p2); });
 
 			text = replaceVar(text, t.write_embed, "$1sadako.text = $2");
 			text = replaceVar(text, t.write_embed + t.cond_embed, "$1sadako.text = sadako.var.$2");
@@ -1897,7 +1910,6 @@
 	}
 
 	// functions intended to be used as-is
-	// sadako.doPage = doPage;
 	sadako.doJump = doJump;
 	sadako.doLink = doLink;
 	sadako.doReturn = doReturn;
@@ -1911,6 +1923,8 @@
 	sadako.end = end;
 	sadako.abort = abort;
 	sadako.write = write;
+	sadako.overwrite = overwrite;
+	sadako.addChoice = addChoice;
 
 	// functions intended to be overridden
 	// sadako.write = write;
