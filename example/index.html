@@ -47,7 +47,7 @@
 		</div>
 		
 		<!-- Story Text -->
-		<div id="story" role="main">
+		<div id="story">
 			<div id="story-output">
 				<div id="output" class="story-text"></div>
 			</div>
@@ -69,22 +69,24 @@
 		
 		<!-- Save/Load Menu -->
 		<div id="save-menu" class="disabled">
-			<table width="100%">
-				<tr>
-					<td rowspan="2">
-						Save Slot <br>
-						<select id="save-slot">
-							<option value="1">1</option>
-							<option value="2">2</option>
-							<option value="3">3</option>
-							<option value="4">4</option>
-							<option value="5">5</option>
-						</select>
-					</td>
-					<td class="choice save-menu-button"><a onclick="sadako.saveGame(); sadako.closeDialog()">Save</a></td>
-				</tr>
-				<tr><td class="choice save-menu-button"><a onclick="sadako.loadGame(); sadako.closeDialog()">Load</a></td></tr>
-			</table>
-		</div>
+            <div>
+                <table width="100%">
+                    <tr>
+                        <td rowspan="2">
+                            Save Slot <br>
+                            <select id="save-slot">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </td>
+                        <td class="choice save-menu-button"><a onclick="sadako.saveGame(); sadako.closeDialog()">Save</a></td>
+                    </tr>
+                    <tr><td class="choice save-menu-button"><a onclick="sadako.loadGame(); sadako.closeDialog()">Load</a></td></tr>
+                </table>
+            </div>
+        </div>
 	</body>
 </html>
