@@ -3,7 +3,7 @@
 		game.showInventory = function() {
 			// Opens the dialog with the inventory settings.
 			sadako.showDialog("Inventory", "#inventory");
-		}
+		};
 		
 		game.showItem = function(name, page) {
 			// Displays the page associated with the item. If an 'inventory'
@@ -11,14 +11,14 @@
 			sadako.dom("#dialog-title").innerHTML = name;
 			if ((page + ".inventory") in sadako.labels) sadako.doLink(page + ".inventory");
 			else sadako.doLink("#" + page);
-		}
+		};
 		
 		game.displayInventory = function() {
 			// Writes the inventory out of the page after setting the dialog
 			// window title to 'Inventory'.
 			sadako.dom("#dialog-title").innerHTML = "Inventory";
 			return game.listInventory();
-		}
+		};
 		
 		game.listInventory = function() {
 			// Makes a bullet list of all items in the 'items' array.
@@ -35,7 +35,7 @@
 			
 			text += "</ul></div>";
 			return text;
-		}
+		};
 		
 		game.bookmark = function(label) {
 			// Saves the page or label to 'bookmark' for future referencing.
@@ -44,7 +44,7 @@
 				label = sadako.page + "." + label;
 			}
 			sadako.var.bookmark = label;
-		}
+		};
 		
 		game.useBookmark = function() {
 			// Jump to the bookark.
@@ -54,7 +54,7 @@
 		game.openSaveMenu = function() {
 			// Opens the save/load menu dialog.
 			sadako.showDialog("Save / Load", sadako.dom("#save-menu").innerHTML);
-		}
+		};
 		
 		game.title = function(title, subtitle) {
 			// Displays the DIV with the room title and a subtitle below it if
@@ -66,7 +66,7 @@
 			if (subtitle) text += '<div id="room-subtitle">' + subtitle + '</div>';
 			// sadako.text += text;
 			sadako.lines.push(text);
-		}
+		};
 		
 		game.move = function(list_name, item) {
 			// Adds an item to a list. If item is already in a list, it'll
@@ -74,7 +74,7 @@
 			if (item in sadako.var.has_item && sadako.var.has_item) sadako.remove(sadako.var[sadako.var.has_item[item]], item);
 			if (list_name !== null) sadako.add(sadako.var[list_name], item);
 			sadako.var.has_item[item] = list_name;
-		}
+		};
 		
 		game.listContents = function(list, nothing, write_links) {
 			// Not used in this demo, but it will list all items inside an
@@ -93,7 +93,7 @@
 			if (items.length === 2) return items.join(" and ");
 			var last = items.pop();
 			return items.join(", ") + ", and " + last;
-		}
+		};
 		
 		window.onload = function() {
 			// Initializes Sadako.
@@ -155,7 +155,23 @@
 						"Erin squees at the TV out of excitement."
 					]));
 				}
-			}
+			};
+			
+			// Creates a scene for the game. A scene is an moment in time that
+			// automatically begins when certain conditions are met and ends
+			// when other conditions are met. When it begins and ends, a
+			// function is executed, if one is defined. The condition checks are
+			// performed before every line is processed.
+			// 
+			// The parameters for addScene are 'id', 'checkStart', 'checkEnd',
+			// 'doStart', and 'doEnding'. The 'checkStart' and 'checkEnd'
+			// conditions can be either a string to be evaluated (which may
+			// contain sadako script) or a function that returns true when
+			// conditions are met. 'doStart' and 'doEnding' are functions. 
+			// 
+			// In this example, we don't do anything on start, but on end we set
+			// the complete flag for the game.
+			sadako.addScene("waiting_for_remote", "%.erin.talked", "%.remote.gave", null, function() { sadako.var.demo_complete = true; });
 			
 			// Sets up the dialog window by passing it the HTML element IDs.
 			// First param is the text output, second is the title of the window

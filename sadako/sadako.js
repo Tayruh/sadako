@@ -53,6 +53,7 @@
 		"break": "\\^\\^",
 		"var_embed": "\\$",
 		"tmp_embed": "_",
+		"scene_embed": "\\*",
 		"value_embed": ":",
 		"cond_embed": "\\.",
 		"write_embed": "~",
@@ -70,7 +71,7 @@
 	sadako.autosave_enabled = false;
 
 	// global variables not saved to storage
-	sadako.version = "0.9.3";
+	sadako.version = "0.9.4";
 	sadako.kayako_version = "0.9.2";
 	sadako.tmp = {};
 	sadako.evals = [];
@@ -96,6 +97,7 @@
 	sadako.current_line = [];
 	sadako.script_level = 1;
 	sadako.in_dialog = false;
+	sadako.scene_checks = {};
 
 	// global variables saved to state
 	sadako.current = null;
@@ -111,6 +113,7 @@
 	sadako.conditions = {};
 	sadako.cond_states = [];
 	sadako.enter_text = [];
+	sadako.scenes = {};
 
 	/* Utility Functions */
 
@@ -600,6 +603,7 @@
 			cond_states: copy(sadako.cond_states, true),
 			choices: copy(sadako.choices, true),
 			evals: copy(sadako.evals, true),
+			scenes: copy(sadako.scenes, true),
 			var: copy(sadako.var, true)
 		}
 
@@ -639,6 +643,7 @@
 		if (!keep_values) {
 			sadako.page_seen = copy(data.page_seen, true);
 			sadako.label_seen = copy(data.label_seen, true);
+			sadako.scenes = copy(data.scenes, true);
 			sadako.var = copy(data.var, true);
 		}
 	}
@@ -674,11 +679,12 @@
 			lines: copy(sadako.enter_text, true),
 			page_seen: copy(sadako.page_seen, true),
 			label_seen: copy(sadako.label_seen, true),
+			scenes: copy(sadako.scenes, true),
 			var: copy(sadako.var, true)
 		}
 	}
 
-	var updateData = function(pages, labels, data) {
+	var updateData = function(pages, labels, scenes, data) {
 		/*
 			Updates the data to be current, in case there is an older save
 			loaded that doesn't contain newer variables.
@@ -697,6 +703,15 @@
 		for (a in sadako.labels) {
 			sadako.label_seen[a] = (labels && a in labels) ? labels[a] : 0;
 		}
+		
+		for (a in sadako.scenes) {
+			sadako.scenes[a] = (scenes && a in scenes) ? scenes[a] : {
+				"isActive": false,
+				"hasEnded": false,
+				"ending": null, 
+				"isReoccuring": false
+			};
+		}
 
 		sadako.var = copy(sadako.defaultData.var, true);
 		if (data) {
@@ -714,7 +729,7 @@
 		// sadako.label_seen = copy(data.label_seen, true);
 		// sadako.var = copy(data.var, true);
 
-		updateData(data.page_seen, data.label_seen, data.var);
+		updateData(data.page_seen, data.label_seen, data.scenes, data.var);
 
 		sadako.enter_text = copy(data.lines, true);
 
@@ -1284,11 +1299,13 @@
 			text = replaceVar(text, t.page_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.page_seen["' + p2 + '"]'; });
 			text = replaceVar(text, t.var_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.var.' + p2; });
 			text = replaceVar(text, t.tmp_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.tmp.' + p2; });
+			text = replaceVar(text, t.scene_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.scenes.' + p2; });
 
 			text = replaceVar(text, t.label_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.label_seen[p2]; });
 			text = replaceVar(text, t.page_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.page_seen[p2]; });
 			text = replaceVar(text, t.var_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.var." + p2); });
 			text = replaceVar(text, t.tmp_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.tmp." + p2); });
+			text = replaceVar(text, t.scene_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.scenes." + p2); });
 
 			text = replaceVar(text, t.write_embed, "$1sadako.text = $2");
 			text = replaceVar(text, t.write_embed + t.cond_embed, "$1sadako.text = sadako.var.$2");
@@ -1550,6 +1567,57 @@
 		}
 		else write(text);
 	}
+	
+	var addScene = function(id, checkStart, checkEnd, doStart, doEnd, doBefore, doAfter, isReoccuring) {
+		sadako.scenes[id] = {
+			"isActive": false,
+			"hasEnded": false,
+			"ending": null, 
+			"isReoccuring": isReoccuring || false
+		}
+		
+		sadako.scene_checks[id] = {
+			"checkStart": checkStart,
+			"checkEnd": checkEnd,
+			"doStart": doStart,
+			"doEnd": doEnd,
+			"doBefore": doBefore,
+			"doAfter": doAfter
+		}
+	};
+	
+	var checkScenes = function() {
+		var a, scene, check;
+		
+		for (a in sadako.scenes) {
+			scene = sadako.scenes[a];
+			check = sadako.scene_checks[a];
+			if (scene.hasEnded && !scene.isReoccuring) continue;
+			if (!scene.isActive) {
+				if (sadako.isStr(check.checkStart)) {
+					if (!eval(sadako.processScript(check.checkStart))) continue;
+				}
+				else if (!check.checkStart()) continue;
+				
+				scene.isActive = true;
+				if (check.doStart !== undefined && check.doStart !== null) check.doStart();
+				checkScenes();
+				continue;
+			}
+			else if (check.checkEnd !== undefined && check.checkEnd !== null) {
+				if (sadako.isStr(check.checkEnd)) {
+					if (!eval(sadako.processScript(check.checkEnd))) continue;
+				}
+				else if (!check.checkEnd()) continue;
+				
+				scene.isActive = false;
+				scene.hasEnded = true;
+				if (check.doEnd !== undefined && check.doEnd !== null) scene.ending = check.doEnd();
+				checkScenes();
+				continue;
+			}
+		}
+	};
 
 	var doLines = function(page, start, part) {
 		/*
@@ -1697,6 +1765,8 @@
 			var is_choice, is_not_choice;
 
 			for (a = part; a < this_page.length; ++a) {
+				checkScenes();
+				
 				token = ("k" in this_page[a]) ? this_page[a].k : null;
 				is_choice = (token === sadako.token.choice || token === sadako.token.static);
 				is_not_choice = (token !== sadako.token.choice && token !== sadako.token.static);
@@ -1805,6 +1875,8 @@
 	}
 
 	var doScript = function(page, start, part) {
+		var a, sceneAction;
+		
 		if (sadako.script_status === ABORT || sadako.script_status === END) return;
 
 		sadako.page = page;
@@ -1817,11 +1889,20 @@
 		sadako.evals = [];
 
 		if (start === undefined) start = 0;
+		
+		if (sadako.script_level === 1) {
+			for (a in sadako.scenes) {
+				sceneAction = sadako.scene_checks[a].doBefore;
+				if (sadako.scenes[a].isActive) {
+					if (sceneAction !== undefined && sceneAction !== null) sceneAction();
+				}
+			}
 
-		sadako.script_level += 1;
-
-		if ("ALL" in sadako.before) { sadako.before.ALL(); }
+			if ("ALL" in sadako.before) { sadako.before.ALL(); }
+		}
 		if (page in sadako.before) sadako.before[page]();
+		
+		sadako.script_level += 1;
 
 		if (doLines(page, start, part) === ABORT) return;
 
@@ -1838,6 +1919,13 @@
 		if (sadako.script_level === 1) {
 			if (sadako.page in sadako.after) sadako.after[sadako.page]();
 			if (sadako.script_status === ABORT) return;
+			
+			for (a in sadako.scenes) {
+				sceneAction = sadako.scene_checks[a].doAfter;
+				if (sadako.scenes[a].isActive) {
+					if (sceneAction !== undefined && sceneAction !== null) sceneAction();
+				}
+			}
 
 			if ("ALL" in sadako.after) sadako.after.ALL();
 			if (sadako.script_status === ABORT) return;
@@ -1925,6 +2013,7 @@
 	sadako.write = write;
 	sadako.overwrite = overwrite;
 	sadako.addChoice = addChoice;
+	sadako.addScene = addScene;
 
 	// functions intended to be overridden
 	// sadako.write = write;
@@ -1948,6 +2037,7 @@
 	// convenient utility functions
 	sadako.rollDice = rollDice;
 	sadako.find = find;
+	sadako.isStr = isStr;
 	sadako.isEmpty = isEmpty;
 	sadako.isValidNum = isValidNum;
 	sadako.getNum = getNum;

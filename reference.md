@@ -463,10 +463,11 @@ For convenience sake, there are tokens that allow easy embedding of **Sadako** v
 
 #### For use in story script
 
-* `$:foo` becomes `[:= sadako.var.foo:]`
-* `_:foo` becomes `[:= sadako.tmp.foo:]`
-* `#:foo` becomes `[:= sadako.page_seen["foo"]:]`
-* `%:foo` becomes `[:= sadako.label_seen["foo"]:]`
+* `$:foo` becomes the value of `sadako.var.foo`
+* `_:foo` becomes the value of `sadako.tmp.foo`
+* `*:foo` becomes the value of `sadako.scenes.foo`
+* `#:foo` becomes the value of `sadako.page_seen["foo"]`
+* `%:foo` becomes the value of `sadako.label_seen["foo"]`
 
 ```
 The color of the gem was a bright $:color.
@@ -478,6 +479,7 @@ The color of the gem was a bright green.
 #### For use in condition blocks
 * `$.foo` becomes `sadako.var.foo`
 * `_.foo` becomes `sadako.tmp.foo`
+* `*.foo` becomes `sadako.scenes.foo`
 * `#.foo` becomes `sadako.page_seen["foo"]`
 * `%.foo` becomes `sadako.label_seen["foo"]`
 * `~.foo` becomes `sadako.text = foo`
@@ -492,6 +494,8 @@ To make sense of this, a few things should be explained briefly.
 `sadako.var` is an object variable that contains user defined variables. These variables are automatically saved to disk when you save the game.
 
 `sadako.tmp` is also an object variable that contains user defined variables. However, these variables are cleared every time `sadako.doJump()`, `sadako.doChoice()`, and `sadako.doScript()` are called. That is to say, any time you click a link or call a function that progresses the story script.
+
+`sadako.scenes` will be described in just a little bit. It's too in depth to describe here.
     
 `sadako.text` is the variable that holds the text being processed for the current line. Just returning text from a function will not work unless you use the `=` value token inside the `[: :]` script block (which hopefully explains how the story script text replacements work). If you are inside a function and want to replace or add to the text output for the current line, `sadako.text` is the variable to use.
 
@@ -1167,6 +1171,79 @@ This gives the following error.
 story: [Page1] [0] [2]
 eval: (1 == 1)
 ```
+
+
+### Scenes
+
+Scenes are a way of expressing an event that is taking place or has taken place. Scenes can happen one after another, or many scenes at once. Whether they are running or not is based on conditions that are checked as every story script line is processed.
+
+To make it clear what role a scene performs, first we should look at some script without scenes.
+
+```
+## example
+    Your friend turns to you and asks "Would you like to go to the movies?"
+    * "Sure!"
+        "Sweet!" They pause. "You can buy your own ticket, right?"
+        ** {no_money} "Sorry, no."
+            "Ugh. I can't believe you. I'll have to go alone then." They wander away.
+        ** "Yeah, no problem."
+            "Great! Let's go!"
+    * {no} "Nah."
+        "Seriously? Well, whatever. I'm going without you."
+
+    ~ if (%.example.no || %.example.no_money)
+        You spend the day by yourself.
+    ~ else
+        You and your friend go to the movies and have a great time.
+```
+
+That's not too bad, and figuring out what the labels mean when the conditions are so close to the origin is not that difficult. However, imagine if this condition check was made 100 lines from the label. The label naming convention may start to lose its meaning. It's also cumbersome if you plan on having this same condition check in multiple locations. This is where scenes clear things up.
+
+First we add the scene in javascript. This should be always be defined in your initialization script so that it's run whether you start a fresh game or load a save.
+
+```
+sadako.addScene("friend_left", "%.example.no || %.example.no_money");
+```
+
+And now we replace the condition check.
+
+```
+~ if (*.friend_left.isActive)
+    You spend the day by yourself.
+~ else
+    You and your friend go to the movies and have a great time.
+```
+
+Not the most extravagant use of a scene, but it does at least make the code a bit cleaner to read.
+
+A scene comes with three members you can access for its state. These are set automatically based on the condition checks.
+
+* `isActive`: Whether we are currently in the scene. This happens when the `startCheck` conditions have passed.
+* `hasEnded`: Whether the scene has finished. This happens when the scene was active and then the `endCheck` conditions passed.
+* `ending`: Any value returned from `doEnding()` is stored in `ending`. This can be useful to determine which way a scene has ended if it has multiple ways of ending the scene.
+
+The fourth member `isReoccuring` is set manually during creation or any time after that to toggle reoccuring activations of a scene.
+
+That's not all scenes can do though. To understand its use, the arguments of the `sadako.addScene` function must first be explained.
+
+`sadako.addScene(id, checkStart, checkEnd, doStart, doEnd, doBefore, doAfter, isReoccuring)`
+
+* `id`: The name of the scene to be defined.
+* `checkStart`: The condition(s) to check for the start of the scene. String or function.
+* `checkEnd`: The condition(s) to check for the end of the scene. String or function.
+* `doStart`: The function to be run when `checkStart` evaluates to true.
+* `doEnd`: The function to be run when `checkEnd` evaluates to true.
+* `doBefore`: The function to run before every page renders while the scene is active.
+* `doAfter`: The function to run after every page renders while the scene is active.
+* `isReoccuring`: Whether the scene should be run again if the start conditions are met after the scene has ended.
+
+`id` and `checkStart` are the only required arguments. The others can be skipped over with a value of `undefined` or `null`.
+
+`checkStart` and `checkEnd` can be either a string or a function. If the argument is a string, it will be evaluated to determine if the conditions are true. The string may contain sadako script like in the example. Strings are good for simple comparisons or when you want to take advantage of sadako script.
+
+If the argument is a function, you must place your condition checks inside the function and return true if they evaluate to true. This is useful for more complex condition checks. The following is an example.
+
+`sadako.addScene("test", function(){ if (1 === 1) return true; })`
 
 
 ### Saving Checkpoints
