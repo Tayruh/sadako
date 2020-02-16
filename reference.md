@@ -1266,7 +1266,7 @@ That's much easier to read. Also as mentioned in the variable embedding section,
 
 A scene comes with four members you can access for its state. These are set automatically based on the condition checks.
 
-* `isActive`: Whether we are currently in the scene. This happens when the `startCheck` conditions have passed.
+* `isActive`: Whether we are currently in the scene. This is initially set to `false`. It is set to `true` when the `startCheck` conditions have passed, and then set to `false` again once `endCheck` has passed.
 * `hasStarted`: A count of how many times scene has started. Incremented every time `checkStart` passes.
 * `hasEnded`: A count of how many times scene has ended. Incremented every time `checkEnd` passes.
 * `ending`: Any value returned from `doEnd()` is stored in `ending`. This can be useful to determine which way a scene has ended if it has multiple ways of ending the scene.
