@@ -1214,7 +1214,7 @@ And now we replace the condition check.
     You and your friend go to the movies and have a great time.
 ```
 
-Not the most extravagant use of a scene, but it does at least make the code a bit cleaner to read. Also as mentioned in the variable embedding section, the `*.` token is the shortcut for `sadako.scenes` variable, and `*:` is the shortcut to its value.
+Not the most extravagant use of a scene, but it does at least make the code a bit cleaner to read. Also as mentioned in the variable embedding section, the `*.` token is the shortcut for the `sadako.scenes` variable, and `*:` is the shortcut to its value.
 
 A scene comes with three members you can access for its state. These are set automatically based on the condition checks.
 
