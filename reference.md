@@ -1184,42 +1184,91 @@ To make it clear what role a scene performs, first we should look at some script
     Your friend turns to you and asks "Would you like to go to the movies?"
     * "Sure!"
         "Sweet!" They pause. "You can buy your own ticket, right?"
-        ** {no_money} "Sorry, no."
-            "Ugh. I can't believe you. I'll have to go alone then." They wander away.
         ** "Yeah, no problem."
             "Great! Let's go!"
+            You and your friend go to the movies and have a great time.
+        ** {no_money} "Sorry, no."
+            "Ugh. I can't believe you. I'll have to go alone then." They wander away.
     * {no} "Nah."
         "Seriously? Well, whatever. I'm going without you."
-
+    
     ~ if (%.example.no || %.example.no_money)
         You spend the day by yourself.
+        
+    * [Go Home]
+        >> #home
+        
+## home
+    You're at your home. {:(!%.example.no && !%.example.no_money) || %.home.called::Your friend is here with you.:}
+    
+    ~ if (%.home.called)
+        Your friend looks happy but reserved. "That movie was pretty good. I wish you could have seen it."
+    
+    ~ else if (!%.example.no && !%.example.no_money)
+        Your friend is happy. "That movie was great!"
+
     ~ else
-        You and your friend go to the movies and have a great time.
+        ** [Call Friend]
+            You decide to call your friend.
+            "The movie is over now. I'll be right over."
+            *** {called} [Back]
+                << RETURN
 ```
 
-That's not too bad, and figuring out what the labels mean when the conditions are so close to the origin is not that difficult. However, imagine if this condition check was made 100 lines from the label. The label naming convention may start to lose its meaning. It's also cumbersome if you plan on having this same condition check in multiple locations. This is where scenes clear things up.
+
+Pretty messy. There are a lot of conditionals based on whether you've seen labels or not and it's somewhat confusing looking even though the labels are still within sight. It'd only get worse as the conditions are moved further from their original and replicated in other locations of the script. Scenes can alleviate this issue.
 
 First we add the scene in javascript. This should be always be defined in your initialization script so that it's run whether you start a fresh game or load a save.
 
 ```
-sadako.addScene("friend_left", "%.example.no || %.example.no_money");
+sadako.addScene("alone", "%.example.no || %.example.no_money", "%.home.called");
 ```
 
-And now we replace the condition check.
+And now we rewrite it using scenes for the condition checks.
 
 ```
-~ if (*.friend_left.isActive)
-    You spend the day by yourself.
-~ else
-    You and your friend go to the movies and have a great time.
+## example
+    Your friend turns to you and asks "Would you like to go to the movies?"
+    * "Sure!"
+        "Sweet!" They pause. "You can buy your own ticket, right?"
+        ** "Yeah, no problem."
+            "Great! Let's go!"
+            You and your friend go to the movies and have a great time.
+        ** {no_money} "Sorry, no."
+            "Ugh. I can't believe you. I'll have to go alone then." They wander away.
+    * {no} "Nah."
+        "Seriously? Well, whatever. I'm going without you."
+    
+    ~ if (*.alone.isActive)
+        You spend the day by yourself.
+        
+    * [Go Home]
+        >> #home
+        
+## home
+    You're at your home. {:!*.alone.isActive::Your friend is here with you.:}
+    
+    ~ if (*.alone.hasEnded)
+        Your friend looks happy but reserved. "That movie was pretty good. I wish you could have seen it."
+        
+    ~ else if (!*.alone.hasStarted)
+        Your friend is happy. "That movie was great!"
+
+    ~ else
+        ** [Call Friend]
+            You decide to call your friend.
+            "The movie is over now. I'll be right over."
+            *** {called} [Back]
+                << RETURN
 ```
 
-Not the most extravagant use of a scene, but it does at least make the code a bit cleaner to read. Also as mentioned in the variable embedding section, the `*.` token is the shortcut for the `sadako.scenes` variable, and `*:` is the shortcut to its value.
+That's much easier to read. Also as mentioned in the variable embedding section, the `*.` token is the shortcut for the `sadako.scenes` variable, and `*:` is the shortcut to its value.
 
 A scene comes with three members you can access for its state. These are set automatically based on the condition checks.
 
 * `isActive`: Whether we are currently in the scene. This happens when the `startCheck` conditions have passed.
-* `hasEnded`: Whether the scene has finished. This happens when the scene was active and then the `endCheck` conditions passed.
+* `hasStarted`: A count of how many times scene has started. Incremented every time `checkStart` passes.
+* `hasEnded`: A count of how many times scene has ended. Incremented every time `checkEnd` passes.
 * `ending`: Any value returned from `doEnd()` is stored in `ending`. This can be useful to determine which way a scene has ended if it has multiple ways of ending the scene.
 
 The fourth member `isRecurring` is set manually during creation or any time after that to toggle reccuring activations of a scene.

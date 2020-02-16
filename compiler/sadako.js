@@ -1571,7 +1571,8 @@
 	var addScene = function(id, checkStart, checkEnd, doStart, doEnd, doBefore, doAfter, isRecurring) {
 		sadako.scenes[id] = {
 			"isActive": false,
-			"hasEnded": false,
+			"hasStarted": 0,
+			"hasEnded": 0,
 			"ending": null, 
 			"isRecurring": isRecurring || false
 		}
@@ -1600,6 +1601,7 @@
 				else if (!check.checkStart()) continue;
 				
 				scene.isActive = true;
+				scene.hasStarted += 1;
 				if (check.doStart !== undefined && check.doStart !== null) check.doStart();
 				checkScenes();
 				continue;
@@ -1611,8 +1613,9 @@
 				else if (!check.checkEnd()) continue;
 				
 				scene.isActive = false;
-				scene.hasEnded = true;
+				scene.hasEnded += 1;
 				if (check.doEnd !== undefined && check.doEnd !== null) scene.ending = check.doEnd();
+				if (scene.ending === undefined) scene.ending = null;
 				checkScenes();
 				continue;
 			}
