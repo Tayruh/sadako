@@ -1222,11 +1222,11 @@ A scene comes with three members you can access for its state. These are set aut
 * `hasEnded`: Whether the scene has finished. This happens when the scene was active and then the `endCheck` conditions passed.
 * `ending`: Any value returned from `doEnding()` is stored in `ending`. This can be useful to determine which way a scene has ended if it has multiple ways of ending the scene.
 
-The fourth member `isReoccuring` is set manually during creation or any time after that to toggle reoccuring activations of a scene.
+The fourth member `isRecurring` is set manually during creation or any time after that to toggle reccuring activations of a scene.
 
 That's not all scenes can do though. To understand its use, the arguments of the `sadako.addScene` function must first be explained.
 
-`sadako.addScene(id, checkStart, checkEnd, doStart, doEnd, doBefore, doAfter, isReoccuring)`
+`sadako.addScene(id, checkStart, checkEnd, doStart, doEnd, doBefore, doAfter, isRecurring)`
 
 * `id`: The name of the scene to be defined.
 * `checkStart`: The condition(s) to check for the start of the scene. String or function.
@@ -1235,7 +1235,7 @@ That's not all scenes can do though. To understand its use, the arguments of the
 * `doEnd`: The function to be run when `checkEnd` evaluates to true.
 * `doBefore`: The function to run before every page renders while the scene is active.
 * `doAfter`: The function to run after every page renders while the scene is active.
-* `isReoccuring`: Whether the scene should be run again if the start conditions are met after the scene has ended.
+* `isRecurring`: Whether the scene should be run again if the start conditions are met after the scene has ended.
 
 `id` and `checkStart` are the only required arguments. The others can be skipped over with a value of `undefined` or `null`.
 

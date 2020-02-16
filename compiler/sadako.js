@@ -709,7 +709,7 @@
 				"isActive": false,
 				"hasEnded": false,
 				"ending": null, 
-				"isReoccuring": false
+				"isRecurring": false
 			};
 		}
 
@@ -1568,12 +1568,12 @@
 		else write(text);
 	}
 	
-	var addScene = function(id, checkStart, checkEnd, doStart, doEnd, doBefore, doAfter, isReoccuring) {
+	var addScene = function(id, checkStart, checkEnd, doStart, doEnd, doBefore, doAfter, isRecurring) {
 		sadako.scenes[id] = {
 			"isActive": false,
 			"hasEnded": false,
 			"ending": null, 
-			"isReoccuring": isReoccuring || false
+			"isRecurring": isRecurring || false
 		}
 		
 		sadako.scene_checks[id] = {
@@ -1592,7 +1592,7 @@
 		for (a in sadako.scenes) {
 			scene = sadako.scenes[a];
 			check = sadako.scene_checks[a];
-			if (scene.hasEnded && !scene.isReoccuring) continue;
+			if (scene.hasEnded && !scene.isRecurring) continue;
 			if (!scene.isActive) {
 				if (sadako.isStr(check.checkStart)) {
 					if (!eval(sadako.processScript(check.checkStart))) continue;
