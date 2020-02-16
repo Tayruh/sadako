@@ -1216,7 +1216,7 @@ To make it clear what role a scene performs, first we should look at some script
 ```
 
 
-Pretty messy. There are a lot of conditionals based on whether you've seen labels or not and it's somewhat confusing looking even though the labels are still within sight. It'd only get worse as the conditions are moved further from their original and replicated in other locations of the script. Scenes can alleviate this issue.
+Pretty messy. There are a lot of conditionals based on whether you've seen labels or not and it's somewhat confusing looking even though the labels are still within sight. It'd only get worse as the conditions are moved further from their origin and replicated in other locations of the script. Scenes can alleviate this issue.
 
 First we add the scene in javascript. This should be always be defined in your initialization script so that it's run whether you start a fresh game or load a save.
 
