@@ -1220,7 +1220,7 @@ A scene comes with three members you can access for its state. These are set aut
 
 * `isActive`: Whether we are currently in the scene. This happens when the `startCheck` conditions have passed.
 * `hasEnded`: Whether the scene has finished. This happens when the scene was active and then the `endCheck` conditions passed.
-* `ending`: Any value returned from `doEnding()` is stored in `ending`. This can be useful to determine which way a scene has ended if it has multiple ways of ending the scene.
+* `ending`: Any value returned from `doEnd()` is stored in `ending`. This can be useful to determine which way a scene has ended if it has multiple ways of ending the scene.
 
 The fourth member `isRecurring` is set manually during creation or any time after that to toggle reccuring activations of a scene.
 
