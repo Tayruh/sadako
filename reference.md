@@ -764,7 +764,7 @@ This set of tokens is reserved for choices and formats it in a specific way. The
 When displaying the choice, the text before and inside the tokens will be displayed. When the choice is selected, the text before and after the tokens will be added to the new display.
 
 ```
-* You search the office[.], but you find nothing of use.
++ You search the office[.], but you find nothing of use.
 
 (choice text): You search the office.
 (new text): You search the office, but you find nothing of use.
@@ -773,9 +773,11 @@ When displaying the choice, the text before and inside the tokens will be displa
 A handy trick is to put `[ ]` around all of the choice text. Doing so will prevent the choice text from displaying at all on the newly rendered page. This trick is used for most examples on this guide to make the example output easier to read.
 
 
-### Choice 
+### Static Choice 
 
-`*`
+`+`
+
+A static choice differs from a `*` limited choice in the fact that it is reusable. Limited choices will be explained in a little bit.
 
 To understand how choices are implemented, you must understand how depth levels work. All example code before this has been with a depth level of 1. That is to say it's at the shallowest level.
 
@@ -783,7 +785,7 @@ When the script is processed, it goes line by line through a depth level until i
 
 ```
 Hello world!
-* [Finish]
++ [Finish]
     You have selected "finish".
     The End.
     
@@ -801,7 +803,7 @@ When you select a choice, the script increases its depth by 1. Since "Finish" is
 
 ```
 Hello world!
-** [Finish]
+++ [Finish]
     The End.
 
     
@@ -813,14 +815,14 @@ In the above example, "Hello world" is level 1 but "Finish" is level 2. Because 
 
 ```
 Line depth difference is greater than 1:
-** [Finish]
+++ [Finish]
 ```
 
 Regardless of indentation, script between a choice and the next depth transition will remain with that depth. For example, the following code may not work the way you may expect.
 
 ```
 Hello world!
-* [Finish]
++ [Finish]
     You have selected "finish".
 The End.
     
@@ -839,12 +841,12 @@ The End.
 The script will display all choices within that depth level until it reaches a line within that depth that is not a choice (usually a `-` depth token that will be explained a bit later).
 
 ```
-* [Choice One] 
++ [Choice One] 
     This was the first choice.
-* [Choice Two] 
++ [Choice Two] 
     This was the second choice.
 - 
-* [Choice Three]
++ [Choice Three]
     This choice is not shown in the example.
 
     
@@ -864,13 +866,13 @@ This was choice two.
 You can place any number of choices inside each other as long you use the correct depth levels.
 
 ```
-* [Choice 1]
++ [Choice 1]
     Next choice. 
-    ** [Choice 1.1]
+    ++ [Choice 1.1]
     Another choice.
-    ** [Choice 1.2]
+    ++ [Choice 1.2]
     One more.
-* [Choice 2]
++ [Choice 2]
     Foo
 
     
@@ -887,7 +889,7 @@ Next choice.
 One more.
 ```
 
-#### Labels
+### Labels
 
 Simply displaying the choice does not increase its *seen* count, unlike other script lines assigned a label. Selecting a choice is the only way that its *seen* count is increased.
 
@@ -900,10 +902,10 @@ Jumping to a choice that has been assigned a label is the equivalent of selectin
 
     This text will not be seen.
 
-    * {test} Choice name will not display
+    + {test} Choice name will not display
         Hello!
         Times choice 1 has been seen: %:Page1.test
-    * {test2} Second choice
+    + {test2} Second choice
         Bleh
         
     - Times choice 2 has been seen: %Page1.test2
@@ -916,7 +918,14 @@ Times choice 1 has been seen: 1
 Times choice 2 has been seen: 0
 ```
 
-Choices using a `*` choice token (as opposed to a `+` static choice token) that have an associated label will disappear after being clicked once.
+Normally the game does not save progress in a choice tree. It only saves progress when you click a link that leads to a label or page (using `sadako.doLink()`). However, if you give a choice an inline label, the game will allow you to save progress after that choice has been selected.
+
+
+### Limited Choice
+
+`*`
+
+Choices using a `*` limited choice token (as opposed to a `+` static choice token) that have an associated label will disappear after being clicked once.
 
 ```
 {loop}
@@ -944,7 +953,18 @@ Choices using a `*` choice token (as opposed to a `+` static choice token) that 
 The End
 ```
 
-Choices also come with a method for a default fallthrough when all other options have been chosen. All you need to do is have a choice without a text description. Once all visible choices have been exhausted, Sadako will then select the first unnamed choice that it sees. You can use this to safely exit a loop. 
+If you have a `*` limited choice and do not assign it a label, it will throw an error during compile. The error will look something like this:
+
+```
+Choice found without associated label.
+[init] [0] [1]: "Sure!"
+```
+
+Fallback choices do not throw this error even if they do not have a label.
+
+### Fallback Choice
+
+Choices also come with a method for a default fallback when all other options have been chosen. All you need to do is have a choice without a text description. Once all visible choices have been exhausted, Sadako will then select the first unnamed choice that it sees. You can use this to safely exit a loop. 
 
 Regardless of whether this is a `*` choice, `+` static, or has an `{ }`inline label, this choice will never disappear.
 
@@ -953,6 +973,7 @@ Regardless of whether this is a `*` choice, `+` static, or has an `{ }`inline la
 * {c1} [Choice 1]
 * {c2} [Choice 2]
 * {c3} [Choice 3]
++ [Choice 4] :: 1 === 0
 *
     Exiting loop.
     >> finish
@@ -978,14 +999,9 @@ Exiting loop.
 All done.
 ```
 
-Normally the game does not save progress in a choice tree. It only saves progress when you click a link that leads to a label or page (using `sadako.doLink()`). However, if you give a choice an inline label, the game will allow you to save progress after that choice has been selected.
+Notice that `Choice 4` is never displayed because of its inline condition. Because it's not available, the loop will safely enter the fallback.
 
-    
-### Static choice
-
-`+`
-
-A choice using `*` and an associated `{ }` inline label will be hidden once it's been chosen. To avoid thus behavior, use `+` instead. A choice using `+` will never be hidden. 
+Another thing to note is that the fallback is triggered when choices above it not available. That is to say, if you were to move the fallback choice to between `Choice 2` and `Choice 3`, the fallback will trigger once `Choice 1` and `Choice 2` are removed, even if `Choice 3` is still available.
 
 
 ### Depth token
