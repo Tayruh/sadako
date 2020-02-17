@@ -1900,9 +1900,9 @@
 					if (sceneAction !== undefined && sceneAction !== null) sceneAction();
 				}
 			}
-
-			if ("ALL" in sadako.before) { sadako.before.ALL(); }
 		}
+		
+		if ("ALL" in sadako.before) { sadako.before.ALL(); }
 		if (page in sadako.before) sadako.before[page]();
 		
 		sadako.script_level += 1;
