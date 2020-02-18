@@ -50,6 +50,8 @@ The following is a short demo written in Sadako script.
     + "I don't know. What do you remember?"
     + "I can't remember anything."
     - "I remember.. falling."
+    <b><i>End of Demo</i></b>
+    << END
     
     = go_back
     + {gb} [Back]., << RETURN
