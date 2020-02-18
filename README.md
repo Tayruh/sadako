@@ -33,7 +33,6 @@ The following is a short demo written in Sadako script.
         ++ {body_ret} [Back]., << RETURN
     ~ else
         As you hobble your way to lump on the floor, it becomes increasingly clear that what you're looking at is a body. Are they dead, or just unconscious?
-        
         ++ [Poke it]
             You gently poke the body with the end of the mop. It stirs slightly.
             +++ [Poke again]
