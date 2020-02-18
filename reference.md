@@ -1022,15 +1022,15 @@ The flow of story script goes like this:
 
 ```
 This is level 1.
-* [Choice 1]
++ [Choice 1]
     Choice 1, level 2.
-    ** [Choice 1.1]
+    ++ [Choice 1.1]
     Choice 1.1, level 3.
-    ** [Choice 1.2]
+    ++ [Choice 1.2]
     Choice 1.1, level 3.
     -- Level 2 again.
     Still level 2.
-* [Choice 2]
++ [Choice 2]
     Choice 2, level 2.
 - Level 1 again.
 
@@ -1062,10 +1062,10 @@ Level 1 again.
 One convenient use of the `-` depth token is forcing a separation between multiple sets of choices, even if the line is blank.
 
 ```
-* [Choice 1]
-* [Choice 2]
++ [Choice 1]
++ [Choice 2]
 -
-* [Choice 3]
++ [Choice 3]
 
 
 // outputs
@@ -1120,9 +1120,9 @@ It's important to note that the `~` condition token acts the same as a `+` stati
 ```
 ~ if ($.money > 100)
     You can buy the following items.
-    ** [A pack of gum.]
+    ++ [A pack of gum.]
         You bought some gum.
-    ** [Some milk.]
+    ++ [Some milk.]
         You bought some milk.
 ~ else if ($.money > 50)
     You almost have enough to buy something. Why is everything so expensive?
@@ -1150,7 +1150,7 @@ You bought some gum.
 You should probably leave the store now.
 ```
     
-Notice that the depth level increased inside the conditional block, so the choices begin with two `*` choice tokens instead of one. If you only had one, the choice would be outside of the conditional block even though it was indented correctly. 
+Notice that the depth level increased inside the conditional block, so the choices begin with two `+` choice tokens instead of one. If you only had one, the choice would be outside of the conditional block even though it was indented correctly. 
 
 The following is an example of erroneous code.
     
@@ -1158,7 +1158,7 @@ The following is an example of erroneous code.
 Beginning test.
 ~ if (1 == 0)
     This text will not be seen.
-    * [This choice is not inside the block]
+    + [This choice is not inside the block]
         Test
         
 // outputs
@@ -1198,20 +1198,20 @@ To make it clear what role a scene performs, first we should look at some script
 ```
 ## example
     Your friend turns to you and asks "Would you like to go to the movies?"
-    * "Sure!"
+    + "Sure!"
         "Sweet!" They pause. "You can buy your own ticket, right?"
-        ** "Yeah, no problem."
+        ++ "Yeah, no problem."
             "Great! Let's go!"
             You and your friend go to the movies and have a great time.
-        ** {no_money} "Sorry, no."
+        ++ {no_money} "Sorry, no."
             "Ugh. I can't believe you. I'll have to go alone then." They wander away.
-    * {no} "Nah."
+    + {no} "Nah."
         "Seriously? Well, whatever. I'm going without you."
     
     ~ if (%.example.no || %.example.no_money)
         You spend the day by yourself.
         
-    * [Go Home]
+    + [Go Home]
         >> #home
         
 ## home
@@ -1224,10 +1224,10 @@ To make it clear what role a scene performs, first we should look at some script
         Your friend is happy. "That movie was great!"
 
     ~ else
-        ** [Call Friend]
+        ++ [Call Friend]
             You decide to call your friend.
             "The movie is over now. I'll be right over."
-            *** {called} [Back]
+            +++ {called} [Back]
                 << RETURN
 ```
 
@@ -1245,20 +1245,20 @@ And now we rewrite it using scenes for the condition checks.
 ```
 ## example
     Your friend turns to you and asks "Would you like to go to the movies?"
-    * "Sure!"
+    + "Sure!"
         "Sweet!" They pause. "You can buy your own ticket, right?"
-        ** "Yeah, no problem."
+        ++ "Yeah, no problem."
             "Great! Let's go!"
             You and your friend go to the movies and have a great time.
-        ** {no_money} "Sorry, no."
+        ++ {no_money} "Sorry, no."
             "Ugh. I can't believe you. I'll have to go alone then." They wander away.
-    * {no} "Nah."
+    + {no} "Nah."
         "Seriously? Well, whatever. I'm going without you."
     
     ~ if (*.alone.isActive)
         You spend the day by yourself.
         
-    * [Go Home]
+    + [Go Home]
         >> #home
         
 ## home
@@ -1271,10 +1271,10 @@ And now we rewrite it using scenes for the condition checks.
         Your friend is happy. "That movie was great!"
 
     ~ else
-        ** [Call Friend]
+        ++ [Call Friend]
             You decide to call your friend.
             "The movie is over now. I'll be right over."
-            *** {called} [Back]
+            +++ {called} [Back]
                 << RETURN
 ```
 
