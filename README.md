@@ -57,7 +57,7 @@ The following is a short demo written in Sadako script.
 
     
 ## mop
-    It's no wonder you didn't see the mop at first. Only the head of it manages to escape the darkness thanks to the smallest ray of light of escaping the masked windows.
+    It's no wonder you didn't see the mop at first. Only the head of it manages to escape the darkness thanks to the smallest ray of light escaping the masked windows.
     + {take_mop} [Take]
         [:& $.on_floor = false:]
         Laying on your side, you reach out as far as you can and manage to grab the head of the mop. You pull it towards yourself. 
