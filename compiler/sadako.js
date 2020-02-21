@@ -1662,7 +1662,9 @@
 					// return [JUMP, temp, 0, 0];
 					temp = "#" + temp;
 					if (include_text) {
-						doJump(temp, true);
+						var status = sadako.script_status;
+						doJump(label, true);
+						if (sadako.script_status === END) sadako.script_status = status;
 						return [CONTINUE];
 					}
 
