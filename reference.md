@@ -305,12 +305,12 @@ It has a few different functions when followed by keywords. They are case sensit
 
 ### Line ending
 
-`.,` 
+`;;` 
 
 Separates lines of the script. **Sadako** uses carriage returns to separate lines, so this token is only necessary if you would like to include multiple statements on the same line for convenience.
 
 ```
-Hello world!., This is the second line
+Hello world!;; This is the second line
 ```
 
 This is the same as
@@ -327,7 +327,7 @@ This is the second line
 
 This inserts a line break (`<br>` tag) into the script.
 
-**Sadako** separates script lines with either a carriage return or a line ending `.,` token. By default, the resulting text is wrapped in a `<p>` tag. The `^^` token inserts a `<br>` into the output so that the line break stays within paragraph tags.
+**Sadako** separates script lines with either a carriage return or a line ending `;;` token. By default, the resulting text is wrapped in a `<p>` tag. The `^^` token inserts a `<br>` into the output so that the line break stays within paragraph tags.
 
 ```
 Hello world!^^This is still within the paragraph.
@@ -482,12 +482,8 @@ The color of the gem was a bright green.
 * `*.foo` becomes `sadako.scenes.foo`
 * `#.foo` becomes `sadako.page_seen["foo"]`
 * `%.foo` becomes `sadako.label_seen["foo"]`
-* `~.foo` becomes `sadako.text = foo`
-* `~'foo'` becomes `sadako.text = 'foo'`
-* `~"foo"` becomes `sadako.text = "foo"`
-* `~+.foo"` becomes `sadako.text += foo`
-* `~+'foo'` becomes `sadako.text += 'foo'`
-* `~+"foo"` becomes `sadako.text += "foo"`
+* `~~=foo` becomes `sadako.text = foo`
+* `~~+'foo'` becomes `sadako.text += 'foo'`
     
 To make sense of this, a few things should be explained briefly. 
 
@@ -502,8 +498,8 @@ To make sense of this, a few things should be explained briefly.
 Script blocks will be described soon, but just know that the script inside the `[: :]` script block in this example is being executed, not displayed.
 
 ```
-You found a bright [:& ~.sadako.var.color:] gem.
-You found a bright [:& ~+.sadako.var.color:] gem.
+You found a bright [:& ~~=sadako.var.color:] gem.
+You found a bright [:& ~~+.sadako.var.color:] gem.
 
 
 // outputs (assuming sadako.var.color is "green")
@@ -511,12 +507,12 @@ green gem.
 You found a bright green gem.
 ```
 
-Notice how the first section of text is missing in the first line of the example output. This is because `~.` replaces the text up to that point. `~+.` appends onto the text.
+Notice how the first section of text is missing in the first line of the example output. This is because `~~=` replaces the text up to that point. `~~+` appends onto the text.
 
 In most situations you can stack replacement tokens, so the above can be written like so and will have the same result.
 
 ```
-You found a bright [:& ~+.$.color:] gem.
+You found a bright [:& ~~+$.color:] gem.
 ```
 
 Regarding `sadako.page_seen` and `sadako.label_seen`, every time you  transition to a new page, progress past a label in the script, or select a choice that is preceded by a label, the counter for that page or label is increased by 1. This is convenient for checking whether you've seen a part of the script and how many times.

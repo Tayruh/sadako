@@ -1,5 +1,5 @@
 /* Pages are defined with the ## token. */
-## init
+## start
 
 	Welcome.
 
@@ -70,13 +70,7 @@
 		// We reset the depth level to 2, effectively ending the condition
 		// block. This is the - depth token's sole purpose. It can be used
 		// inline as it is here, or on a line by itself.
-		// 
-		// Also note the use of $. and $: here. $. accesses the variable and $:
-		// returns the value. Because of this, we can use $: directly inside a
-		// string like we do here.
-		-- [:& $.fname = "$:name $:lname":]
-		
-		Your name is $:fname. Is this correct?
+		-- Your name is $:name $:lname. Is this correct?
 		
 		// Remember: We're level 2, so two + choice tokens.
 		// 
@@ -100,7 +94,7 @@
 
 	// This is the first depth token to be seen after selecting "Yes", so the
 	// script will resume here.
-	- [:& $.demo_complete = false:]
+	- [:& $.fname = $.name + " " + $.lname:]
 	
 	It's a pleasant rainy day outside. You're spending it indoors with your sister Erin.
 
@@ -132,7 +126,7 @@
 	
 	// You can do single line conditions by adding :: to the end of the line
 	// followed by the condition.
-	<b><i>You've reached the end of the demo! Thanks for playing!</i></b> :: $.demo_complete
+	<b><i>You've reached the end of the demo! Thanks for playing!</i></b> :: %.remote.gave
 	
 	// Notice that most of these links start with %, which means they're for
 	// labels. Sadako will automatically turn something like 'couch' into
@@ -175,20 +169,10 @@
 		<< RETURN
 
 	= erin_watching
-
-	// The *. token is a shortcut for the sadako.scenes array. The values in
-	// this array will be set automatically based on conditions specified in
-	// your javascript initialization (games.js, in our case).
-	// 
-	// Scenes are a handy device for making complicated condition checks
-	// uncomplicated.  Instead of having to remember that the label
-	// 'erin.talked' is what begins Erin waiting for you to give her a remote,
-	// it's much clearer to reference a scene like 'waiting_for_remote'.
-	// 
-	// Scenes also come with their own members to chech their current condition.
-	// In this line, we check to see if the  scene has been activated and then
-	// ended.
-	~ if (*.waiting_for_remote.hasEnded)
+	// Any time a = label is seen, a line with a {} label is seen, or a choice
+	// with a {} is clicked, its label_seen count is increased. All labels start
+	// with a value of zero. You can access its value with %. like below.
+	~ if (%.remote.gave)
 		Erin is completely absorbed in her show and it doesn't look like she wants to be disturbed any further.
 		>> go_back
 	-
@@ -203,17 +187,11 @@
 	= couch
 	The couch isn't anything special, but it's very comfortable and faces TV at the perfect angle. Erin still prefers the floor, for whatever reason.
 	
-	// Any time a = label is seen, a line with a {} label is seen, or a choice
-	// with a {} is clicked, its label_seen count is increased. All labels start
-	// with a value of zero. You can access its value with %. like below.
 	~ if (%.living_room.searched_couch)
 		You're pretty positive there's nothing else in the couch.
 		
 	// Condition blocks support 'else if' and 'else' statements.
-	// 
-	// This is also another scene check. This time we're checking to see if the
-	// scene is currently active.
-	~ else if (*.waiting_for_remote.isActive)
+	~ else if (%.erin.talked)
 		There's really only one place you can think of where the remote would be: in the black hole that is the space between the couch cushions.
 		
 		++ {searched_couch} [Search couch]
@@ -274,15 +252,15 @@
 	= go_back
 	/*
 		Sadako script separates lines using linebreaks, but you can induce your
-		own linebreak using the ., token (that's a period and comma together).
+		own linebreak using the ;; token (that's a period and comma together).
 		This is useful for minimizing whitespace on simple lines like this one.
 	
-		A quick note about the // comment token: The ., linebreak token takes
+		A quick note about the // comment token: The ;; linebreak token takes
 		priority over the // comment token, but not block comments like this
 		one. Also be aware that single line comments only work at the
 		start of a line.
 	*/
-	+ {gb} [Back]., << RETURN
+	+ {gb} [Back];; << RETURN
 	
 ## erin
 
@@ -297,7 +275,7 @@
 	// 'erin_watching' into a subroutine.
 	>> living_room.erin_watching
 
-	- >> remote :: *.waiting_for_remote.isActive
+	- >> remote :: %.erin.talked
 
 	// $:name write the value of sadako.var.name into the text.
 	// 
@@ -387,7 +365,7 @@
 	"Hey. Did you get the remote yet?"
 
 	= go_back
-	+ {gb} [Back]., >> #living_room
+	+ {gb} [Back];; >> #living_room
 	
 ## remote
 	It's the remote for the television. Erin is looking for this.
@@ -427,4 +405,4 @@
 			// a link. Therefore an '<< END' call is necessary in order to
 			// prevent it from displaying the following 'Back' choice.
 			<< END
-	+ [Back]., >> #inventory
+	+ [Back];; >> #inventory

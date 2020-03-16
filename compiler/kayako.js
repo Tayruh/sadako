@@ -1,4 +1,4 @@
-/* global */
+// version: 0.9.3
 
 (function(sadako) {
 	
@@ -162,7 +162,7 @@
 						"text": text //parseParts(text)
 					}
 					*/
-					line = {"t": text };
+					line = {"t": text.trim() };
 					if (lines[a][b][2] !== null) line.k = lines[a][b][2];
 
 					if (line.k === sadako.token.label) {
@@ -225,7 +225,7 @@
 			var storyData = {};
 			var pages = text.split(sadako.token.page);
 
-			var a, b, c, title, data, temp, temp2, temp3, index, lines;
+			var a, b, c, title, data, temp, temp2, temp3, index, lines, script;
 			for (a = 0; a < pages.length; ++a) {
 				text = pages[a];
 				if (!text.trim().length) continue;
@@ -234,26 +234,37 @@
 				lines = [];
 
 				temp = text.split(sadako.token.script_open);
-				temp2 = temp.shift().split(".,");
-
+				
+				// add lines before first script block to array
+				temp2 = temp.shift().split(sadako.token.line);
 				for (b = 0; b < temp2.length; ++b) {
 					lines = lines.concat(temp2[b].split("\n"));
 				}
 
+				// index through script blocks. we do this to retain line breaks in script blocks
 				for (b = 0; b < temp.length; ++b) {
 					index = temp[b].indexOf(sadako.token.script_close);
-					temp2 = temp[b].substring(index).split(".,");
-
+					
+					// collect after script block 
+					temp2 = temp[b].substring(index).split(sadako.token.line);
 					temp3 = [];
 					for (c = 0; c < temp2.length; ++c) {
 						temp3 = temp3.concat(temp2[c].split("\n"));
 					}
+					
+					// remove leading and trailing spaces from script lines
+					script = temp[b].substring(0, index).split("\n");
+					for (c = 0; c < script.length; ++c) {
+						script[c] = script[c].trim();
+					}
+					
+					// add script block and rest of line after script block to end of previous line 
+					lines[lines.length - 1] += sadako.token.script_open + script.join("\n") + temp3.shift();
 
-					lines[lines.length - 1] += sadako.token.script_open + temp[b].substring(0, index) + temp3.shift();
+					// add lines after script block
 					lines = lines.concat(temp3);
 				}
 
-				// title = text.substring(0, text.indexOf(sadako.token.line)).trim();
 				title = lines.shift().trim();
 
 				if (title.length < 1) {

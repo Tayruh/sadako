@@ -37,6 +37,6 @@ The CSS, while not necessary, styles the choices. The `choice` class is predefin
 
 `sadako.init()` initializes the **Sadako** library. The first argument if provided is a string. If the string has `#` as its first character (like `"#source"`), it uses the innerHTML of that element as the source code for the story. If it doesn't start with `#`, it treats the string as a JSON string containing the story.
 
-`sadako.startGame()` starts the game, as you would imagine. The only argument is a string containing the page on which to begin the game. If not provided, it attempts to load page `“1"`.
+`sadako.startGame()` starts the game, as you would imagine. The only argument is a string containing the page on which to begin the game. If not provided, it attempts to load page `“start"`.
 
 That's basically it. You now have a running game.

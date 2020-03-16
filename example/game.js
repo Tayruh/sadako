@@ -183,6 +183,6 @@
 			sadako.dom("#banner-status").innerHTML = "A Rainy Day";
 			
 			// Begin the game starting with the 'init' page.
-			sadako.startGame("init");
+			sadako.startGame();
 		};
 	}(window.sadako, window.game = window.game || {}));

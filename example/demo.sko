@@ -1,4 +1,4 @@
-## init
+## start
 	Welcome.
 
 	= enter_name
@@ -17,15 +17,11 @@
 		~~ if (!$.name || !$.lname)
 			Name is invalid.
 			>> enter_name
-		
-		-- [:& $.fname = "$:name $:lname":]
-		
-		Your name is $:fname. Is this correct?
+		-- Your name is $:name $:lname. Is this correct?
 		++ {y} [Yes]
 		++ [No]
 			>> enter_name
-			
-	- [:& $.demo_complete = false:]
+	- [:& $.fname = $.name + " " + $.lname:]
 	
 	It's a pleasant rainy day outside. You're spending it indoors with your sister Erin.
 	>> #living_room
@@ -36,8 +32,7 @@
 ## living_room ~:room
 	(:title "Living Room":) 
 
-	<b><i>You've reached the end of the demo! Thanks for playing!</i></b> :: $.demo_complete
-	
+	<b><i>You've reached the end of the demo! Thanks for playing!</i></b> :: %.remote.gave
 	Your family isn't rich but they provide well enough, as is visible by this room. It comes with your usual furnishings like a [:% couch:] and a [:% television:]. In the middle of the room is a large circular [:% rug @: throw rug:]. The wall to the right of the couch houses a set of [:% windows:] overlooking the yard.
 	
 	[:erin @: Erin:] is here, seated comfortably on the throw rug and watching the TV.	
@@ -53,7 +48,7 @@
 		<< RETURN
 
 	= erin_watching
-	~ if (*.waiting_for_remote.hasEnded)
+	~ if (%.remote.gave)
 		Erin is completely absorbed in her show and it doesn't look like she wants to be disturbed any further.
 		>> go_back
 	-
@@ -65,7 +60,7 @@
 	~ if (%.living_room.searched_couch)
 		You're pretty positive there's nothing else in the couch.
 		
-	~ else if (*.waiting_for_remote.isActive)
+	~ else if (%.erin.talked)
 		There's really only one place you can think of where the remote would be: in the black hole that is the space between the couch cushions.
 		
 		++ {searched_couch} [Search couch]
@@ -92,12 +87,12 @@
 	- ~:delay:0
 
 	= go_back
-	+ {gb} [Back]., << RETURN
+	+ {gb} [Back];; << RETURN
 	
 ## erin
 	>> living_room.erin_watching
 
-	- >> remote :: *.waiting_for_remote.isActive
+	- >> remote :: %.erin.talked
 
 	Erin looks up at you. "Hey, $:name."
 
@@ -149,7 +144,7 @@
 	"Hey. Did you get the remote yet?"
 
 	= go_back
-	+ {gb} [Back]., >> #living_room
+	+ {gb} [Back];; >> #living_room
 	
 ## remote
 	It's the remote for the television. Erin is looking for this.
@@ -170,4 +165,4 @@
 			
 			[:& sadako.doLink("#inventory") @: Back:] ~:choice
 			<< END
-	+ [Back]., >> #inventory
+	+ [Back];; >> #inventory
