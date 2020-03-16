@@ -8,7 +8,7 @@ A reference and guide on how to use Sadako script can be viewed [here](reference
 
 The following is a short demo written in Sadako script.
 ```
-## init
+## start
     [:& $.on_floor = true:]
     >> #main_room
 
@@ -30,9 +30,10 @@ The following is a short demo written in Sadako script.
             ~~~ else
                 You're not getting up on your own. Maybe there's something around in the darkness that can help support your weight.
             --- >> go_back
-        ++ {body_ret} [Back]., << RETURN
+        ++ {body_ret} [Back];; << RETURN
     ~ else
         As you hobble your way to lump on the floor, it becomes increasingly clear that what you're looking at is a body. Are they dead, or just unconscious?
+        
         ++ [Poke it]
             You gently poke the body with the end of the mop. It stirs slightly.
             +++ [Poke again]
@@ -53,7 +54,7 @@ The following is a short demo written in Sadako script.
     << END
     
     = go_back
-    + {gb} [Back]., << RETURN
+    + {gb} [Back];; << RETURN
 
     
 ## mop
@@ -62,7 +63,7 @@ The following is a short demo written in Sadako script.
         [:& $.on_floor = false:]
         Laying on your side, you reach out as far as you can and manage to grab the head of the mop. You pull it towards yourself. 
         You remove the mop head the handle and brace the handle against the floor. You pull and then push down on the handle as you unsteadily rise to your feet. You continue to rest against it as a makeshift cane.        
-        ++ {take_ret} [Back]., >> #main_room
+        ++ {take_ret} [Back];; >> #main_room
     + {mop_ret} [Back]
         >> #main_room
  ```
