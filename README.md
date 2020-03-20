@@ -6,6 +6,8 @@ A guide on how to setup an HTML page to being working with Sadako can be viewed 
 
 A reference and guide on how to use Sadako script can be viewed [here](reference.md).
 
+The JavaScript reference is [here](javascript_reference.md)
+
 The following is a short demo written in Sadako script.
 ```
 ## start
