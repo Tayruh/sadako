@@ -12,41 +12,275 @@ The first method is autosaving which can be toggled on and off by means of the b
 
 You can limit the amount of history states with `sadako.history_limit`. The default is `10`. You can disable rewinding the history altogether by setting the value to `0`.
 
+### Variables
+
+#### sadako.savename
+
+String containing filename of saves. Default is `sadako`, which saves the file as `sadako_savedata_1`, `sadako_savedata_auto`, etc.
+
+#### sadako.text_delay
+
+Float value containing milliseconds to delay the displaying of each paragraph.
+
+#### sadako.output_id
+
+String containing the HTML element ID to output the story text to. Value must begin with a `#`. Default value is `#output`.
+
+#### sadako.tags
+
+Object list containing tags associated with pages.
+
+For example, `## page1 ~:title:Page 1 ~:outside` would become:
+
+```
+sadako.tags["page1"] = {
+    "title": "Page 1", 
+    "outside": true
+};
+```
+
+#### sadako.page_seen
+
+Object list containing count of how many times a page has been seen.
+
+Example:
+```
+// javascript
+sadako.page_seen["page1"]
+
+// sadadko script
+#.page1
+```
+
+#### sadako.label_seen
+
+Object list containing count of how many times a label has been seen.
+
+Example:
+```
+// javascript
+sadako.label_seen["kitchen.drawer"]
+
+// sadako script
+%.kitchen.drawer
+```
+
+#### sadako.macros
+
+Object list containing functions associated with sadako script `(:` `:)` macro tags.
+
+```
+// javascript
+sadako.macros.add = function(x, y) { sadako.write(x + y); }
+
+// sadako script
+(:add 1, 2:)
+```
+
+The above macro would write `"3"` to the output text.
+
+
+#### sadako.in_dialog
+
+Returns `true` if the script is currently being run inside a dialog window, and `false` if not.
+
+#### sadako.onDialogClose
+
+If defined, this function will be called when the dialog is closed. The function is cleared automatically by default. If you wish to retain this function, return `true`.
+
+```
+sadako.onDialogClose = function() {
+    sadako.doLink("Page2");
+    return true; // prevents dialog close function from being cleared
+}
+```
+
+#### sadako.page
+
+The page that the script is currently on.
+
+#### sadako.var
+
+The variable object that holds the user variables and is saved to the save file.
+
+`sadako.var.bleh` is the same as `$.bleh` in sadako script. Use `$:bleh` to write its value into the output.
+
+#### sadako.tmp
+
+The variable object that holds the temporary user variables. This is not saved and the object will be cleared once a link is clicked or a choice is selected.
+
+`sadako.tmp.bleh` is the same as `_.bleh` in sadako script. Use `_:bleh` to write its value into the output.
+
+#### sadako.before
+
+An object list of functions. Before rendering any story script in a choice, page, or label section, the function named after that page will run. A function called `ALL` will run for every page. A useful function to work alongside this one is `sadako.isPageTop()`, which checks to see if you're on a fresh page (ie. not having jumped to a label section or inside a choice section).
+
+```
+sadako.before.kitchen = function() {
+    if (sadako.isPageTop()) sadako.write("The dishwaher is humming away.");
+};
+
+sadako.before.ALL = function() {
+     if ("snowing" in sadako.tags[sadako.page]) sadako.write("The snow falls gently around you.");
+}
+```
+
+#### sadako.after
+
+Same concept as `sadako.before`, except it is only called after the final story script section has rendered. In other words, it's only called once and only for the page where the scripts ends on.
+
+
+#### sadako.autosave_enabled
+
+Saves state to an autosave save slot if set to `true`. Default is `false`.
+
+Autosave is saved whenever possible (see `Saving` details above) and reloaded automatically when the game starts if the value is set to `true`.
+
 ### Functions
 
 There are not many functions that you need to run **Sadako**. In fact, the only two you absolutely *need* are `sadako.init()` and `sadako.startGame()` as mentioned above. However, there are a few you may use often to enhance the capability of your script, and also a handful of helper functions for convenience.
 
-#### sadako.doLink(label)
 
-`label` (string): Page or label to jump to. Page must begin with `#`.
+#### sadako.init(story, id)
+
+This function must be called before anything. It initializes **Sadako**. 
+
+* `story` (string): If given, this string can either be the ID of the HTML element (preferably a `textarea`) to take the script from, or a string containing the script itself. By default, the value is `#source`, so **Sadako** grabs the story from that HTML element. If `sadako.story` is already defined, this value is ignored.
+* `id` (string): If given, it is the ID of the HTML element to use for output. Otherwise it uses the value in `sadako.output_id`.
+
+
+#### sadako.startGame(page)
+
+Begins the game. If "page" is provided, it will start there instead of `"start"`. If autosave is enabled, it will load the autosave.
+
+* page (string): Page to begin game on.
+
+#### sadako.saveGame(saveSlot, no_confirm)
+
+Saves the game to local storage.
+
+* `saveSlot` (integer): Value to differentiate between different saves storedlocally
+* `no_confirm` (boolean): `true`: prevents notifications on success or fail, `false`: allows notifications
+
+#### sadako.loadGame(saveSlot, no_confirm)
+
+Loads the data from local storage. Returns `true` if loaded successfully, false if not.
+
+* `loadSlot` (integer): Value to differentiate between different saves stored locally
+* `no_confirm` (boolean): `true`: prevents notifications on success or fail, `false`: allows notifications
+
+#### sadako.write(output)
+
+Adds text to the lines array to be queued for output. This is the simplest way to write to the output outside of sadako script. If inside a sadako script `[: :]` script block, you can use the `~~=` and `~~+` tokens to write to the output instead.
+
+* `output` (string or array): String or array of strings to added to output.
+
+#### sadako.addChoice(name, command, tags)
+
+Adds a choice to the global choice array.
+
+* `name` (string): Choice text. Be aware that formatting using [] will not work.
+* `command` (string): String to evaluate when choice is selected
+* `tags` (string): A string of classes in script format. example: `"~:class:completed ~:title:blargh"`
+
+#### sadako.writeOutput()
+
+Writes everything in the global lines array and choices array to the output. If `sadako.write()` and `sadako.addChoice()` are being used outside of sadako script (ie. in a javascript file), this function must be called for the output to display.
+
+#### sadako.overwrite(text, choices)
+
+Rewrites the output, along with adding choices if given. Global lines and choices arrays are written to the output.
+
+* `text` (string or array): text or array of text to display
+* `choices` (array): array of choice arrays to pass to the `addChoice()` function. A single choice is an array containing the arguments passed to `sadako.addChoice()`. See the `addChoice()` function for more details.
+
+Example:
+```
+sadako.overwrite("Test string", [["choice 1", "alert('hello world')"], ["choice 2", "sadako.doLink('#page2')", "~:class:info"]]);
+```
+
+#### sadako.writeLink(name, command, broken)
+
+Returns an html link that executes the command on click.
+
+* `name` (string): Link name
+* `command` (string): Command to be evaluated on click
+* `broken` (boolean): If `true`, displays the link using the 'broken' class
+
+#### sadako.doLink(label)
 
 This is the function called when clicking on a link created by a script block that leads to a page or label. Calling the function for javascript acts the same way: it clears the output, creates a save state, create a history state, redirects to the page or label, and increases its `page_seen` or `label_seen`count.
 
+* `label` (string): Page or label to jump to. Page must begin with `#`.
+
 #### sadako.processScript(text)
-
-`text` (string): Text to be processed.
-
-`returns` (string): HTML string resulting from sadako script tag replacements.
 
 This function renders the script tags inside a string as its equivalent HTML and javascript. This does not work correctly with depth tokens like `-`, `=`, `~`, `*`, and `+`, since they are rendered at compile time.
 
+* `text` (string): Text to be processed.
+* `returns` (string): HTML string resulting from sadako script tag replacements.
+
+#### sadako.isPageTop()
+
+Returns `true` if the script started on the first line of a page.
+
+#### sadako.end()
+
+The equivalent of calling `>> END` in sadako script.
+
+#### sadako.abort()
+
+The equivalent of calling `>> ABORT` in sadako script.
+
+#### sadako.run()
+
+The script won't resume if its status is `END` or `ABORT`. Call this to set it to `RUN` again and resume processing.
+
+#### sadako.doReturn()
+
+The equivalent of calling `>> RETURN`.
+
+#### sadako.back()
+
+Sends the story back one history state.
+
+#### sadako.isToken(text, token)
+
+Check the beginning of a string for token text. If it matches, it returns the text following the token. If it doesn't match, it returns `false`.
+    
+* `text` (string): Text to compare.
+* `token` (string): Token to look for.
+
+#### sadako.addScene(id, checkStart, checkEnd, doStart, doEnd, doBefore, doAfter, isRecurring)
+
+Described in detail in the reference manual. This function defines a scene to be used in sadako script. Every "check" and "do" argument in this function can be either a string of sadako script or a javascript function.
+
+* `id` (string): The name of the scene to be defined.
+* `checkStart` (string or function): The condition(s) to check for the start of the scene.
+* `checkEnd` (string or function): The condition(s) to check for the end of the scene.
+* `doStart` (string or function): The script to be run when `checkStart` evaluates to `true`.
+* `doEnd` (string or function): The script to be run when `checkEnd` evaluates to `true`.
+* `doAfter` (string or function): The script to run after every page renders while the scene is active.
+* `doBefore` (string or function): The script to run before every page renders while the scene is active.
+* `isRecurring` (boolean): Whether the scene should be run again if the start conditions are met after the scene has ended.
+
 #### sadako.setUpDialog(dialog_id, title_id, elements) 
-
-`dialog_id` (string): ID of HTML element for text output of dialog box.
-
-`title_id` (string): Not required. ID of HTML element to display title of dialog box.
-
-`elements` (array of strings): IDs of elements to be shown and hidden.
 
 This sets up the dialog for display. You only need to call thing function once. The elements in the `elements` array will be shown or hidden every time you call `sadako.showDialog()` and `sadako.hideDialog()`.
 
+* `dialog_id` (string): ID of HTML element for text output of dialog box.
+* `title_id` (string): Not required. ID of HTML element to display title of dialog box.
+* `elements` (array of strings): IDs of elements to be shown and hidden.
 
-### Helper Functions
+#### sadako.showDialog()
 
-#### sadako.dom(id)
+Displays the dialog window.
 
-`id` (string): ID or class of page element. An ID must begin with `#` and a class name with `.`. 
+* `title` (string): Text to display in title bar
+* `text` (string): Text to display in dialog body
 
-`returns` (object or array): HTML element or array of HTML elements with the assigned ID or class.
+#### sadako.closeDialog(cleanup)
 
-This is the equivalent of writing `document.getElementById(id)` and `document.getElementByClassName(name)`. I just find it easier to work with.
+Closes the dialog window.
+
+* `cleanup` (boolean): if true, clears lines and choices arrays.
