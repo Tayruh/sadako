@@ -90,7 +90,7 @@ If defined, this function will be called when the dialog is closed. The function
 
 ```
 sadako.onDialogClose = function() {
-    sadako.doLink("Page2");
+    sadako.doLink("#page2");
     return true; // prevents dialog close function from being cleared
 }
 ```
@@ -204,14 +204,15 @@ sadako.overwrite("Test string", [["choice 1", "alert('hello world')"], ["choice 
 Returns an html link that executes the command on click.
 
 * `name` (string): Link name
-* `command` (string): Command to be evaluated on click
-* `broken` (boolean): If `true`, displays the link using the 'broken' class
+* `command` (string): Javascript command to be evaluated on click. 
+If the command begins with `#` (ie. `#page2`) or `%` (ie. `%page2.test`), it will jump to that page or label using `sadako.doLink()`. If the page or label does not exist, `broken` will be set to `true`.
+* `broken` (boolean): If `true`, displays the link using the `broken` class.
 
 #### sadako.doLink(label)
 
 This is the function called when clicking on a link created by a script block that leads to a page or label. Calling the function for javascript acts the same way: it clears the output, creates a save state, create a history state, redirects to the page or label, and increases its `page_seen` or `label_seen`count.
 
-* `label` (string): Page or label to jump to. Page must begin with `#`.
+* `label` (string): Page or label to jump to. Page must begin with `#`. A label can begin with `%` but is not required.
 
 #### sadako.processScript(text)
 
