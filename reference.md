@@ -65,7 +65,7 @@ When you redirect to a page, **Sadako** will proceed line by line through the sc
 
 Every time you're redirected to a page that differs from the current page, the *seen* counter increases by 1. This is stored in `sadako.page_seen["Page1"]` (using "Page1" as an example). This value can be used to check whether a page has been visited and how many times.
 
-#### Tags ####
+#### Tags
 
 Pages may also have tags using the `~:` tag token after the page name.
 
@@ -103,7 +103,11 @@ A label marks a line of the script so that you can redirect the script to it whe
 
 The actual use of the `{ }` label will be described in the `>>` jump token and `<<` return token descriptions.
 
-Whenever the script processes a line with the `{ }` label tokens, the *seen* counter for that label is increased by 1. This is stored in `sadako.label_seen["foo"]` (using "foo" as an example). This value can be used to check whether a label has been seen and how many times. The one caveat to this is that a choice with a label only increases the seen count if it is selected or jumped to, not when it is displayed.
+Whenever the script processes a line with the `{ }` label tokens, the *seen* counter for that label is increased by 1. This is stored in `sadako.label_seen["foo"]` (using "foo" as an example), which is abbreviated to `%.foo` in sadako script. This value can be used to check whether a label has been seen and how many times. 
+
+An important thing to note is that the label seen count is increased *after* the script line is processed. Also, a choice with a label only increases the seen count if it is selected or jumped to, not when it is displayed. Likewise, a condition block with a label only increases its label seen if the condition is true.
+
+Inline labels are not allowed on condition blocks and will be stripped during compiling.
 
 Because of the way that page names, label names, and variable names are handled by **Sadako**, it is recommended that you do not include spaces or periods in them. Use underscores, dashes, or camel-casing instead.
 
@@ -1183,6 +1187,8 @@ This gives the following error.
 story: [Page1] [0] [2]
 eval: (1 == 1)
 ```
+
+Be aware `{ }` inline labels are not allowed with condition blocks and will be striping during compiling.
 
 
 ### Scenes

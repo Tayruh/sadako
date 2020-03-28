@@ -123,7 +123,7 @@
 			var parts, line;
 
 			var choices = [];
-			var text, label;
+			var text, label, temp;
 
 			var depth_seen, choice_seen;
 
@@ -140,31 +140,27 @@
 
 					label = null;
 
-					if (sadako.isToken(text, sadako.token.label_open) !== false && checkConflicts(text, sadako.token.label_open)) {
-						label = text.substring(sadako.token.label_open.length, text.indexOf(sadako.token.label_close)).trim();
-						if (label.length) {
-							label = page + "." + label;
-							if (label in sadako.labels) {
-								console.error("Duplicate label for '" + label + "' found!");
-							}
-							else {
-								
-								sadako.labels[label] = [page, a, b];
-								sadako.label_seen[label] = 0;
-							}
-						}
-						text = text.substring(text.indexOf(sadako.token.label_close) + sadako.token.label_close.length).trimStart();
+					if ((temp = sadako.isToken(text, sadako.token.label_open)) !== false && checkConflicts(text, sadako.token.label_open)) {
+						label = temp.substring(0, temp.indexOf(sadako.token.label_close));
+						text = temp.substring(label.length + 1);
+						label = label.trim();
 					}
-
-					/*
-					line = {
-						"token": lines[a][b][2],
-						"text": text //parseParts(text)
-					}
-					*/
+					
 					line = {"t": text.trim() };
+					
 					if (lines[a][b][2] !== null) line.k = lines[a][b][2];
-
+					
+					if (label && line.k !== sadako.token.cond_block) {
+						label = page + "." + label;
+						if (label in sadako.labels) {
+							console.error("Duplicate label for '" + label + "' found!");
+						}
+						else {
+							sadako.labels[label] = [page, a, b];
+							sadako.label_seen[label] = 0;
+						}
+					}
+					
 					if (line.k === sadako.token.label) {
 						if (text.length < 1) continue;
 						if (!depth_seen) {
@@ -208,7 +204,7 @@
 						choice_seen = true;
 					}
 
-					if (label) line.l = label;
+					if (label && line.k !== sadako.token.cond_block) line.l = label;
 					if (line.k === sadako.token.choice && !label && text.length > 1) console.error(sadako.format("Choice found without associated label.\n[{0}] [{1}] [{2}]: {3}", page, a, b, text));
 
 					parts.push(line);
