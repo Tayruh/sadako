@@ -49,8 +49,6 @@
 
 			if (!lines[a].length) continue;
 
-			if (sadako.isToken(lines[a], sadako.token.comment) !== false) continue;
-
 			match = null;
 			// allow starting tokens to be escaped with a backslash
 			if (lines[a].charAt(0) === "\\")
@@ -225,7 +223,6 @@
 			for (a = 0; a < pages.length; ++a) {
 				text = pages[a];
 				if (!text.trim().length) continue;
-				if (sadako.isToken(text, sadako.token.comment) !== false) continue;
 
 				lines = [];
 
@@ -240,6 +237,10 @@
 				// index through script blocks. we do this to retain line breaks in script blocks
 				for (b = 0; b < temp.length; ++b) {
 					index = temp[b].indexOf(sadako.token.script_close);
+					if (index === -1) {
+						console.error("Error: Script block open token found without closing token.\nScript: " + temp[b]);
+						continue;
+					}
 					
 					// collect after script block 
 					temp2 = temp[b].substring(index).split(sadako.token.line);
@@ -297,11 +298,24 @@
 			
 			var before, after;
 
+			// remove block comments
 			while (text.indexOf(sadako.token.comment_open) !== -1) {
 				before = text.substring(0, text.indexOf(sadako.token.comment_open));
 				after = text.substring(text.indexOf(sadako.token.comment_close) + sadako.token.comment_close.length);
 				text = before + after;
 			}
+			
+			var a, line;
+			before = text.split("\n");
+			after = [];
+			
+			// remove inline comments
+			for (a = 0; a < before.length; ++a) {
+				line = before[a].split(sadako.token.comment, 1)[0];
+				if (!line.trim().length) continue;
+				after.push(line);
+			}
+			text = after.join("\n");
 
 			return text;
 		}

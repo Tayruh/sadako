@@ -1,8 +1,8 @@
 
 (function(sadako) {
 	
-	sadako.version = "0.9.5";
-	sadako.kayako_version = "0.9.3";
+	sadako.version = "0.9.7";
+	sadako.kayako_version = "0.9.4";
 
 	var localStorage;
 

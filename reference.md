@@ -20,9 +20,12 @@ So write whatever you want.
 
 `//`
 
-Any line beginning with this token will be ignored by the script.
+All text and scripting between this token and the end of the line will be ignored by **Sadako**.
 
-Unlike JavaScript, a `//` comment token will never comment out half a line of text. If you need to do this, use the `/* */` comment block.
+```
+This text will display. // This text will not display.
+This text will also display.
+```
 
 
 ### Escape
