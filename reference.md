@@ -1301,10 +1301,10 @@ That's not all scenes can do though. To understand its use, the arguments of the
 * `id`: The name of the scene to be defined.
 * `checkStart`: The condition(s) to check for the start of the scene. String or function.
 * `checkEnd`: The condition(s) to check for the end of the scene. String or function.
-* `doStart`: The function to be run when `checkStart` evaluates to true.
-* `doEnd`: The function to be run when `checkEnd` evaluates to true.
-* `doBefore`: The function to run before every page renders while the scene is active.
-* `doAfter`: The function to run after every page renders while the scene is active.
+* `doStart`: The script to be run when `checkStart` evaluates to true. String or function.
+* `doEnd`: The script to be run when `checkEnd` evaluates to true. String or function.
+* `doBefore`: The script to run before every page renders while the scene is active. String or function.
+* `doAfter`: The script to run after every page renders while the scene is active. String or function.
 * `isRecurring`: Whether the scene should be run again if the start conditions are met after the scene has ended.
 
 `id` and `checkStart` are the only required arguments. The others can be skipped over with a value of `undefined` or `null`.

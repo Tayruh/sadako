@@ -2075,7 +2075,10 @@
 			for (a in sadako.scenes) {
 				sceneAction = sadako.scene_checks[a].doBefore;
 				if (sadako.scenes[a].isActive) {
-					if (sceneAction !== undefined && sceneAction !== null) sceneAction();
+					if (sceneAction !== undefined && sceneAction !== null) {
+						if (isStr(sceneAction)) eval(processScript(sceneAction));
+						else sceneAction();
+					}
 				}
 			}
 		}
@@ -2109,7 +2112,10 @@
 			for (a in sadako.scenes) {
 				sceneAction = sadako.scene_checks[a].doAfter;
 				if (sadako.scenes[a].isActive) {
-					if (sceneAction !== undefined && sceneAction !== null) sceneAction();
+					if (sceneAction !== undefined && sceneAction !== null) {
+						if (isStr(sceneAction)) eval(processScript(sceneAction));
+						else sceneAction();
+					}
 				}
 			}
 
