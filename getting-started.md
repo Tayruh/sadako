@@ -15,7 +15,7 @@
     <body>
         <div id="output"></div>
         <textarea id="source" style="display:none">
-            ## demo
+            ## start
                 Hello world
                 + The End
         </textarea>
@@ -24,7 +24,7 @@
     <script src="kayako.js" type="text/javascript"></script>
 	<script type="text/javascript">
         sadako.init();
-        sadako.startGame("demo");
+        sadako.startGame();
     </script>
 </html>
 ```
@@ -35,7 +35,7 @@ The `source` textarea tag is where you write the story. It's recommended to use 
 
 The CSS, while not necessary, styles the choices. The `choice` class is predefined in **Sadako**'s default text display functions. The hypertext links do not use `href`, so adding `cursor: pointer` makes the mouse cursor treat it like a link again.
 
-`sadako.init()` initializes the **Sadako** library. The first argument if provided is a string. If the string has `#` as its first character (like `"#source"`), it uses the innerHTML of that element as the source code for the story. If it doesn't start with `#`, it treats the string as a JSON string containing the story.
+`sadako.init()` initializes the **Sadako** library. By default, Sadako uses the HTML element with the ID `source` for its story script.
 
 `sadako.startGame()` starts the game, as you would imagine. The only argument is a string containing the page on which to begin the game. If not provided, it attempts to load page `“start"`.
 
