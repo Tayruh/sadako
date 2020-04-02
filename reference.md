@@ -1258,7 +1258,7 @@ story: [Page1] [0] [2]
 eval: (1 == 1)
 ```
 
-Be aware `{ }` inline labels are not allowed with condition blocks and will be striping during compiling.
+Be aware `{` `}` inline labels are not allowed with condition blocks and will be stripped during compiling.
 
 
 ## Scenes
