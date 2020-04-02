@@ -1,6 +1,6 @@
 
 (function(sadako) {
-	
+
 	sadako.version = "0.9.7";
 	sadako.kayako_version = "0.9.4";
 
@@ -377,7 +377,7 @@
 
 			Returns (boolean): true if value in array, and false if not.
 		*/
-		
+
 		return (list.indexOf(id) !== -1);
 
 		/*
@@ -490,7 +490,7 @@
 			Returns (string): String representation of the array.
 		*/
 
-		if (!isStr(quote)) { quote = '"'; }
+		if (!quote) { quote = '"'; }
 		var result = "";
 		var a;
 		for (a = 0; a < list.length; ++a) {
@@ -505,12 +505,12 @@
 	var cap = function(str) {
 		/*
 			Capitalizes the first letter of a string.
-			
+
 			str (string): String to be capitalized.
-			
+
 			Returns (string): Returns modified string.
 		*/
-		
+
 		return str.replace(/(\b\w)/i, function(m) { return m.toUpperCase(); });
 	};
 
@@ -537,9 +537,10 @@
 				localStorage = window.localStorage;
 				return;
 			}
+			console.log("window.localStorage not available. Attempting emulation via cookies.");
 		}
 		catch(exception){
-			console.log("window.localStorage not available. Attempting emulation via cookies.")
+			console.log("window.localStorage not available. Attempting emulation via cookies.");
 		}
 
 		// Credit: https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Local_storage
@@ -556,17 +557,13 @@
 			},
 			setItem: function (sKey, sValue) {
 				if(!sKey) { return; }
+
 				document.cookie = escape(sKey) + "=" + escape(sValue) + "; expires=Tue, 19 Jan 2038 03:14:07 GMT; path=/";
 
 				if (document.cookie.length < 1) return console.error("Cookie did not save correctly. Try clearing cookies for this domain.");
 
 				// eslint-disable-next-line no-useless-escape
 				this.length = document.cookie.match(/\=/g).length;
-
-				// the cookie name/value pair is typically first
-				// var cookie = document.cookie.split(";")[0].split("=")[1];
-				// console.log(cookie.length);
-				// console.log(cookie.split(/%(?:u[0-9A-F]{2})?[0-9A-F]{2}|./).length);
 			},
 			length: 0,
 			removeItem: function (sKey) {
@@ -619,7 +616,7 @@
 			data (object): data containing values to copy
 
 			keep_values (boolean): If true then page and labels counts,
-				scene values, and the variable object are not altered. This is 
+				scene values, and the variable object are not altered. This is
 				useful when unfreezing data and maintaining current progress.
 		*/
 
@@ -702,12 +699,12 @@
 		for (a in sadako.labels) {
 			sadako.label_seen[a] = (labels && a in labels) ? labels[a] : 0;
 		}
-		
+
 		for (a in sadako.scenes) {
 			sadako.scenes[a] = (scenes && a in scenes) ? scenes[a] : {
 				"isActive": false,
 				"hasEnded": false,
-				"ending": null, 
+				"ending": null,
 				"isRecurring": false
 			};
 		}
@@ -722,11 +719,11 @@
 
 	var loadData = function(data) {
 		/*
-			Copies values from data object to the current state. 
-			
+			Copies values from data object to the current state.
+
 			data (object): Data to be loaded.
 		*/
-		
+
 		sadako.current = data.current;
 		sadako.lines = copy(data.lines, true);
 
@@ -756,7 +753,7 @@
 			Stores current data into the save object to be available for
 			saving. If autosaving is enabled, it creates an autosave file.
 		*/
-		
+
 		if (!sadako.savestate_enabled) {
 			// sadako.enter_text = null;
 			return;
@@ -770,10 +767,10 @@
 		/*
 			Saves the game to local storage.
 
-			saveSlot (integer): Value to differentiate between different 
+			saveSlot (integer): Value to differentiate between different
 				saves storedlocally
-			
-			no_confirm (boolean): 
+
+			no_confirm (boolean):
 				true: prevents notifications on success or fail
 				false: allows notifications
 		*/
@@ -790,6 +787,10 @@
 		var saveData = JSON.stringify(sadako.save_data);
 
 		localStorage.setItem(sadako.savename + "_savedata_" + saveSlot, saveData);
+		if (!no_confirm && !localStorage.getItem(sadako.savename + "_savedata_" + saveSlot)) {
+			alert("Save failed!");
+			return;
+		}
 
 		if (!no_confirm) alert("Save successful!");
 	};
@@ -798,10 +799,10 @@
 		/*
 			Loads the data from local storage.
 
-			loadSlot (integer): Value to differentiate between different saves 
+			loadSlot (integer): Value to differentiate between different saves
 				stored locally
-			
-			no_confirm (boolean): 
+
+			no_confirm (boolean):
 				true: prevents notifications on success or fail
 				false: allows notifications
 
@@ -836,14 +837,14 @@
 
 	var startGame = function(page) {
 		/*
-			Begins the game. 
-			
+			Begins the game.
+
 			- If "page" is provided, it will start there instead of "start".
 			- If autosave is enabled, it will load the autosave.
-			
+
 			page (string): Page to begin game on.
 		*/
-		
+
 		if (page !== undefined) sadako.page = page;
 
 		if (sadako.defaultData === undefined || isEmpty(sadako.defaultData)) {
@@ -867,10 +868,10 @@
 	var back = function() {
 		/*
 			Goes back one state in the history.
-			
+
 			- This function is also called when "<< BACK" is used.
 		*/
-		
+
 		var saveData;
 
 		if (sadako.history_limit < 1) return;
@@ -900,8 +901,8 @@
 	};
 
 	var restart = function() {
-		// Deletes autosave and refreshes the page. 
-		
+		// Deletes autosave and refreshes the page.
+
 		if (localStorage.getItem(sadako.savename + "_savedata_auto") !== null) {
 			localStorage.removeItem(sadako.savename + "_savedata_auto");
 		}
@@ -912,14 +913,14 @@
 	sadako.freezeData = function(id) {
 		/*
 			"Freezes" the current state.
-			
+
 			- This stores the current state in an object so that you can
-				jump to another part of a script without affecting the current 
-				story progress. Useful for displaying a dialog, for example. 
-			
+				jump to another part of a script without affecting the current
+				story progress. Useful for displaying a dialog, for example.
+
 			id (string): if provided, changes the HTML element id for text output
 		*/
-		
+
 		sadako.savestate_enabled = false;
 		sadako.is_frozen = true;
 
@@ -932,11 +933,11 @@
 
 	sadako.unfreezeData = function() {
 		/*
-			Returns the script back to its previous state. 
+			Returns the script back to its previous state.
 			Does not revert page and label seen counts, scene values,
 			or the variable object in order to maintain progress.
 		*/
-		
+
 		if (!sadako.is_frozen) return;
 
 		sadako.savestate_enabled = true;
@@ -953,16 +954,16 @@
 	sadako.setupDialog = function(output_id, title_id, display_ids) {
 		/*
 			Assigns ids to the elements associated with the dialog.
-			
-			- ids should begin with a '#' symbol. 
-			
+
+			- ids should begin with a '#' symbol.
+
 			output_id (string): The element in which the output text will be written.
 			title_id (string): The element containing the title of the dialog window.
-			display_ids (array): An array containing one or more elements 
-				to show/hide in order to show/hide the dialog window (ie. the DIV containing 
+			display_ids (array): An array containing one or more elements
+				to show/hide in order to show/hide the dialog window (ie. the DIV containing
 				both the title and output area DIVs).
 		*/
-		
+
 		sadako.dialog_ids.output = output_id;
 		sadako.dialog_ids.title = title_id;
 		sadako.dialog_ids.display = display_ids;
@@ -971,10 +972,10 @@
 	sadako.closeDialog = function(cleanup) {
 		/*
 			Closes the dialog window.
-			
+
 			cleanup (boolean): if true, clears lines and choices arrays.
 		*/
-		
+
 		sadako.unfreezeData();
 
 		sadako.in_dialog = false;
@@ -998,11 +999,11 @@
 	sadako.showDialog = function(title, text) {
 		/*
 			Displays the dialog window.
-			
+
 			title (string): Text to display in title bar
 			text (string): Text to display in dialog body
 		*/
-		
+
 		var temp;
 
 		sadako.in_dialog = true;
@@ -1034,11 +1035,11 @@
 	var write = function(output) {
 		/*
 			Adds text to the lines array to be queued for output.
-			
-			output (string or array): String or array of strings to added 
+
+			output (string or array): String or array of strings to added
 				to output.
 		*/
-		
+
 		if (isArray(output)) {
 			var a;
 			for (a = 0; a < output.length; ++a) {
@@ -1047,17 +1048,17 @@
 		}
 		else sadako.lines.push(sadako.processScript(output));
 	};
-	
+
 	var overwrite = function(text, choices) {
 		/*
 			Writes the text to the output.
-			
+
 			text (string or array): text or array of text to display
-			
+
 			choices (array): array of choice arrays to pass to the addChoice() function.
 				See the addChoice() function for more details.
 		*/
-		
+
 		sadako.choices = [];
 		if (choices) {
 			var a;
@@ -1065,22 +1066,22 @@
 				sadako.addChoice(choices[a][0], choices[a][1], (choices[a].length > 2) ? choices[a][2] : undefined);
 			}
 		}
-		
+
 		sadako.lines = [];
 		sadako.write(text);
 		sadako.writeOutput();
 	};
-	
+
 	var addChoice = function(name, command, tags) {
 		/*
 			Adds a choice to the global choice array.
-			
+
 			name (string): Choice text. Be aware that formatting using [] will not work.
 			command (string): String to evaluate when choice is selected
 			tags (string): A string of classes in script format.
 				example: "~:class:completed ~:title:blargh"
 		*/
-		
+
 		sadako.choices.push({
 			"text": sadako.writeLink(sadako.processScript(name), sadako.processScript(command)) + (tags || "")
 		});
@@ -1089,11 +1090,11 @@
 	var processTags = function(text, func) {
 		/*
 			Strips the tags from the end of a line and processes them.
-			
+
 			text (string): input text
 			func (function): This function is used to process each tag
 		*/
-		
+
 		var temp, classes;
 		var tags = text.split(sadako.token.tag);
 		text = tags.shift();
@@ -1127,12 +1128,12 @@
 	sadako.writeLink = function(name, command, broken) {
 		/*
 			Returns an html link that executes the command on click.
-			
+
 			name (string): Link name
 			command (string): Command to be evaluated on click
 			broken (boolean): If true, displays the link using the 'broken' class
 		*/
-		
+
 		var temp;
 		if ((temp = isToken(command, sadako.token.page_embed))) {
 			command = 'sadako.doLink("#' + temp + '")';
@@ -1142,7 +1143,7 @@
 			command = 'sadako.doLink("%' + temp + '")';
 			if (!(temp in sadako.labels)) broken = true;
 		}
-		
+
 		if (broken === undefined || broken === false) return "<a onClick='" + command + "'>" + name + "</a>";
 		return "<a class='broken' title='" + command + "'>" + name + "</a>";
 	};
@@ -1150,11 +1151,11 @@
 	sadako.writeInput = function(script, name) {
 		/*
 			Creates a textbox or textarea for user input.
-			
+
 			script (string): name of variable to store value of input into
 			name (string): text to be displayed with label
 		*/
-		
+
 		var temp;
 		var multi = false;
 		if ((temp = isToken(script, sadako.token.input_embed)) !== false) {
@@ -1179,20 +1180,20 @@
 	//eslint-disable-next-line no-unused-vars
 	sadako.doLineTag = function(text, tag) {
 		// placeholder line tag processing function to be ovewritten by user
-		
+
 		return [text];
 	};
 
 	//eslint-disable-next-line no-unused-vars
 	sadako.doChoiceTag = function(text, tag) {
 		// placeholder choice tag processing function to be ovewritten by user
-		
+
 		return [text];
 	};
 
 	sadako.writeOutput = function() {
 		// Writes output to display area
-		
+
 		var choices = [];
 
 		var delay = 0;
@@ -1202,13 +1203,13 @@
 		var displayText = function(text, tags) {
 			/*
 				Writes a single line out to the display area.
-				
+
 				text (string): Text to display
 				tags (array): Array of tag strings used for processing.
-					Currently all tags are ignored here except 'delay' that 
+					Currently all tags are ignored here except 'delay' that
 					adjust offsets the display time between lines.
 			*/
-			
+
 			var classes = [];
 
 			var a, temp;
@@ -1241,7 +1242,7 @@
 
 		var writeOutput = function() {
 			// Indexes through each line and choice and outputs them to the display
-			
+
 			sadako.clear();
 			var temp, a;
 
@@ -1269,7 +1270,7 @@
 
 					name = sadako.parseLink(temp[0]);
 					if (name.trim().length < 1) continue;
-					
+
 					// Choice taken from script
 					if ("line" in sadako.choices[a]) {
 						text += sadako.format("<li class='choice'><span class='{0}'><a onclick='sadako.doChoice({1})'>{2}</a></span></li>", temp[1].join(" "), a, name);
@@ -1301,7 +1302,7 @@
 
 	var refresh = function() {
 		// Reruns the current section of script
-		
+
 		doScript(sadako.page, sadako.start, sadako.part);
 	};
 
@@ -1468,10 +1469,18 @@
 
 			text = replaceVar(text, t.label_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.label_seen[p2]; });
 			text = replaceVar(text, t.page_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.page_seen[p2]; });
-			text = replaceVar(text, t.var_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.var." + p2); });
-			text = replaceVar(text, t.tmp_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.tmp." + p2); });
+
+			text = replaceVar(text, t.var_embed + t.value_embed, function(match, p1, p2) {
+				if (isFunc(eval("sadako.var." + p2))) return p1 + eval("sadako.var." + p2 + "()");
+				return p1 + eval("sadako.var." + p2);
+			});
+			text = replaceVar(text, t.tmp_embed + t.value_embed, function(match, p1, p2) {
+				if (isFunc(eval("sadako.tmp." + p2))) return p1 + eval("sadako.tmp." + p2 + "()");
+				return p1 + eval("sadako.tmp." + p2);
+			});
+
 			text = replaceVar(text, t.scene_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.scenes." + p2); });
-			
+
 			text = text.replace(RegExp(t.write_embed, 'g'), 'sadako.text = ');
 			text = text.replace(RegExp(t.pluswrite_embed, 'g'), 'sadako.text += ');
 
@@ -1650,7 +1659,7 @@
 		sadako.choices = [];
 		sadako.tmp = {};
 		sadako.chosen = null;
-		
+
 		var temp;
 		if ((temp = isToken(label, sadako.token.label_embed))) label = temp;
 
@@ -1730,16 +1739,16 @@
 		}
 		else write(text);
 	};
-	
+
 	var addScene = function(id, checkStart, checkEnd, doStart, doEnd, doBefore, doAfter, isRecurring) {
 		sadako.scenes[id] = {
 			"isActive": false,
 			"hasStarted": 0,
 			"hasEnded": 0,
-			"ending": null, 
+			"ending": null,
 			"isRecurring": isRecurring || false
 		}
-		
+
 		sadako.scene_checks[id] = {
 			"checkStart": checkStart,
 			"checkEnd": checkEnd,
@@ -1749,10 +1758,10 @@
 			"doAfter": doAfter
 		}
 	};
-	
+
 	var checkScenes = function() {
 		var a, scene, check;
-		
+
 		for (a in sadako.scenes) {
 			scene = sadako.scenes[a];
 			check = sadako.scene_checks[a];
@@ -1762,7 +1771,7 @@
 					if (!eval(sadako.processScript(check.checkStart))) continue;
 				}
 				else if (!check.checkStart()) continue;
-				
+
 				scene.isActive = true;
 				scene.hasStarted += 1;
 				if (check.doStart !== undefined && check.doStart !== null) {
@@ -1777,7 +1786,7 @@
 					if (!eval(sadako.processScript(check.checkEnd))) continue;
 				}
 				else if (!check.checkEnd()) continue;
-				
+
 				scene.isActive = false;
 				scene.hasEnded += 1;
 				if (check.doEnd !== undefined && check.doEnd !== null) {
@@ -1839,7 +1848,7 @@
 					doJump(temp);
 					return [END];
 				}
-				
+
 				if ((temp = isToken(label, sadako.token.label_embed)) !== false) label = temp;
 
 				if (label.indexOf(".") === -1 || !(label in sadako.labels)) label = page + "." + label;
@@ -1944,10 +1953,10 @@
 				token = ("k" in this_page[a]) ? this_page[a].k : null;
 				is_choice = (token === sadako.token.choice || token === sadako.token.static);
 				is_not_choice = (token !== sadako.token.choice && token !== sadako.token.static);
-				
+
 				// if choices have been listed and new line is not a choice, stop the script
 				if (choice_seen === true && is_not_choice) return [END];
-				
+
 				// check and process scenes
 				checkScenes();
 
@@ -1968,7 +1977,7 @@
 				// returns null if inline condition is false
 				text = processScript(this_page[a].t);
 				if (text === null) continue;
-				
+
 				// increase label seen count as long as this isn't a choice
 				if (is_not_choice && label) sadako.label_seen[label] += 1;
 
@@ -2057,7 +2066,7 @@
 
 	var doScript = function(page, start, part) {
 		var a, temp, sceneAction;
-		
+
 		if (sadako.script_status === ABORT || sadako.script_status === END) return;
 
 		sadako.page = page;
@@ -2070,7 +2079,7 @@
 		sadako.evals = [];
 
 		if (start === undefined) start = 0;
-		
+
 		if (sadako.script_level === 1) {
 			for (a in sadako.scenes) {
 				sceneAction = sadako.scene_checks[a].doBefore;
@@ -2082,17 +2091,17 @@
 				}
 			}
 		}
-		
+
 		if ("ALL" in sadako.before) { sadako.before.ALL(); }
 		if (page in sadako.before) sadako.before[page]();
-		
+
 		sadako.script_level += 1;
 
 		temp = doLines(page, start, part);
-		
+
 		// check and process scenes once more now that story block has completed
 		checkScenes();
-		
+
 		if (temp === ABORT) return;
 
 		if (sadako.lines.length) {
@@ -2108,7 +2117,7 @@
 		if (sadako.script_level === 1) {
 			if (sadako.page in sadako.after) sadako.after[sadako.page]();
 			if (sadako.script_status === ABORT) return;
-			
+
 			for (a in sadako.scenes) {
 				sceneAction = sadako.scene_checks[a].doAfter;
 				if (sadako.scenes[a].isActive) {
