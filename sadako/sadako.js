@@ -53,7 +53,7 @@
 		"input_embed": ">",
 
 		// embedding
-		"break": "\\^\\^",
+		"script_embed": "\\^",
 		"var_embed": "\\$",
 		"tmp_embed": "_",
 		"scene_embed": "\\*",
@@ -89,6 +89,7 @@
 	sadako.dialog_ids = {};
 	sadako.onDialogClose = null;
 	sadako.macros = {};
+	sadako.scripts = {};
 	sadako.is_frozen = false;
 	sadako.save_data = {};
 	sadako.current_line = [];
@@ -1447,6 +1448,10 @@
 
 		return sadako.text;
 	};
+	
+	sadako.writeSpan = function(class_name, text) {
+		return format('<span class="{0}">{1}</span>', class_name, text);
+	};
 
 	var processScript = function(line) {
 		var a, sections, script, cond;
@@ -1457,29 +1462,31 @@
 				return text.replace(regexp, replacement);
 			}
 
-			text = text.replace(RegExp(sadako.token.break, 'g'), '<br>');
-
 			var t = sadako.token;
 
 			text = replaceVar(text, t.label_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.label_seen["' + p2 + '"]'; });
 			text = replaceVar(text, t.page_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.page_seen["' + p2 + '"]'; });
-			text = replaceVar(text, t.var_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.var.' + p2; });
-			text = replaceVar(text, t.tmp_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.tmp.' + p2; });
+			
+			text = replaceVar(text, t.var_embed + t.cond_embed, function(match, p1, p2) { return p1 + "sadako.var." + p2; });
+			text = replaceVar(text, t.tmp_embed + t.cond_embed, function(match, p1, p2) { return p1 + "sadako.tmp." + p2; });
 			text = replaceVar(text, t.scene_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.scenes.' + p2; });
+			
+			text = replaceVar(text, t.script_embed + t.cond_embed, function(match, p1, p2) {
+				if (isFunc(eval("sadako.scripts." + p2))) return p1 + "sadako.scripts." + p2 + "()";
+				return p1 + "sadako.scripts." + p2;
+			});
 
 			text = replaceVar(text, t.label_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.label_seen[p2]; });
 			text = replaceVar(text, t.page_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.page_seen[p2]; });
 
-			text = replaceVar(text, t.var_embed + t.value_embed, function(match, p1, p2) {
-				if (isFunc(eval("sadako.var." + p2))) return p1 + eval("sadako.var." + p2 + "()");
-				return p1 + eval("sadako.var." + p2);
-			});
-			text = replaceVar(text, t.tmp_embed + t.value_embed, function(match, p1, p2) {
-				if (isFunc(eval("sadako.tmp." + p2))) return p1 + eval("sadako.tmp." + p2 + "()");
-				return p1 + eval("sadako.tmp." + p2);
-			});
-
+			text = replaceVar(text, t.var_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.var." + p2); });
+			text = replaceVar(text, t.tmp_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.tmp." + p2); });
 			text = replaceVar(text, t.scene_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.scenes." + p2); });
+			
+			text = replaceVar(text, t.script_embed + t.value_embed, function(match, p1, p2) {
+				if (isFunc(eval("sadako.scripts." + p2))) return p1 + eval("sadako.scripts." + p2 + "()");
+				return p1 + eval("sadako.scripts." + p2);
+			});
 
 			text = text.replace(RegExp(t.write_embed, 'g'), 'sadako.text = ');
 			text = text.replace(RegExp(t.pluswrite_embed, 'g'), 'sadako.text += ');
@@ -1518,7 +1525,7 @@
 				if (sections.length < 2) return text;
 				text = text.substring(sections[0].length + sadako.token.cond.length);
 
-				return format('<span class="{0}">{1}</span>', sections[0], text);
+				return sadako.writeSpan(sections[0], text);
 			}
 
 			var temp = text.split(sadako.token.span_open);
@@ -2217,16 +2224,17 @@
 	sadako.addScene = addScene;
 
 	// functions intended to be overridden
-	// sadako.write = write;
-	// sadako.writeLink = writeLink;
-	// sadako.writeOutput = writeOutput;
-	// sadako.doLineTag = doLineTag;
-	// sadako.doChoiceTag = doChoiceTag;
-	// sadako.saveGame = saveGame;
-	// sadako.loadGame = loadGame;
-	// sadako.freezeData = freezeData;
-	// sadako.unfreezeData = unfreezeData;
-	// sadako.clear = clear;
+	// sadako.write
+	// sadako.writeLink
+	// sadako.writeSpan
+	// sadako.writeOutput
+	// sadako.doLineTag
+	// sadako.doChoiceTag
+	// sadako.saveGame
+	// sadako.loadGame
+	// sadako.freezeData
+	// sadako.unfreezeData
+	// sadako.clear
 
 	// functions made available for use in overridden functions
 	sadako.processTags = processTags;

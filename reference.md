@@ -1,55 +1,60 @@
-# Sadako Script Reference
+## Sadako Script Reference
 
 #### Table of Contents
 
-* [Comments](https://github.com/Tayruh/sadako/blob/master/reference.md#comments)
-    *  [Comment Block `/*` `*/`](https://github.com/Tayruh/sadako/blob/master/reference.md#comment-block)
-    *  [Line Comment `//`](https://github.com/Tayruh/sadako/blob/master/reference.md#line-comment)
-    * [Escape `\`](https://github.com/Tayruh/sadako/blob/master/reference.md#escape)
+* [Comments](#comments)
+    *  [Comment Block `/* */`](#comment-block)
+    *  [Line Comment `//`](#line-comment)
+    * [Escape `\`](#escape)
 
-* [Story Sections](https://github.com/Tayruh/sadako/blob/master/reference.md#story-sections)
-    * [Pages `##`](https://github.com/Tayruh/sadako/blob/master/reference.md#pages)
-    
-        * [Tags `~:`](https://github.com/Tayruh/sadako/blob/master/reference.md#tags)
-    * [Inline Labels `{` `}`](https://github.com/Tayruh/sadako/blob/master/reference.md#inline-labels)
-    * [Jumps `>>`](https://github.com/Tayruh/sadako/blob/master/reference.md#jumps)
-        * [Includes `>>=`](https://github.com/Tayruh/sadako/blob/master/reference.md#includes)
-    * [Returns `<<`](https://github.com/Tayruh/sadako/blob/master/reference.md#returns)
+* [Story Sections](#story-sections)
+    * [Pages `##`](#pages)
+        * [Tags `~:`](#tags)
+    * [Inline Labels `{ }`](#inline-labels)
+    * [Jumps `>>`](#jumps)
+    * [Returns `<<`](#returns)
+        * [Includes `>>=`](#includes)
 
-* [Text Formatting](https://github.com/Tayruh/sadako/blob/master/reference.md#text-formatting)
-    * [Line Ending `;;`](https://github.com/Tayruh/sadako/blob/master/reference.md#line-ending)
-    * [Line Break `^^`](https://github.com/Tayruh/sadako/blob/master/reference.md#line-break)
-    * [Text Attachment `<>`](https://github.com/Tayruh/sadako/blob/master/reference.md#text-attachment)
-    * [Span Markup `<:` `:>`](https://github.com/Tayruh/sadako/blob/master/reference.md#span-markup)
-    * [Tags `~:`](https://github.com/Tayruh/sadako/blob/master/reference.md#tags-1)
+* [Text Formatting](#text-formatting)
+    * [Line Ending `;;`](#line-ending)
+    * [Text Attachment `<>`](#text-attachment)
+    * [Span Markup `<: :>`](#span-markup)
+    * [Tags `~:`](#tags-1)
+        * [Class](#class)
+        * [Choice](#choice)
+        * [Delay](#delay)
+        * [User Defined](#user-defined)
 
-* [Variables and Conditionals](https://github.com/Tayruh/sadako/blob/master/reference.md#variables-and-conditionals)
-    * [Variable Embedding](https://github.com/Tayruh/sadako/blob/master/reference.md#variable-embedding)
-        
-        * [For use in Story Script `$:` `_:` `*:` `#:` `%:`](https://github.com/Tayruh/sadako/blob/master/reference.md#for-use-in-story-script)
-        * [For use in Script Blocks `$.` `_.` `*.` `#.` `%.` `~~=` `~~+`](https://github.com/Tayruh/sadako/blob/master/reference.md#for-use-in-script-blocks)
-    * [Conditional Display `::`](https://github.com/Tayruh/sadako/blob/master/reference.md#conditional-display)
-    * [Inline Text Options `{:` `:}`](https://github.com/Tayruh/sadako/blob/master/reference.md#inline-text-options)
-    * [Script Block](https://github.com/Tayruh/sadako/blob/master/reference.md#script-block)
-    
-        * [Redirects `[:` `:]` / `[:%` `:]`](https://github.com/Tayruh/sadako/blob/master/reference.md#redirects)
-        * [JavaScript `[:&` `:]` / `[:=` `:]`](https://github.com/Tayruh/sadako/blob/master/reference.md#javascript)
-        * [Input Boxes `[:>` `:]` / `[:>>` `:]`](https://github.com/Tayruh/sadako/blob/master/reference.md#input-boxes)
-    * [Macros `(:` `:)`](https://github.com/Tayruh/sadako/blob/master/reference.md#macros)
+* [Variables and Conditionals](#variables-and-conditionals)
+    * [Variable Embedding](#variable-embedding)
+        * [For use in Story Script `$:` `_:` `*:` `#:` `%:` `^:`](#for-use-in-story-script)
+        * [For use in Script Blocks `$.` `_.` `*.` `#.` `%.` `^.` `~~=` `~~+`](#for-use-in-script-blocks)
+        * [var, tmp](#var-tmp)
+        * [text](#text)
+        * [scripts](#scripts)
+    * [Conditional Display `::`](#conditional-display)
+    * [Inline Text Options `{: :}`](#inline-text-options)
+    * [Script Block](#script-block)
+        * [Redirects `[: :]` `[:% :]`](#redirects)
+        * [JavaScript `[:& :]` `[:= :]`](#javascript)
+        * [Input Boxes `[:> :]` `[:>> :]`](#input-boxes)
+    * [Macros `(: :)`](#macros)
 
-* [Choices and Depths](https://github.com/Tayruh/sadako/blob/master/reference.md#choices-and-depths)
-    * [Choice formatting `[` `]`](https://github.com/Tayruh/sadako/blob/master/reference.md#choice-formatting)
-    * [Static Choice `+`](https://github.com/Tayruh/sadako/blob/master/reference.md#static-choice)
-    * [Labels `{` `}`](https://github.com/Tayruh/sadako/blob/master/reference.md#labels)
-    * [Limited Choice `*`](https://github.com/Tayruh/sadako/blob/master/reference.md#limited-choice)
-    * [Fallback Choice](https://github.com/Tayruh/sadako/blob/master/reference.md#fallback-choice)
-    * [Depth Token `-`](https://github.com/Tayruh/sadako/blob/master/reference.md#depth-token)
-    * [Depth Labels `=`](https://github.com/Tayruh/sadako/blob/master/reference.md#depth-labels)
-    * [Condition Block `~ if` `~ else if` `~ else`](https://github.com/Tayruh/sadako/blob/master/reference.md#condition-block)
+* [Choices and Depths](#choices-and-depths)
+    * [Choice formatting `[ ]`](#choice-formatting)
+    * [Static Choice `+`](#static-choice)
+    * [Labels `{ }`](#labels)
+    * [Limited Choice `*`](#limited-choice)
+    * [Fallback Choice](#fallback-choice)
+    * [Depth Token `-`](#depth-token)
+    * [Depth Labels `=`](#depth-labels)
+    * [Condition Block `~ if` `~ else if` `~ else`](#condition-block)
 
-* [Scenes `*.`](https://github.com/Tayruh/sadako/blob/master/reference.md#scenes)
+* [Scenes `*.` `*:`](#scenes)
+    * [Examples](#examples)
+    * [Defining](#defining)
 
-* [Saving Checkpoints](https://github.com/Tayruh/sadako/blob/master/reference.md#saving-checkpoints)
+* [Saving Checkpoints](#saving-checkpoints)
 
 ## Comments
 
@@ -57,7 +62,7 @@
 
 `/*` `*/`
 
-Anything within the these tokens is removed from the story script before it's even parsed. Because of this, you can use it also ignore line breaks.
+Anything within the these tokens is removed from the story script before it's even parsed. Because of this, it will also ignore line breaks.
 
 ```
 /*
@@ -117,7 +122,9 @@ An escape token is used to prevent **Sadako** from recognizing a token that begi
     
 When you redirect to a page, **Sadako** will proceed line by line through the script within that page. When it reaches the end, it will stop. A page can be written simply and only display a full screen of text, or it can be complex and full of links, choices, and jumps. The only way out of a page is through a jump of some sort, which will be explained shortly.
 
-Every time you're redirected to a page that differs from the current page, the *seen* counter increases by 1. This is stored in `sadako.page_seen["Page1"]` (using "Page1" as an example). This value can be used to check whether a page has been visited and how many times.
+Every time you're redirected to a page, the *seen* counter increases by 1. This is stored in `sadako.page_seen["Page1"]` (using "Page1" as an example). This value can be used to check whether a page has been visited and how many times.
+
+Because of the way that pages are handled by **Sadako**, it is recommended that you only include alphanumeric characters and underscores in their naming.
 
 #### Tags
 
@@ -133,7 +140,7 @@ In this example, the page is assigned a tag called `test`. Unless a value is ass
 ## Page1 ~:blah:some text ~:test:20 
 ```
 
-In the example above, `Page1` is given a `blah` tag with the value of `some text` and a `test` tag with the value of `20`. Spaces are allowed, as you can see.
+In the example above, `Page1` is given a `blah` tag with the value of `some text` and a `test` tag with the value of `20`. Spaces are allowed in a tag value, as you can see.
 
 On their own, tags don't do anything. However, you can check for them and their value in `sadako.tags[<page_name>]`. For example:
 
@@ -155,15 +162,15 @@ some text
 
 A label marks a line of the script so that you can redirect the script to it whenever you wish. If you are familiar with programming `gosub` and `return` concepts, this is the label for use with that. 
 
-The actual use of the `{ }` label will be described in the `>>` jump token and `<<` return token descriptions.
+The actual use of the `{ }` label will be described in the `>>` jump token and `<<` return token sections.
 
 Whenever the script processes a line with the `{ }` label tokens, the *seen* counter for that label is increased by 1. This is stored in `sadako.label_seen["foo"]` (using "foo" as an example), which is abbreviated to `%.foo` in sadako script. This value can be used to check whether a label has been seen and how many times. 
 
-An important thing to note is that the label seen count is increased *after* the script line is processed. Also, a choice with a label only increases the seen count if it is selected or jumped to, not when it is displayed. Likewise, a condition block with a label only increases its label seen if the condition is true.
+An important thing to note is that the label seen count is increased *after* the script line is processed. Also, a choice with a label only increases the seen count if it is selected or jumped to, not when it is displayed.
 
 Inline labels are not allowed on condition blocks and will be stripped during compiling.
 
-Because of the way that page names, label names, and variable names are handled by **Sadako**, it is recommended that you do not include spaces or periods in them. Use underscores, dashes, or camel-casing instead.
+Because of the way that labels are handled by **Sadako**, it is recommended that you only include alphanumeric characters and underscores in their naming.
 
 
 ### Jumps
@@ -212,92 +219,22 @@ Page jumps must include the `#` page token before its name.
 
 ```
 ## Page1
-    You won't see this text.
+    Some display text.
     >> #Page2
 ## Page2
     Hello!
     
 // outputs
+Some display text.
 Hello!
 ```
 
-Jumping to a page is not the same as jumping a label. Jumping to a label continues adding to the current output, like in the label jump example. However, jumping to a page (even if it's the same page) clears the output and the jump stack, meaning the `<<` token described below will not work. The reason only `Hello!` was seen in the example output is because the output was cleared upon jumping to `Page2`.
-
-If you want to include a page in the current flow of text, I suggest adding a label to the top of the page and jumping to that instead, like in the example above.
-
-#### Includes
-
-There is an exception to the previous statement. If you include the `=` value token before the page or label to jump to, **Sadako** will jump to that page or label, but instead of ending output when it reaches the end of the script, it will jump back to where it was.
-
-```
-This ends early.
->> test
-You won't see this.
-<< END
-
-= test
-Something to print.
-<< END
-
-
-// outputs
-This ends early.
-Something to print.
-```
-
-The above stops processing the script once it sees `<< END` in `test`.
-
-```
-This won't exit early.
->>= test
-You'll be able to see this now.
-<< END
-
-= test
-Something to print.
-<< END
-
-
-// outputs
-This ends early.
-Something to print.
-You'll be able to see this now.
-```
-
-By using the `=` value token, it won't stop processing the script when it sees `<< END`. Similarly, using it in conjunction with page jumps, it won't display a fresh page, but will instead include that page's contents in with the current page.
-
-```
-## Page1
-    This won't be seen.
-    >> #Page2
-    This won't be displayed either.
-    
-## Page2
-    Hello!
-    
-// outputs
-Hello!
-```
-```
-## Page1
-    You will see this.
-    >>= #Page2
-    You will see this also.
-    
-## Page2
-    Hello!
-    
-// outputs
-You will see this.
-Hello!
-You will see this also.
-```
 
 ### Returns
 
 `<<`
 
-The return token is designed to leave the current story block. On its own, the `<<` return token returns the script back to the last activated `>>` jump token. This has the effect of creating functions in the story script.
+The return token is designed to leave the current story block. On its own, the `<<` return token returns the script back to the last activated `>>` jump token. This has the effect of creating functions in the story script. The caveat to this is that if the jump were to a page instead of a label, the `<<` token (excluding `<< RETURN`) will end the script processing instead of returning.
 
 ```
 Print it once:
@@ -357,6 +294,85 @@ It has a few different functions when followed by keywords. They are case sensit
 * `<< ABORT`
 
     Same as `<< END` but more aggressive. It quits the current script and does not display any text. All script blocks and jumps before this command will still be executed but no output will be displayed. The `ABORT` call is useful helping avoid some pitfalls that arise when calling `sadako.doLink()` and `sadako.closeDialog()` from within a `[: :]` script block.
+    
+
+#### Includes
+
+`>>=`
+
+If you include the `=` value token before the page or label to jump to, **Sadako** will jump to that page or label, but instead of ending output when it reaches the end of the script, it will jump back to where it was.
+
+An example without the `>>=` include token:
+
+```
+This ends early.
+>> test
+You won't see this.
+<< END
+
+= test
+Something to print.
+<< END
+
+
+// outputs
+This ends early.
+Something to print.
+```
+
+An example using the `>>=` include token:
+
+```
+This won't exit early.
+>>= test
+You'll be able to see this now.
+<< END
+
+= test
+Something to print.
+<< END
+
+
+// outputs
+This ends early.
+Something to print.
+You'll be able to see this now.
+```
+
+By using the `>>=` include token, it won't stop processing the script when it sees `<< END`. Similarly, using it in conjunction with page jumps, it will include that page's contents in with the current page. This is similar to using the `<<` return token with label jumps.
+
+An example without the `>>=` include token:
+
+```
+## Page1
+    Some example text.
+    >> #Page2
+    This won't be displayed.
+    
+## Page2
+    Hello!
+    
+// outputs
+Some example text.
+Hello!
+```
+
+An example using the `>>=` include token:
+
+```
+## Page1
+    Some example text.
+    >>= #Page2
+    This text can be seen now.
+    
+## Page2
+    Hello!
+    
+// outputs
+Some example text.
+Hello!
+This text can be seen now.
+```
 
 
 ## Text Formatting
@@ -376,25 +392,6 @@ This is the same as
 ```
 Hello world!
 This is the second line
-```
-
-
-### Line Break
-
-`^^`
-
-This inserts a line break (`<br>` tag) into the script.
-
-**Sadako** separates script lines with either a carriage return or a line ending `;;` token. By default, the resulting text is wrapped in a `<p>` tag. The `^^` token inserts a `<br>` into the output so that the line break stays within paragraph tags.
-
-```
-Hello world!^^This is still within the paragraph.
-This is a separate paragraph.
-
-
-// outputs
-<p>Hello world!<br>This is still within the paragraph.</p>
-<p>This is a separate paragraph.</p>
 ```
 
 
@@ -441,18 +438,22 @@ Span token. This is used to easily attach a CSS class to a block of text. You se
 
 Tags are used to alter the output or display of a line. Any number of tags can be added to a line. 
 
-There are also three hardcoded tags in **Sadako**:
+There are also three hardcoded tags in **Sadako** in addition to any user defined tags: `class`, `choice`, and `delay`.
 
-* `class:<classname>` (alias `c:<classname>`): Adds a CSS class to the line.
-* `choice`: Displays the current line as though it were a choice. Useful for links that run javascript.
-* `delay:<XXXX.X>`: Amount of time in milliseconds (5000.0 = 5 seconds) to delay the display of this line and all lines following it.
+#### Class
+
+`class:<classname>` (alias `c:<classname>`): Adds a CSS class to the line.
 
 ```
 This will be displayed using the "test" class. ~:class:test
 
 // outputs
-<p class="test">This will be displayed using the "test" class.</p>
+<div class="test">This will be displayed using the "test" class.</div>
 ```
+
+#### Choice
+
+`choice` (no value): Displays the current line as though it were a choice. Useful for links that run javascript.
 
 ```
 [:& alert("Boo!") @: Fake Choice.:] ~:choice
@@ -460,6 +461,10 @@ This will be displayed using the "test" class. ~:class:test
 // outputs (output is simplified for example purposes)
 <ul><li class="choice"><a onclick='alert("Boo!")'>Fake Choice</a></li></ul>
 ```
+
+#### Delay
+
+`delay:<XXXX.X>`: Amount of time in milliseconds (1000.0 = 1 second) to delay the display of this line and all lines following it.
 
 The `delay` tag can be tricky. Basically, as each line is printed, it's set to delay for the amount of this delay plus `sadako.text_delay`.
 
@@ -477,33 +482,35 @@ This will also take 3 seconds.
 In the above example, the second line of text will actually take longer to display than the third line of text. 
 
 Also, notice how it uses an empty `-` depth token to set the delay for the choice. Unlike `class` tags, `delay` will not work on choices because of the way they are displayed. Therefore, you should set it before displaying the choice. This trick also works with doing things like jumps which also don't allow tags. To remove the additional delay, just use the `delay` tag with a value of `0`.
+
+#### User Defined
     
-**Sadako** provides two functions intended to be overwritten by the user. These are `sadako.doLineTags()` and `sadako.doChoiceTags()`. The return value is an array containing the text to display as the first element and classes to be added to the line as the remaining elements. Classes do not have to be provided, and if nothing is returned from the function, no text will be printed.
+**Sadako** provides two functions intended to be overwritten by the user. These are `sadako.doLineTag()` and `sadako.doChoiceTag()`. The return value is an array containing the text to display as the first element and classes to be added to the line as the remaining elements. Classes do not have to be provided, and if nothing is returned from the function, no text will be printed.
 
 By default, each function looks like this:
 
 ```
-sadako.doLineTags = function(text, tag) { return [text]; }
-sadako.doChoiceTags = function(text, tag) { return [text]; }
+sadako.doLineTag = function(text, tag) { return [text]; }
+sadako.doChoiceTag = function(text, tag) { return [text]; }
 ```
 
 Obviously this does nothing as it is. However, here's an example of how you can make use of the functions. 
 
 ```
 sadako.doLineTag = function(text, tag) {
-    if (tag === "ayren") return ['Ayren says, "' + text + '"', "test1", "test2"];
+    if (tag === "erin") return ['Erin says, "' + text + '"', "test1", "test2"];
     return [text];
 }
 
 // in story script
-Hi! ~:ayren
+Hi! ~:erin
 
 
 // outputs
-<p class="test1 test2">Ayren says, "Hi!"</p>
+<div class="test1 test2">Erin says, "Hi!"</div>
 ```
     
-This function is called once per tag with the current text and tag (converted to lowercase) as the arguments. Text you return from one function call with be sent as the argument for the function call of the next tag for this line. This is so can keep modifying the text with each new tag if desired.
+This function is called once per tag with the current text and tag (converted to lowercase) as the arguments. Text you return from one function call will be sent as the argument for the function call of the next tag for this line. This is so you can keep modifying the text with each new tag if desired.
     
 Tags must come before a `::` conditional token since it's considered part of the line. Conditionals will be explained in a little bit.
 
@@ -526,6 +533,7 @@ For convenience sake, there are tokens that allow easy embedding of **Sadako** v
 * `*:foo` becomes the value of `sadako.scenes.foo`
 * `#:foo` becomes the value of `sadako.page_seen["foo"]`
 * `%:foo` becomes the value of `sadako.label_seen["foo"]`
+* `^:foo` becomes the value of `sadako.scripts.foo` or (`sadako.scripts.foo()` if a function)
 
 ```
 The color of the gem was a bright $:color.
@@ -533,8 +541,6 @@ The color of the gem was a bright $:color.
 // outputs (assuming sadako.var.color is "green")
 The color of the gem was a bright green.
 ```
-
-The `$:` saved variable and `_:` temporary variable can also be functions, not just a value. Just write out of the embedded variable like usual (without parenthesis) and the script will execute it and place the returned value into the current output. The functions don't take an argument.
 
 ```
 // javascript
@@ -558,16 +564,20 @@ Script blocks will be described soon, but just know that the script inside the `
 * `*.foo` becomes `sadako.scenes.foo`
 * `#.foo` becomes `sadako.page_seen["foo"]`
 * `%.foo` becomes `sadako.label_seen["foo"]`
+* `^.foo` becomes `sadako.scripts.foo` (or `sadako.scripts.foo()` if a function)
 * `~~=foo` becomes `sadako.text = foo`
 * `~~+'foo'` becomes `sadako.text += 'foo'`
     
 To make sense of this, a few things should be explained briefly. 
 
+#### var, tmp
+
 `sadako.var` is an object variable that contains user defined variables. These variables are automatically saved to disk when you save the game.
 
 `sadako.tmp` is also an object variable that contains user defined variables. However, these variables are cleared every time `sadako.doLink()` and `sadako.doChoice()` are called. That is to say, any time you click a link or call a function that progresses the story script.
 
-`sadako.scenes` will be described in just a little bit. It's too in depth to describe here.
+
+#### text
 
 `sadako.text` is the variable that holds the text being processed for the current line. Just returning text from a function will not work unless you use the `=` value token inside the `[: :]` script block (which hopefully explains how the story script text replacements work). If you are inside a function and want to replace or add to the text output for the current line, `sadako.text` is the variable to use.
 
@@ -589,6 +599,35 @@ In most situations you can stack replacement tokens, so the above can be written
 You found a bright [:& ~~+$.color:] gem.
 ```
 
+#### scripts
+
+`sadako.scripts` is an object variable that is a list of sadako script strings or functions that return text. The functions never accept arguments. `sadako.scripts` entries should be defined in your javascript initialization, not in sadako script itself, because they will not be saved to along with your game data.
+
+```
+// javascript
+sadako.var.x = 0;
+sadako.scripts.nth = function() {
+    sadako.var.x += 1;
+    if (sadako.var.x == 1) return "first";
+    if (sadako.var.x == 2) return "second";
+}
+sadako.scripts.count = "$:x";
+
+// sadako script
+This is the ^:nth time you've called this.
+This is the ^:nth time you've called this.
+The total times called was: ^:count
+
+
+// outputs
+This is the first time you've called this.
+This is the second time you've called this.
+The total times called was: 2
+
+```
+
+`sadako.scenes` will be described in just a little bit. It's too in depth to describe here.
+
 Regarding `sadako.page_seen` and `sadako.label_seen`, every time you  transition to a new page, progress past a label in the script, or select a choice that is preceded by a label, the counter for that page or label is increased by 1. This is convenient for checking whether you've seen a part of the script and how many times.
 
 
@@ -596,13 +635,15 @@ Regarding `sadako.page_seen` and `sadako.label_seen`, every time you  transition
 
 `::` 
 
-The statement preceding the `::` conditional token will only be displayed and scripts executed if the statement following it equates to true. 
+The statement preceding the `::` conditional token will only be displayed and scripts executed if the statement following it equates to `true`.
 
-In the following example, the line will not be displayed if *money* is less than 100.
+In the following example, the line will only be displayed if *money* is less than 100.
 
 ```
 You don't have enough money. :: $.money < 100
 ```
+
+Conditional display checks come before rendering anything in a line. If the condition check is false, everything on that line is ignored. Therefore, any code inside a script block will not be executed unless the condition returns true.
 
 
 ### Inline Text Options
@@ -658,10 +699,10 @@ A standard script block inserts a link to a page.
 If you follow the page name with the `@:` rename token, you can rename the link.
 
 ```
-[:some_annnoying_title @: the next room:]
+[:some_annoying_title @: the next room:]
 
 // outputs
-<a onclick='sadako.doLink("#some_annnoying_title")'>the next room</a>
+<a onclick='sadako.doLink("#some_annoying_title")'>the next room</a>
 ```
 
 You can lead the script block with a token and it will do things besides linking to a page.
@@ -754,7 +795,7 @@ What is your name? [                       ]
 
 Visually this looks the same, but under the hood it works differently, especially for those with screen readers. Feel free to check out [this information](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/label) to get an idea on why labels are helpful.
 
-Finally, if you begin the script block with two `>` input tokens instead of one, it becomes a multiline input box. A single input box will only accept the first line of text, no matter how much you write. A multiline text box will accept all lines. Also, the CSS class `multiline` will automatically be assigned to a multiline box so that you may resize it in CSS without having to affect single line input boxes.
+Finally, if you begin the script block with two `>` input tokens instead of one, it becomes a multiline input box. A single input box will allow a single line of text. A multiline text box will allow many lines and will scroll as needed. Also, the CSS class `multiline` will automatically be assigned to a multiline box so that you may resize it in CSS without having to affect single line input boxes.
 
 Here's an example.
 
@@ -800,7 +841,7 @@ Then to use them, you do this:
 ```
 (:say "Ayren", "Hi!":)
 (:blargh:)
-(:=doMath 1, 2:)
+(:= doMath 1, 2:)
 
 // outputs
 Ayren says, "Hi!"
@@ -808,7 +849,7 @@ bleh
 3
 ```
 
-If you look at the `doMath` macro, you'll see that it begins with the `=` value token as in a `[: :]` script block. This is treated in the same manner and adds the result to the output. Like always, the other option is to use the `sadako.text` variable for output. The choice is yours. If you don't always require output, I'd suggest the `=` value method.
+If you look at the `doMath` macro, you'll see that it begins with the `=` value token as in a `[: :]` script block. This is treated in the same manner and adds the result to the output. Without the `=` value token, the macro would execute and display nothing. Like always, the other option is to use the `sadako.text` variable for output. The choice is yours. If you don't always require output, I'd suggest the `=` value method.
 
 Basically a macro is just a text replacement for a `[: :]` script block call to a `sadako.macros` function.
 
@@ -820,7 +861,7 @@ Basically a macro is just a text replacement for a `[: :]` script block call to 
 [:& sadako.macros.say("Ayren", "Hi!"):]
 ```
 
-Please be aware that `sadako.macros` is not saved when you save your game. Because of this, any macros defined during game will not be saved and the game will crash when you reload. Therefore, always define your macros in your javascript before you call `sadako.startGame()`.
+Please be aware that `sadako.macros` is not saved when you save your game. Therefore, always define your macros in your javascript before you call `sadako.startGame()`.
 
 
 ## Choices and Depths 
@@ -869,7 +910,7 @@ You have selected "finish".
 The End.
 ```
 
-When you select a choice, the script increases its depth by 1. Since "Finish" is level 1, it becomes level 2. The depth level for the choice is not chosen based on indentation, but is instead determined by the amount of tokens preceding the text. "Finish" is level 1 because there is only one `*` at the start of the line. 
+When you select a choice, the script increases its depth by 1. Since "Finish" is level 1, it becomes level 2. The depth level for the choice is not chosen based on indentation, but is instead determined by the amount of tokens preceding the text. "Finish" is level 1 because there is only one `+` at the start of the line. 
 
 ```
 Hello world!
@@ -939,9 +980,9 @@ You can place any number of choices inside each other as long you use the correc
 + [Choice 1]
     Next choice. 
     ++ [Choice 1.1]
-    Another choice.
+        Another choice.
     ++ [Choice 1.2]
-    One more.
+        One more.
 + [Choice 2]
     Foo
 
@@ -961,7 +1002,7 @@ One more.
 
 ### Labels
 
-Unline a script line with a label, simply displaying the choice does not increase its *seen* count. Instead, the label seen count is increased if you jump to the label or select the choice.
+Unlike a script line with a label, simply displaying the choice does not increase its *seen* count. Instead, the label seen count is increased if you jump to the label or select the choice.
 
 Jumping to a choice that has been assigned a label is the equivalent of selecting that choice. In other words, jumping to the label actually jumps *inside* the choice block, not to the line with the label.
 
@@ -995,7 +1036,7 @@ Normally the game does not save progress in a choice tree. It only saves progres
 
 `*`
 
-Choices using a `*` limited choice token (as opposed to a `+` static choice token) that have an associated label will disappear after being clicked once.
+Choices using a `*` limited choice token (as opposed to a `+` static choice token) that have an associated label will disappear after being chosen once. Jumping to a label associated with a `*` limited choice will also make the choice disappear.
 
 ```
 {loop}
@@ -1043,7 +1084,7 @@ Regardless of whether this is a `*` choice, `+` static, or has an `{ }`inline la
 * {c1} [Choice 1]
 * {c2} [Choice 2]
 * {c3} [Choice 3]
-+ [Choice 4] :: 1 === 0
++ [Choice 4] :: 1 == 0
 *
     Exiting loop.
     >> finish
@@ -1080,24 +1121,24 @@ Another thing to note is that the fallback is triggered when choices above it no
 
 The depth token realigns the depth. Say that you are three levels deep in choices and you want to get back to a depth of 1. The `-` depth token is the most convenient way to do it. 
 
-The depth can also changed using `*` choice tokens, `+` static choice tokens, `=` label tokens, and `~` conditional tokens. The difference is that the `-` depth token only sets the depth and does not perform any extra functions.
+The depth can also changed using `+` static choice tokens, `*` limited choice tokens, `=` label tokens, and `~` conditional tokens. The difference is that the `-` depth token only sets the depth and does not perform any extra functions. 
 
 The flow of story script goes like this:
 
 1. All non-choice story script lines are processed. 
-2. If the script sees `<< END` or `<< ABORT`, it stops processing any further lines of script.
-3. If the script runs out of content in that depth, it looks for a depth changing token (listed above) in the next line and sets the depth to that. If there is not a depth token, the script stops processing.
+2. If the script sees `<< END` or `<< ABORT` or the end of the page, it stops processing any further lines of script.
+3. If the script runs out of content in that depth, it looks for a depth changing token (listed above) in the next line and sets the depth to that, as long as the depth is not greater than the current depth.
 4. If the script sees any choices, it will process all choices until it sees a non-choice depth token.
-5. After a choice is selected, the script will jump to the story block with that choice and start again at step 1.
+5. After a choice is selected, the script will jump to the story block within that choice and start again at step 1.
 
 ```
 This is level 1.
 + [Choice 1]
     Choice 1, level 2.
     ++ [Choice 1.1]
-    Choice 1.1, level 3.
+        Choice 1.1, level 3.
     ++ [Choice 1.2]
-    Choice 1.1, level 3.
+        Choice 1.1, level 3.
     -- Level 2 again.
     Still level 2.
 + [Choice 2]
@@ -1122,7 +1163,10 @@ Still level 2.
 Level 1 again.
 ```
 
-Notice that if you comment out or remove the `-- Level 2 again line.` line, it will not set the depth to level 2 and will instead find the level 1 depth token next. The level of depth is indicated by the number of `-` tokens, just like it is with choices. 
+You may be thinking that it should have jumped to `Choice 2` instead of the `-` depth token, however `Choice 1` and `Choice 2` are two parts of a group of choices. When you exit a choice, it jumps past the rest of the options in that choice group, which is why `Choice 2` is ignored even though it's the next depth token in the script.
+
+Notice that if you comment out or remove the `-- Level 2 again.` line, it will not set the depth to level 2. `Still level 2.` will be set as level 3 and the next depth level token will be `- Level 1 again.`, so the script will jump to that. The level of depth is indicated by the number of `-` tokens, just like it is with choices. 
+
 
 ```
 // if "Choice 1.1" is selected
@@ -1146,8 +1190,6 @@ One convenient use of the `-` depth token is forcing a separation between multip
 <Choice 3>
 ```
 
-** variable**: _sadako.token.depth_
-    
     
 ### Depth Labels
 
@@ -1176,7 +1218,7 @@ Some stuff to write
 <<
 ```
 
-Note that since the `=` label marker shares the same properties as a `-` depth marker, processing of choices will stop once the script sees this token.
+Because of the way that labels are handled by **Sadako**, it is recommended that you only include alphanumeric characters and underscores in their naming.
     
 
 ### Condition Block
@@ -1185,7 +1227,7 @@ Note that since the `=` label marker shares the same properties as a `-` depth m
 
 The condition block allows you to display or not display blocks of story script based on conditions. It's basically `if`/`else if`/`else` from javascript, except it runs story script instead.
 
-It's important to note that the `~` condition token acts the same as a `+` static choice token. That is, it has levels of depth based on the number of leading tokens, and the script inside the block increases by one depth. However, the script will not stop at `-` depth tokens or `=` label tokens after seeing a `~` conditional token, which is the case with choices.
+It's important to note that the `~` condition token acts the same as a `+` choice token in that the levels of depth are based on the number of leading tokens, and the script inside the block increases by one depth.
 
 ```
 ~ if ($.money > 100)
@@ -1236,7 +1278,7 @@ Beginning text.
 <This choice is not inside the block>
 ```
 
-Also be sure not to interrupt the flow of the conditional blocks. There should not be any `*` or `+` choices, `=` labels, or `-` depth tokens between `if`, `else if`, and `else` blocks or else the script will fail. Errors will be printed to the javascript console.
+Also be sure not to interrupt the flow of the conditional blocks. There should not be any `*` or `+` choices, `=` labels, or `-` depth tokens of the same depth between `if`, `else if`, and `else` blocks or else the script will fail. Errors will be printed to the javascript console.
 
 The following is an example of erroneous code.
 
@@ -1258,12 +1300,14 @@ story: [Page1] [0] [2]
 eval: (1 == 1)
 ```
 
-Be aware `{` `}` inline labels are not allowed with condition blocks and will be stripped during compiling.
+Be aware `{ }` inline labels are not allowed with condition blocks and will be stripped during compiling.
 
 
 ## Scenes
 
 Scenes are a way of expressing an event that is taking place or has taken place. Scenes can happen one after another, or many scenes at once. Whether they are running or not is based on conditions that are checked as every story script line is processed.
+
+### Examples
 
 To make it clear what role a scene performs, first we should look at some script without scenes.
 
@@ -1352,35 +1396,65 @@ And now we rewrite it using scenes for the condition checks.
 
 That's much easier to read. Also as mentioned in the variable embedding section, the `*.` token is the shortcut for the `sadako.scenes` variable, and `*:` is the shortcut to its value.
 
+Other than just clarity of code, scenes are useful for when you have conditions that are difficult to check, or that you want checked constantly. For example, imagine that you had an inventory array and wanted to check if it ever held an item. Once you removed that item from the array, how would you know that it was ever there? Scenes are perfect for this.
+
+Scene conditions are checked every line and the `isActive` state is set to `true` once the  `checkStart` condition is met. After `isActive` is set, it will only be set to `false` if the `checkEnd` condition (if provided) is met.
+
+```
+// javascript
+sadako.var.inventory = {};
+sadako.addScene("held_gun", "'gun' in $.inventory");
+
+// sadako script
+Held gun: *:held_gun.isActive
+[:& $.inventory.gun = true :]
+Gun: $:inventory.gun
+[:& delete $.inventory.gun :]
+Gun: $:inventory.gun
+Held gun: *:held_gun.isActive
+
+
+// outputs
+Held gun: false
+Gun: true
+Gun: undefined
+Held gun: true
+```
+
+Even more appropriate may be using `*.held_gun.hasStarted`, which is a count of how many times the scene has started. This will never return to 0 even when a scene ends, so you can always use it to check if the scene has started at least once.
+
+### Defining
+
 A scene comes with four members you can access for its state. These are set automatically based on the condition checks.
 
 * `isActive`: Whether we are currently in the scene. This is initially set to `false`. It is set to `true` when the `startCheck` conditions have passed, and then set to `false` again once `endCheck` has passed.
 * `hasStarted`: A count of how many times scene has started. Incremented every time `checkStart` passes.
 * `hasEnded`: A count of how many times scene has ended. Incremented every time `checkEnd` passes.
 * `ending`: Any value returned from `doEnd()` is stored in `ending`. This can be useful to determine which way a scene has ended if it has multiple ways of ending the scene.
-
-The fifth member `isRecurring` is set manually during creation or any time after that to toggle reccuring activations of a scene.
+* `isRecurring` is `false` by default. If set to `true`, a scene can be started again after it has ended.
 
 That's not all scenes can do though. To understand its use, the arguments of the `sadako.addScene` function must first be explained.
 
 `sadako.addScene(id, checkStart, checkEnd, doStart, doEnd, doBefore, doAfter, isRecurring)`
 
 * `id`: The name of the scene to be defined.
-* `checkStart`: The condition(s) to check for the start of the scene. String or function.
-* `checkEnd`: The condition(s) to check for the end of the scene. String or function.
-* `doStart`: The script to be run when `checkStart` evaluates to true. String or function.
-* `doEnd`: The script to be run when `checkEnd` evaluates to true. String or function.
+* `checkStart`: The condition to check for the start of the scene. String or function.
+* `checkEnd`: The condition to check for the end of the scene. String or function.
+* `doStart`: The script to be run when `checkStart` evaluates to `true`. String or function.
+* `doEnd`: The script to be run when `checkEnd` evaluates to `true`. String or function.
 * `doBefore`: The script to run before every page renders while the scene is active. String or function.
 * `doAfter`: The script to run after every page renders while the scene is active. String or function.
-* `isRecurring`: Whether the scene should be run again if the start conditions are met after the scene has ended.
+* `isRecurring`: Whether the scene should be run again if the start conditions are met after the scene has ended. Boolean.
 
 `id` and `checkStart` are the only required arguments. The others can be skipped over with a value of `undefined` or `null`.
 
 `checkStart` and `checkEnd` can be either a string or a function. If the argument is a string, it will be evaluated to determine if the conditions are true. The string may contain sadako script like in the example. Strings are good for simple comparisons or when you want to take advantage of sadako script.
 
-If the argument is a function, you must place your condition checks inside the function and return true if they evaluate to true. This is useful for more complex condition checks. The following is an example.
+If the argument is a function, you must place your condition checks inside the function and return `true` if the conditions are met. This is useful for more complex condition checks. The following is an example.
 
-`sadako.addScene("test", function(){ if (1 === 1) return true; })`
+`sadako.addScene("test", function(){ if (sadako.page_seen["page2"]) return true; })`
+
+Be aware that the `sadako.scenes` object is not saved along with game data, so all entries in the object should be defined in your javascript initialization and not in sadako script.
 
 
 ## Saving Checkpoints

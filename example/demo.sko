@@ -6,12 +6,12 @@
 
 	<table><>
 		<tr><>
-			<td>[:> $.name @: <b>First</b>^^:]</td><>
-			<td>[:> $.lname @: <b>Last</b>^^:]</td><>
+			<td>[:> $.name @: <b>First</b><br>:]</td><>
+			<td>[:> $.lname @: <b>Last</b><br>:]</td><>
 		</tr><>
 	</table>
 
-	[:>> $.bleh @: <b>Favorite Foods</b> (not needed)^^:]
+	[:>> $.bleh @: <b>Favorite Foods</b> (not needed)<br>:]
 
 	+ [Continue]
 		~~ if (!$.name || !$.lname)

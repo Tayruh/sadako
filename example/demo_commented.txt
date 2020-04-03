@@ -22,21 +22,17 @@
 			// The part after the @: is the HTML label tag associated with the
 			// text box.
 			// 
-			// The ^^ is just a replacement for the <br> tag. It's not very
-			// effective here, but it normally makes the text a bit easier to
-			// read instead of random HTML tags inserted into your text.
-			// 
 			// The $ token is a shortcut for the sadako.var variable, so $.name
 			// is the same as sadako.var.name. The sadako.var object is special
 			// because its data is saved to disk when you save.
-			<td>[:> $.name @: <b>First</b>^^:]</td><>
-			<td>[:> $.lname @: <b>Last</b>^^:]</td><>
+			<td>[:> $.name @: <b>First</b><br>:]</td><>
+			<td>[:> $.lname @: <b>Last</b><br>:]</td><>
 		</tr><>
 	</table>
 	
 	// This is how you create a multiline text box. It's just two > tokens
 	// instead of one.
-	[:>> $.bleh @: <b>Favorite Foods</b> (not needed)^^:]
+	[:>> $.bleh @: <b>Favorite Foods</b> (not needed)<br>:]
 
 	// This is a static choice. Choices can begin with a + or * token, with the
 	// difference being that * choices will disappear after one use.  
