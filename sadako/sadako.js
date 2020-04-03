@@ -1484,8 +1484,10 @@
 			text = replaceVar(text, t.scene_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.scenes." + p2); });
 			
 			text = replaceVar(text, t.script_embed + t.value_embed, function(match, p1, p2) {
-				if (isFunc(eval("sadako.scripts." + p2))) return p1 + eval("sadako.scripts." + p2 + "()");
-				return p1 + eval("sadako.scripts." + p2);
+				var text;
+				if (isFunc(eval("sadako.scripts." + p2))) text = eval("sadako.scripts." + p2 + "()");
+				else text = eval("sadako.scripts." + p2);
+				return p1 + ((text !== undefined) ? text : "");
 			});
 
 			text = text.replace(RegExp(t.write_embed, 'g'), 'sadako.text = ');
