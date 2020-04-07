@@ -1163,15 +1163,22 @@
 			script = temp;
 			multi = true;
 		}
+		
+		var value = eval(script);
+		
+		if (value === undefined) {
+			value = "";
+			eval(script + ' = ""');
+		}
 
 		var id = "input_" + sadako.evals.length;
 		if (multi) {
 			if (name) name += " ";
-			sadako.text += format('<label>{0}<textarea id="{1}"  class="multiline" onblur="eval(sadako.evals[{2}])"></textarea></label>', name, id, sadako.evals.length);
+			sadako.text += format('<label>{0}<textarea id="{1}"  class="multiline" onblur="eval(sadako.evals[{2}])">{3}</textarea></label>', name, id, sadako.evals.length, value);
 		}
 		else {
 			var label = (name) ? '<label for="' + id + '">' + name + '</label> ' : "";
-			sadako.text += format('{0}<input type="text" id="{1}" onblur="eval(sadako.evals[{2}])">', label, id, sadako.evals.length);
+			sadako.text += format('{0}<input type="text" id="{1}" onblur="eval(sadako.evals[{2}])" value="{3}">', label, id, sadako.evals.length, value);
 		}
 
 		var command = format('{0} = sadako.dom("#{1}").value.trim()', script, id);

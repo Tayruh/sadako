@@ -782,7 +782,15 @@ What is your name? [:> $.player_name:]
 What is your name? [                       ]
 ```
 
-The variable defined in script block will be set to whatever the input text is. **Sadako** sets the variable whenever the input box loses focus.
+The variable defined in script block (`$.player_name` in the example) will be set to whatever the input text is. **Sadako** sets the variable whenever the input box loses focus. If the variable is `undefined`, the input box will be displayed with an empty box like the above example. If the variable already has a value assigned, that value will be displayed in the input box when it is displayed.
+
+```
+[:& $.foo = "test":]
+[:> $.foo:]
+
+// outputs
+[test                   ]
+```
 
 Instead of displaying the input description using standard text, you can use the HTML `label` tag by using the `@:` rename label and following it with the text to display.
 
