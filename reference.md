@@ -38,6 +38,8 @@
         * [Redirects `[: :]` `[:% :]`](#redirects)
         * [JavaScript `[:& :]` `[:= :]`](#javascript)
         * [Input Boxes `[:> :]` `[:>> :]`](#input-boxes)
+        * [Reveal Links `[:+ :]`](#reveal-links)
+        * [Dialog Links `[:* :]`](#dialog-links)
     * [Macros `(: :)`](#macros)
 
 * [Choices and Depths](#choices-and-depths)
@@ -576,6 +578,52 @@ To make sense of this, a few things should be explained briefly.
 
 `sadako.tmp` is also an object variable that contains user defined variables. However, these variables are cleared every time `sadako.doLink()` and `sadako.doChoice()` are called. That is to say, any time you click a link or call a function that progresses the story script.
 
+It's very important to know that includes maintain their own set of temporary variables. These rules apply to anything that does includes, which are primarily the `>>=` token, the `[:+# :]` and `[:+% :]` reveal tokens, and the `sadako.doInclude()` function.
+
+```
+## page1
+    [:& _.test = "first":]
+    This is page 1.
+    Value of test: _:test
+    >>= #page2
+    Page 1 again.
+    Value of test: _:test
+
+## page2
+    = test
+    This is page 2.
+    Value of test: _:test
+
+    [:& _.test = "second":]
+    Value to set to: _:test
+    <<
+    
+// outputs
+This is page 1.
+Value of test: first
+This is page 2.
+Value of test: undefined
+Value to set to: second
+Page 1 again.
+Value of test: first
+```
+
+Notice how the temporary variables were cleared upon entering `page2`, but then restored to `page1`'s values after leaving.
+
+Look at the result if we changed the `>>=` include to a normal `>>` jump to the `page2.test` label. (Jumping to a page does not allow a return jump like a label does.)
+
+```
+This is page 1.
+Value of test: first
+This is page 2.
+Value of test: first
+Value to set to: second
+Page 1 again.
+Value of test: second
+```
+
+The temporary variables aren't cleared with jumps.
+
 
 #### text
 
@@ -713,6 +761,8 @@ You can lead the script block with a token and it will do things besides linking
 * `=` Evaluates a variable or javascript and prints the text.
 * `>` Creates a single line input box for storing text into a variable.
 * `>>` Creates a multiline input box for storing text into variables.
+* `+` Creates a reveal link which will change the text once clicked.
+* `*` Creates a dialog link that displays the dialog window once clicked.
 
 **Sadako** assumes that a label is local unless otherwise stated. If you want to access a label that is not local, you must include the page with the label, like `some_page.some_label`.
 
@@ -824,6 +874,70 @@ Please type something.
 [                                   ]
 [                                   ]
 ```
+
+
+#### Reveal Links
+
+The `+` token inside a script block creates a reveal link, with the `@:` name token separating the name of the link as per usual. Once a reveal link is clicked, it will replace the link with the new text.
+
+There are five ways to use the `+` reveal token:
+
+1. Alone. It will replace the link with solid text and that'll be it. It's a time time deal.
+`[:+ Replacment text @: Link name:]`
+<br>
+
+2. With an `=` eval token. This will replace the text once with the evaluated script.
+`[:+= "The sum of 1 + 1 = " + (1 + 1) @: Let's do some math:]`
+<br>
+
+3. With a `&` code token. Instead of a one-time replacement, this will repeatedly call the script every click and replace the link name with the output. 
+The following example replaces the link name with a random item every click.
+`[:+& sadako.randomItem(["apple", "orange", "banana"]) @: Link name:]`
+<br>
+
+4. With a `#` page token. It will replace the link with the output of an included page. This acts exactly like including with the `>>=` include token, except it doesn't display until you click the link.
+`[:+# some_page @: link name:]`
+<br>
+
+5. With a `%` label token. It will replace the link with the output of an included label. This acts exactly like including with the `>>=` include token, except it doesn't display until you click the link.
+`[:+% some_label @: link name:]`
+
+
+With both included pages and included labels, the inclusion will stop once it sees a choice and will not include any choices. 
+
+Page and label names can also be derived from script evaulation using an `=` eval token. For example, the following will include the page named `page3`:
+ `[:+#= "page" + (1 + 2) @: Link name:]`
+ 
+ 
+#### Dialog Links
+
+The `*` dialog token is used to display a popup when the link is clicked. Like usual, the link name is taken from the text following the `@:` name token.
+
+You can use the `*` dialog token in five ways:
+
+1. Just output straight text to a dialog window.
+`[:* Some text @: Link name:]`
+<br>
+
+2. With an `=` eval token. The script is evaluated before being displayed in the dialog window.
+`[:*= "Here's some math: " + (1 + 2) @: Link name:]`
+<br>
+
+3. With a `&` code token. Instead of displaying the text directly in a dialog window, the dialog will be displayed empty and the script will be evaluated. However, The output target of functions like `sadako.doLink()`, `sadako.overwrite()`, `sadako.writeOutput()`, and such will be redirected to the dialog window.
+    The following will write `Bleh` to the dialog window after it displays.
+`[:*& sadako.overwrite("Bleh") @: Link name:]`
+<br>
+
+4. With a `#` page token. The dialog will be shown with the included page.
+`[:*# some_page @: link name:]`
+<br>
+
+5. With a `%` label token. The dialog will be shown with the included label.
+`[:*% some_label @ label_name:]`
+
+As with the `+` reveal token, you can add an `=` eval token to the page and label tokens to evaluate the name of the page or label to display in the dialog. For example, the following will display the page named `page3` in a dialog window:
+ `[:*#= "page" + (1 + 2) @: Link name:]`
+
 
 
 ### Macros

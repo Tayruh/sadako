@@ -1,7 +1,6 @@
-
 (function(sadako) {
 
-	sadako.version = "0.10.0";
+	sadako.version = "0.10.1";
 	sadako.kayako_version = "0.9.6";
 
 	var localStorage;
@@ -99,6 +98,7 @@
 	sadako.in_dialog = false;
 	sadako.in_include = false;
 	sadako.scene_checks = {};
+	sadako.reveal_id = 0;
 
 	// global variables saved to state
 	sadako.current = null;
@@ -129,9 +129,10 @@
 		*/
 
 		var temp;
-
-		if ((temp = isToken(id, "#"))) return document.getElementById(temp);
-		else if ((temp = isToken(id, "\\."))) return document.getElementsByClassName(temp);
+		
+		if ((temp = isToken(id, "\\.")) !== false) return document.getElementsByClassName(temp);
+		if ((temp = isToken(id, "#")) !== false) return document.getElementById(temp);
+		return document.getElementById(id);
 	};
 
 	var copy = function(item, deep) {
@@ -518,11 +519,17 @@
 		return str.replace(/(\b\w)/i, function(m) { return m.toUpperCase(); });
 	};
 
-	var scrollToTop = function() {
+	sadako.scrollToTop = function(id) {
 		// Scrolls HTML page to the top.
-
-		document.body.scrollTop = 0; // For Safari
-		document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+		
+		if (sadako.in_include) return;
+		
+		if (id) dom(id).scrollTop = 0;
+		else if (sadako.in_dialog) dom(sadako.dialog_ids.output).scrollTop = 0;
+		else {
+			document.body.scrollTop = 0; // For Safari
+			document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+		}
 	}
 
 
@@ -932,7 +939,7 @@
 
 		sadako.freeze_data = copy(getCurrentState(), true);
 		sadako.freeze_data.history = copy(sadako.history, true);
-		sadako.freeze_data.output_id = sadako.output_id;
+		sadako.freeze_data.output_id = id || sadako.output_id;
 
 		if (id) sadako.output_id = id;
 	};
@@ -986,7 +993,7 @@
 
 		sadako.in_dialog = false;
 
-		if (cleanup) {
+		if (cleanup || sadako.script_status === RUN) {
 			sadako.lines = [];
 			sadako.choices = [];
 		}
@@ -1014,7 +1021,7 @@
 
 		// if (sadako.dialog_ids.display && !sadako.hasClass(sadako.dialog_ids.display[0], "open")) {
 		if (!sadako.in_dialog) {
-			sadako.freezeData(sadako.dialog_ids.output);
+			sadako.freezeData();
 		}
 		
 		sadako.in_dialog = true;
@@ -1058,7 +1065,7 @@
 		else sadako.lines.push(sadako.processScript(output));
 	};
 
-	var overwrite = function(text, choices) {
+	var overwrite = function(text, choices, id) {
 		/*
 			Writes the text to the output.
 
@@ -1078,7 +1085,8 @@
 
 		sadako.lines = [];
 		sadako.write(text);
-		sadako.writeOutput();
+		sadako.writeOutput(id);
+		sadako.scrollToTop(id);
 	};
 
 	var addChoice = function(name, command, tags) {
@@ -1153,6 +1161,7 @@
 			if (!(temp in sadako.story)) broken = true;
 		}
 		else if ((temp = isToken(command, sadako.token.label_embed))) {
+			temp = localizeLabel(temp);
 			command = 'sadako.doLink("%' + temp + '")';
 			if (!(temp in sadako.labels)) broken = true;
 		}
@@ -1166,7 +1175,7 @@
 		sadako.evals.push([]);
 		var output = format("<span id='{0}' class='hide'>{1}</span>", id, text);
 		setTimeout(function() {
-			removeClass("#" + id, "hide");
+			removeClass(id, "hide");
 		}, sadako.text_delay);
 		return output;
 	}
@@ -1186,27 +1195,29 @@
 		if (isToken(script, page_cond) || isToken(script, page_value)) is_include = false;
 		else if (isToken(script, label_cond) || isToken(script, label_value)) is_include = false;
 		
-		var id = "reveal_" + sadako.evals.length;
+		var id = "reveal_" + sadako.reveal_id;
+		sadako.reveal_id += 1;
 
 		if (is_include) {
 			if ((temp = isToken(script, t.page_embed + t.eval_value))) script = "#" + eval(temp);
-			else if ((temp = isToken(script, t.label_embed + t.eval_value))) script = "%" + eval(temp);
+			else if ((temp = isToken(script, t.label_embed + t.eval_value))) {
+				temp = localizeLabel(eval(temp));
+				script = "%" + temp;
+			}
 			
 			if ((temp = isToken(script, t.page_embed)) && !(temp in sadako.story)) {
-				return sadako.writeLink(name, 'sadako.doInclude("' + script + '")', true);
+				return sadako.writeLink(name, 'sadako.doInclude(#"' + script + '")', true);
 			}
 			
 			if ((temp = isToken(script, t.label_embed)) && !(temp in sadako.labels)) {
-				return sadako.writeLink(name, 'sadako.doInclude("' + script + '")', true);
+				return sadako.writeLink(name, 'sadako.doInclude(%"' + script + '")', true);
 			}
 			
 			sadako.evals.push(function() {
-				sadako.freezeData("#" + id);
 				sadako.lines = [];
 				sadako.choices = [];
 				sadako.doInclude(script);
-				sadako.writeOutput();
-				sadako.unfreezeData();
+				sadako.writeOutput(id);
 			});
 		}
 		else {
@@ -1217,17 +1228,17 @@
 				cid = cid + "A";
 			}
 			
-			temp = isToken(script, sadako.token.eval_value);
-			if (temp !== false) script = eval(temp);
-
+			var eval_script = isToken(script, sadako.token.eval_value);
+			var text;
 			sadako.evals.push(function() {
-				var text = sadako.processScript(script);
-				if (link) text = eval(script);
+				text = script;
+				if (eval_script) text = processScript(eval_script);
+				if (link || eval_script) text = eval(text);
 				
-				addClass("#" + cid, "hide");
-				dom("#" + cid).innerHTML = text;
+				addClass(cid, "hide");
+				dom(cid).innerHTML = text;
 				setTimeout(function() {
-					removeClass("#" + cid, "hide");
+					removeClass(cid, "hide");
 				}, sadako.text_delay);
 			});
 		}
@@ -1285,7 +1296,7 @@
 		return [text];
 	};
 
-	sadako.writeOutput = function() {
+	sadako.writeOutput = function(id) {
 		// Writes output to display area
 
 		var choices = [];
@@ -1322,7 +1333,9 @@
 			el.className = classes.join(" ");
 			el.innerHTML = text;
 
-			dom(sadako.output_id).appendChild(el);
+			if (id) dom(id).appendChild(el);
+			else if (sadako.in_dialog && sadako.dialog_ids.output) dom(sadako.dialog_ids.output).appendChild(el);
+			else dom(sadako.output_id).appendChild(el);
 
 			// Fade in paragraph after a short delay
 			setTimeout(function() {
@@ -1384,7 +1397,7 @@
 		return function() {
 			// Indexes through each line and choice and outputs them to the display
 
-			sadako.clear();
+			sadako.clear(id);
 			
 			processLines();
 
@@ -1400,15 +1413,16 @@
 		}();
 	};
 
-	sadako.clear = function() {
+	sadako.clear = function(id) {
 		/*
 			Clears display text.
 
 			- Overwrite this function if a different method of displaying text is needed.
 		*/
 
-		// scrollToTop()
-		dom(sadako.output_id).innerHTML = "";
+		if (id) dom(id).innerHTML = "";
+		else if (sadako.in_dialog && sadako.dialog_ids.output) dom(sadako.dialog_ids.output).innerHTML = "";
+		else dom(sadako.output_id).innerHTML = "";
 	};
 
 	var refresh = function() {
@@ -1501,13 +1515,24 @@
 			var items = doRename(text);
 			var script = items[0];
 			var name = items[1] || script;
-
+		
+			var command = "";
+			if (sadako.in_dialog) command = "sadako.closeDialog(); ";
+			
 			var temp = isToken(script, sadako.token.eval_value);
-			if (temp) script = eval(temp);
-
-			if (script.indexOf(".") === -1 || !(script in sadako.labels)) script = sadako.page + "." + script;
-			var command = 'sadako.doLink("' + script + '")';
-
+			if (temp !== false) {
+				command += format("sadako.evals[{0}]()", sadako.evals.length);
+				var temp2;
+				sadako.evals.push(function() {
+					script = eval(temp);
+					if ((temp2 = isToken(script, sadako.token.label_embed))) script = temp2;
+					sadako.doLink("%" + localizeLabel(script));
+				});
+				return sadako.writeLink(name, command);
+			}
+			
+			script = localizeLabel(script);
+			command += 'sadako.doLink("%' + script + '")';
 			return sadako.writeLink(name, command, (script in sadako.labels) ? false : true);
 		}
 
@@ -1521,11 +1546,22 @@
 			var temp = isToken(script, sadako.token.page_embed);
 			if (temp !== false) script = temp;
 			
+			var command = "";
+			if (sadako.in_dialog) command = "sadako.closeDialog(); ";
+			
 			temp = isToken(script, sadako.token.eval_value);
-			if (temp) script = eval(temp);
-
-			var command = 'sadako.doLink("#' + script + '")';
-
+			if (temp) {
+				command += format("sadako.evals[{0}]()", sadako.evals.length);
+				var temp2;
+				sadako.evals.push(function() {
+					script = eval(temp);
+					if ((temp2 = isToken(script, sadako.token.page_embed))) script = temp2;
+					sadako.doLink("#" + script);
+				});
+				return sadako.writeLink(name, command);
+			}
+			
+			command += 'sadako.doLink("#' + script + '")';
 			return sadako.writeLink(name, command, (script in sadako.story) ? false : true);
 		}
 
@@ -1546,15 +1582,7 @@
 		}
 		
 		var doDialog = function(text) {
-			var getValue = function(text) {
-				if (isToken(text, sadako.token.cond_embed)) return false;
-				if (isToken(text, sadako.token.value_embed)) return false;
-				var script = text;
-				if ((temp = isToken(text, sadako.token.eval_value))) script = eval(temp);
-				return script;
-			}
-			
-			var temp, command;
+			var temp, eval_script, command;
 			
 			var items = doRename(text);
 			var script = items[0];
@@ -1562,19 +1590,45 @@
 			
 			var id = sadako.evals.length;
 			
-			if ((temp = isToken(script, sadako.token.page_embed)) && (temp = getValue(temp))) {
-				command = function() { sadako.showDialog("", "#" + temp); }
-			}
-			else if ((temp = isToken(script, sadako.token.label_embed)) && (temp = getValue(temp))) {
-				command = function() { sadako.showDialog("", "%" + temp); }
-			}
-			else {
+			if ((temp = isToken(script, sadako.token.page_embed))) {
+				script = temp;
+				eval_script = isToken(temp, sadako.token.eval_value);
 				
 				command = function() { 
-					var text = script;
-					if ((temp = isToken(script, sadako.token.eval_value))) text = eval(temp);
-					sadako.showDialog(); 
-					sadako.overwrite(text);
+					if (eval_script) script = eval(eval_script);
+					if ((temp = isToken(script, sadako.token.page_embed))) script = temp;
+					sadako.showDialog("", "#" + script); 
+				}
+			}
+			else if ((temp = isToken(script, sadako.token.label_embed))) {
+				script = temp;
+				eval_script = isToken(temp, sadako.token.eval_value);
+
+				command = function() { 
+					if (eval_script) script = eval(eval_script);
+					if ((temp = isToken(script, sadako.token.label_embed))) script = temp;
+					sadako.showDialog("", "%" + localizeLabel(script));
+				}
+			}
+			else if ((temp = isToken(script, sadako.token.eval_code))) {
+				script = temp;
+				command = function() { 
+					sadako.showDialog();
+					sadako.clear();
+					eval(script);
+				}
+			}
+			else if ((temp = isToken(script, sadako.token.eval_value))) {
+				script = temp;
+				command = function() { 
+					sadako.showDialog();
+					sadako.overwrite(eval(script));
+				}
+			} 
+			else {
+				command = function() { 
+					sadako.showDialog();
+					sadako.overwrite(script);
 				}
 			}
 			
@@ -1770,9 +1824,9 @@
 		choice (integer): index of choice in 'sadako.choices' array
 		*/
 		
-		sadako.run();
+		if (!sadako.in_dialog && !sadako.in_include) sadako.reveal_id = 0;
 		
-		if (!sadako.in_dialog) sadako.scrollToTop();
+		sadako.run();
 
 		sadako.chosen = choice;
 		var line = sadako.choices[choice].line;
@@ -1803,14 +1857,19 @@
 
 		doScript(line[0], line[1] + "." + line[2], 0);
 	};
+	
+	var localizeLabel = function(label, throw_error) {
+		if (label.indexOf(".") === -1 || !(label in sadako.labels)) label = sadako.page + "." + label;
+		if (throw_error && !(label in sadako.labels)) throw new Error("Can't find label '" + label + "'");
+		return label;
+	}
 
 	var getLineByLabel = function(label) {
 		if (label.charAt(0) === "#") {
 			return [label.substring(1), 0, 0];
 		}
 		else {
-			if (label.indexOf(".") === -1 || !(label in sadako.labels)) label = sadako.page + "." + label;
-			if (!(label in sadako.labels)) throw new Error("Can't find label '" + label + "'");
+			label = localizeLabel(label, true);
 
 			var line = sadako.labels[label];
 			var token = sadako.story[line[0]][line[1]][line[2]].k;
@@ -1822,22 +1881,47 @@
 	};
 	
 	var doInclude = function(label) {
+		var state = [];
+		
+		var saveState = function() {
+			state.push(copy(sadako.savestate_enabled, true));
+			state.push(copy(sadako.tmp, true));
+			state.push(copy(sadako.conditions, true));
+			state.push(copy(sadako.in_include, true));
+			state.push(copy(sadako.script_status, true));
+			state.push(copy(sadako.page, true));
+			state.push(copy(sadako.part, true));
+			state.push(copy(sadako.start, true));
+		}
+		
+		var restoreState = function() {
+			sadako.savestate_enabled = copy(state.shift(), true);
+			sadako.tmp = copy(state.shift(), true);
+			sadako.conditions = copy(state.shift(), true);
+			sadako.in_include = copy(state.shift(), true);
+			sadako.script_status = copy(state.shift(), true);
+			sadako.page = copy(state.shift(), true);
+			sadako.part = copy(state.shift(), true);
+			sadako.start = copy(state.shift(), true);
+		}
+		
 		if (sadako.script_status === END) sadako.run();
 		
 		var temp;
 		if ((temp = isToken(label, sadako.token.label_embed))) label = temp;
 		
-		var status = sadako.script_status;
+		saveState();
 		sadako.in_include = true;
+		sadako.tmp = {};
+		sadako.savestate_enabled = false;
 		doJump(label, true);
-		sadako.in_include = false;
-		if (sadako.script_status === END) sadako.script_status = status;
+		restoreState();
 	}
 
 	var doLink = function(label) {
-		sadako.run();
+		if (!sadako.in_dialog && !sadako.in_include) sadako.reveal_id = 0;
 		
-		if (!sadako.in_dialog) sadako.scrollToTop();
+		sadako.run();
 
 		sadako.lines = [];
 		sadako.choices = [];
@@ -2306,6 +2390,7 @@
 				if (sadako.script_status === ABORT) return;
 
 				sadako.writeOutput();
+				sadako.scrollToTop();
 			}
 		};
 		
@@ -2427,6 +2512,7 @@
 	// sadako.freezeData
 	// sadako.unfreezeData
 	// sadako.clear
+	// sadako.scrollToTop
 
 	// functions made available for use in overridden functions
 	sadako.processTags = processTags;
@@ -2459,6 +2545,6 @@
 	sadako.arrayToString = arrayToString;
 	sadako.cap = cap;
 	sadako.dom = dom;
-	sadako.scrollToTop = scrollToTop;
+	
 
 }(window.sadako = window.sadako || {}));
