@@ -78,10 +78,13 @@ The following is a short example written in Sadako script.
 ```
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 Why the name *Sadako* for a hypertext fiction engine? 
 
 I usually name my projects after my favorite characters in the respective genre. However, I don't have any favorite characters in this genre since most games don't have memorable characters and only self-insert protagonists. Instead I chose to go with my favorite thing, which is japanese horror. I love Ringu and Juon, so I chose Sadako as the main engine, and I thought it'd be humorous to have Kayako as the compiler. Sadako vs Kayako. Yes, I'm lame. Please forgive me. 🙏
+=======
+>>>>>>> parent of 0c722ac... Update README.md
 =======
 >>>>>>> parent of 0c722ac... Update README.md
 =======
