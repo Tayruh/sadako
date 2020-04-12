@@ -3,23 +3,23 @@
 #### Table of Contents
 
 * [Comments](#comments)
-    *  [Comment Block `/* */`](#comment-block)
-    *  [Line Comment `//`](#line-comment)
-    * [Escape `\`](#escape)
+    *  [Comment Block](#comment-block) `/* */`
+    *  [Line Comment](#line-comment) `//`
+    * [Escape](#escape) `\`
 
 * [Story Sections](#story-sections)
-    * [Pages `##`](#pages)
-        * [Tags `~:`](#tags)
-    * [Inline Labels `{ }`](#inline-labels)
-    * [Jumps `>>`](#jumps)
-    * [Returns `<<`](#returns)
-        * [Includes `>>=`](#includes)
+    * [Pages](#pages) `##`
+        * [Tags](#tags) `~:`
+    * [Inline Labels](#inline-labels) `{ }`
+    * [Jumps](#jumps) `>>`
+    * [Returns](#returns) `<<`
+        * [Includes](#includes) `>>=`
 
 * [Text Formatting](#text-formatting)
-    * [Line Ending `;;`](#line-ending)
-    * [Text Attachment `<>`](#text-attachment)
-    * [Span Markup `<: :>`](#span-markup)
-    * [Tags `~:`](#tags-1)
+    * [Line Ending](#line-ending) `;;`
+    * [Text Attachment](#text-attachment) `<>`
+    * [Span Markup](#span-markup) `<: :>`
+    * [Tags](#tags-1) `~:`
         * [Class](#class)
         * [Choice](#choice)
         * [Delay](#delay)
@@ -27,32 +27,32 @@
 
 * [Variables and Conditionals](#variables-and-conditionals)
     * [Variable Embedding](#variable-embedding)
-        * [For use in Story Script `$:` `_:` `*:` `#:` `%:` `^:`](#for-use-in-story-script)
-        * [For use in Script Blocks `$.` `_.` `*.` `#.` `%.` `^.` `~~=` `~~+`](#for-use-in-script-blocks)
+        * [For use in Story Script](#for-use-in-story-script) `$:` `_:` `*:` `#:` `%:` `^:`
+        * [For use in Script Blocks](#for-use-in-script-blocks) `$.` `_.` `*.` `#.` `%.` `^.` `~~=` `~~+`
         * [var, tmp](#var-tmp)
         * [text](#text)
         * [scripts](#scripts)
-    * [Conditional Display `::`](#conditional-display)
-    * [Inline Text Options `{: :}`](#inline-text-options)
+    * [Conditional Display](#conditional-display) `::`
+    * [Inline Text Options](#inline-text-options) `{: :}`
     * [Script Block](#script-block)
-        * [Redirects `[: :]` `[:% :]`](#redirects)
-        * [JavaScript `[:& :]` `[:= :]`](#javascript)
-        * [Input Boxes `[:> :]` `[:>> :]`](#input-boxes)
-        * [Reveal Links `[:+ :]`](#reveal-links)
-        * [Dialog Links `[:* :]`](#dialog-links)
-    * [Macros `(: :)`](#macros)
+        * [Redirects](#redirects) `[: :]` `[:# :]` `[:% :]`
+        * [JavaScript](#javascript) `[:& :]` `[:= :]`
+        * [Input Boxes](#input-boxes) `[:> :]` `[:>> :]`
+        * [Reveal Links](#reveal-links) `[:+ :]` `[:+# :]` `[:+% :]` `[:+& :]` `[:+= :]`
+        * [Dialog Links](#dialog-links) `[:* :]` `[:*! :]` `[:*# :]` `[:*% :]` `[:*& :]` `[:*= :]`
+    * [Macros](#macros) `(: :)`
 
 * [Choices and Depths](#choices-and-depths)
-    * [Choice formatting `[ ]`](#choice-formatting)
-    * [Static Choice `+`](#static-choice)
-    * [Labels `{ }`](#labels)
-    * [Limited Choice `*`](#limited-choice)
+    * [Choice formatting](#choice-formatting) `[ ]`
+    * [Static Choice](#static-choice) `+`
+    * [Labels](#labels) `{ }`
+    * [Limited Choice](#limited-choice) `*`
     * [Fallback Choice](#fallback-choice)
-    * [Depth Token `-`](#depth-token)
-    * [Depth Labels `=`](#depth-labels)
-    * [Condition Block `~ if` `~ else if` `~ else`](#condition-block)
+    * [Depth Token](#depth-token) `-`
+    * [Depth Labels](#depth-labels) `=`
+    * [Condition Block](#condition-block) `~ if` `~ else if` `~ else`
 
-* [Scenes `*.` `*:`](#scenes)
+* [Scenes](#scenes) `*.` `*:`
     * [Examples](#examples)
     * [Defining](#defining)
 
@@ -909,6 +909,10 @@ Page and label names can also be derived from script evaulation using an `=` eva
 The `*` dialog token is used to display a popup when the link is clicked. Like usual, the link name is taken from the text following the `@:` name token.
 
 You can use the `*` dialog token in five ways:
+
+1. With an `!` action token. This closes the dialog window. If a name is given, it will close after pressing the link. If none is given, it will close immediately. Any text following the `!` action token will be discarded.
+Close immediately: `[:*!:]`
+Close with link: `:[*! @: Link name:]`
 
 1. Just output straight text to a dialog window.
 `[:* Some text @: Link name:]`

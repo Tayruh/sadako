@@ -1,6 +1,6 @@
 (function(sadako) {
 
-	sadako.version = "0.10.1";
+	sadako.version = "0.10.2";
 	sadako.kayako_version = "0.9.6";
 
 	var localStorage;
@@ -52,6 +52,7 @@
 		"eval_input": ">",
 		"eval_reveal": "+",
 		"eval_dialog": "*",
+		"eval_action": "!",
 
 		// embedding
 		"script_embed": "\\^",
@@ -940,11 +941,13 @@
 
 			cleanup (boolean): if true, clears lines and choices arrays.
 		*/
+		
+		if (!sadako.in_dialog) return;
 
 		sadako.unfreezeData();
-
 		sadako.in_dialog = false;
 
+		// if script is running, we clear previous lines and choices
 		if (cleanup || sadako.script_status === RUN) {
 			sadako.lines = [];
 			sadako.choices = [];
@@ -969,32 +972,31 @@
 			text (string): Text to display in dialog body
 		*/
 		
+		var updateDialog = function() {
+			sadako.clear();
+			if (sadako.dialog_ids.title) sadako.dom(sadako.dialog_ids.title).innerHTML = title || "";
+			
+			if (text) {
+				var temp;
+				if ((temp = sadako.isToken(text, sadako.token.page_embed))) doLink("#" + temp);
+				else if ((temp = sadako.isToken(text, sadako.token.label_embed))) sadako.doLink(temp);
+				else sadako.overwrite(text);
+			}
+		}
+		
 		if (!sadako.dialog_ids.output) { 
 			console.error("Dialog is not set up properly.");
 			return false;
 		}
-
-		sadako.run();
-
-		// if (sadako.dialog_ids.display && !sadako.hasClass(sadako.dialog_ids.display[0], "open")) {
-		if (!sadako.in_dialog) {
-			sadako.freezeData();
+		
+		if (sadako.in_dialog) {
+			updateDialog();
+			return true;
 		}
 		
+		sadako.freezeData();
 		sadako.in_dialog = true;
-
-		sadako.lines = [];
-		sadako.choices = [];
-
-		if (sadako.dialog_ids.title) sadako.dom(sadako.dialog_ids.title).innerHTML = title || "";
-
-		var temp;
-		if (text === undefined) sadako.dom(sadako.dialog_ids.output).innerHTML = "";
-		else {
-			if ((temp = sadako.isToken(text, sadako.token.page_embed))) doLink("#" + temp);
-			else if ((temp = sadako.isToken(text, sadako.token.label_embed))) sadako.doLink(temp);
-			else sadako.dom(sadako.dialog_ids.output).innerHTML = text;
-		}
+		updateDialog();
 
 		var a;
 		for (a = 0; a < sadako.dialog_ids.display.length; ++a) {
@@ -1545,72 +1547,87 @@
 		}
 		
 		var doDialog = function(text) {
-			var temp, eval_script, command;
+			var writeDialogLink = function(name, command, is_broken) {
+				sadako.evals.push(command);
+				if (is_broken) return (sadako.writeLink(name, command, true));
+				return sadako.writeLink(name, format("sadako.evals[{0}]()", id));
+			}
+			
+			var temp, eval_script;
 			
 			var items = doRename(text);
 			var script = items[0];
-			var name = items[1] || script;
+			var name = items[1];
 			
 			var id = sadako.evals.length;
 			
-			var is_broken = false;
+			// close dialog
+			if (isToken(script, sadako.token.eval_action) !== false) {
+				if (!name) {
+					sadako.closeDialog();
+					return "";
+				}
+				return writeDialogLink(name, function() { sadako.closeDialog() });
+			}
 			
+			if (!name) name = script;
+			
+			// page
 			if ((temp = isToken(script, sadako.token.page_embed))) {
 				script = temp;
 				eval_script = isToken(temp, sadako.token.eval_value);
 				
-				command = function() { 
+				if (!eval_script && !(script in sadako.story)) {
+					return writeDialogLink(name, format('sadako.showDialog("#{0}")', script), true);
+				}
+				
+				return writeDialogLink(name, function() { 
 					if (eval_script) script = eval(eval_script);
 					if ((temp = isToken(script, sadako.token.page_embed))) script = temp;
 					sadako.showDialog("", "#" + script); 
-				}
-				
-				if (!eval_script && !(script in sadako.story)) {
-					is_broken = true;
-					command = format('sadako.showDialog("#{0}")', script);
-				}
+				});
 			}
-			else if ((temp = isToken(script, sadako.token.label_embed))) {
+			
+			// label
+			if ((temp = isToken(script, sadako.token.label_embed))) {
 				script = temp;
 				eval_script = isToken(temp, sadako.token.eval_value);
 
-				command = function() { 
+				if (!eval_script && !(localizeLabel(script) in sadako.labels)) {
+					return writeDialogLink(name, format('sadako.showDialog("%{0}")', script), true);
+				}
+				
+				return writeDialogLink(name, function() { 
 					if (eval_script) script = eval(eval_script);
 					if ((temp = isToken(script, sadako.token.label_embed))) script = temp;
 					sadako.showDialog("", "%" + localizeLabel(script));
-				}
-				
-				if (!eval_script && !(localizeLabel(script) in sadako.labels)) {
-					is_broken = true;
-					command = format('sadako.showDialog("%{0}")', script);
-				}
+				});
 			}
-			else if ((temp = isToken(script, sadako.token.eval_code))) {
+
+			// code eval
+			if ((temp = isToken(script, sadako.token.eval_code))) {
 				script = temp;
-				command = function() { 
+				return writeDialogLink(name, function() { 
 					if (!sadako.showDialog()) return;
 					sadako.clear();
 					eval(script);
-				}
+				});
 			}
-			else if ((temp = isToken(script, sadako.token.eval_value))) {
+			
+			// text eval
+			if ((temp = isToken(script, sadako.token.eval_value))) {
 				script = temp;
-				command = function() { 
+				return writeDialogLink(name, function() {
 					if (!sadako.showDialog()) return;
 					sadako.overwrite(eval(script));
-				}
-			} 
-			else {
-				command = function() {
-					if (!sadako.showDialog()) return;
-					sadako.overwrite(script);
-				}
+				});
 			}
 			
-			sadako.evals.push(command);
-			
-			if (is_broken) return (sadako.writeLink(name, command, true));
-			return sadako.writeLink(name, format("sadako.evals[{0}]()", id));
+			// normal text
+			return writeDialogLink(name, function() {
+				if (!sadako.showDialog()) return;
+				sadako.overwrite(script);
+			});
 		}
 		
 		return function() {
