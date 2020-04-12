@@ -912,7 +912,7 @@ You can use the `*` dialog token in six ways:
 
 1. With an `!` action token. This closes the dialog window. If a name is given, it will close after clicking the link. If none is given, it will close immediately. Any text following the `!` action token will be discarded.<br>
 Close immediately: `[:*!:]`<br>
-Close with link: `:[*! @: Link name:]`
+Close with link: `[:*! @: Link name:]`
 
 2. Just output straight text to a dialog window.<br>
 `[:* Some text @: Link name:]`
