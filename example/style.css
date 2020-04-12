@@ -18,10 +18,6 @@ html, body {
 	font-size:100%;
 }
 
-.hide {
-	opacity: 0;
-	transition: opacity 200ms ease-in;
-}
 .choice { 
 	font-size: 1.1em;
 	line-height: 2;
@@ -40,13 +36,21 @@ html, body {
 	margin-left:10px;
 }
 
-#room-title {
+#room-title2 {
 	font-size:1.1em;
 	width: 100%;
 	text-align: center;
 	color: darkgray;
 	background: #333;
 }
+
+#room-title {
+	font-size:1.1em;
+	width: 100%;
+	font-weight: bold;
+	text-decoration: underline;
+}
+
 div:not(:first-of-type) > #room-title {
 	margin-top: 2em;
 }
@@ -55,11 +59,6 @@ div:not(:first-of-type) > #room-title {
 	text-align: center;
 	font-size: 0.9em;
 	color: darkgray;
-}
-
-#dialog-text {
-	max-width: 30em;
-	overflow-y: auto;
 }
 
 #inventory {
@@ -91,10 +90,25 @@ div:not(:first-of-type) > #room-title {
 	text-justify: auto;
 }
 .story-text > div {
-	margin: 1em;
-	transition: opacity 400ms ease-in;
+	margin-left: 1em;
+	margin-right: 1em;
 }
-.story-text a {
+.story-text div {
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+
+.story-text .hide {
+	transition: opacity initial;
+	opacity: 0;
+}
+
+.story-text :not(.hide) {
+	transition: opacity 400ms ease-in;
+	opacity: 1;
+}
+
+.story-text a.link {
 	text-decoration:none;
 	text-align:left;
 	color: darkgray;
@@ -113,8 +127,8 @@ div:not(:first-of-type) > #room-title {
 .story-text tr, .story-text th, .story-text td, .story-text caption {
 	padding: 3px;
 }
-.story-text a:not(.link-broken) { color:darkgray; }
-.story-text a:hover { color: darkorange; }
+.story-text a.link:not(.link-broken) { color:darkgray; }
+.story-text a.link:hover { color: darkorange; }
 .story-text hr {
 	border-color:#333333;
 	margin-top: 3em;
@@ -130,7 +144,7 @@ div:not(:first-of-type) > #room-title {
 .story-text textarea { resize: none; font-size: 12pt; height: 1.3em; width: 14em; }
 .story-text textarea.multiline { height: 6.5em; width: 30em; }
 
-a { cursor: pointer; }
+a.link { cursor: pointer; }
 a.broken, #story-output a.broken { color: red; }
 
 #banner-wrapper {
@@ -150,11 +164,11 @@ a.broken, #story-output a.broken { color: red; }
 	margin-right: auto;
 	margin-left: auto;
 	line-height: 30px;
+	text-align: center;
 }
 #banner-status {
-	position: absolute;
-	top: 5px;
-	left: 3.5em;
+	padding-left: 40px;
+	padding-right: 106px;
 	display: inline-block;
 	line-height: 24px;
 	color: #888;
@@ -173,7 +187,9 @@ a.broken, #story-output a.broken { color: red; }
 	margin-left: 0;
 }
 .banner-button {
-	width: 30px;
+	margin-left: 3px;
+	margin-right: 3px;
+	height: 20px;
 	display: inline-block;
 	text-align: center;
 }
@@ -187,10 +203,21 @@ a.broken, #story-output a.broken { color: red; }
   display: inline-block;
 }
 
-#overlay {
-	background-color: #000;
+
+#dialog:not(.open), #dialog-overlay:not(.open) {
+	transition: visibility 200ms step-end, opacity 200ms ease-in;
 	visibility: hidden;
 	opacity: 0;
+}
+
+#dialog.open, #dialog-overlay.open {
+	transition: opacity 200ms ease-in;
+	visibility: visible;
+	opacity: 1;	
+}
+
+#dialog-overlay {
+	background-color: #000;
 	position: fixed;
 	top: 0; 
 	left: 0;
@@ -198,37 +225,37 @@ a.broken, #story-output a.broken { color: red; }
 	width: 100%;
 	z-index: 200;
 }
-#overlay:not(.open) {
-	transition: visibility 200ms step-end, opacity 200ms ease-in;
-}
-#overlay.open {
-	visibility: visible;
-	transition: opacity 200ms ease-in;
-	opacity: 0.8;
-}
+#dialog-overlay.open { opacity: 0.8; }
 
 #dialog {
 	position: fixed;
 	top: 5vh;;
 	left: 50%;
 	transform: translate(-50%);
-	visibility: hidden;
-	opacity: 0;
 	padding: 0;
 	z-index: 300;
 }
+	
+}
 #dialog-output {
 	overflow-y: auto;
+	
 	max-height: 75vh;
 }
-#dialog:not(.open) {
-	transition: visibility 200ms step-end, opacity 200ms ease-in;
+#dialog-body {
+	min-width: 280px;
+	background-color: #111;
+	border: 1px solid #444;
+	text-align: left;
+	line-height: 1.5;
+	padding: 0;
+	border-radius: 0 0 6px 6px;
+    max-width: 40em;
+	min-height: 2em;
 }
-#dialog.open {
-	visibility: visible;
-	transition: opacity 200ms ease-in;
-	opacity: 1;
-	
+#dialog-text {
+	max-width: 30em;
+	overflow-y: auto;
 }
 #dialog-titlebar {
 	background-color: #444;
@@ -241,7 +268,6 @@ a.broken, #story-output a.broken { color: red; }
 #dialog-title {
 	padding: 0.2em 2em 0.2em 0.5em;
 	font-size: 1em;
-	text-align: center;
     font-family: Arvo-Regular_0, serif;
 }
 #dialog-close {
@@ -269,22 +295,22 @@ a.broken, #story-output a.broken { color: red; }
 	background-color: #6d3c00;
 	border-color: darkorange;
 }
-#dialog-body {
-	min-width: 280px;
-	background-color: #111;
-	border: 1px solid #444;
-	text-align: left;
-	line-height: 1.5;
-	padding: 0;
-	border-radius: 0 0 6px 6px;
-    max-width: 40em;
-}
 
 #save-slot {
     color: white;
     background: black;
 }
 .save-menu-button { text-align: right; }
+
+
+/* ====== game specific ====== */
+
+.demo-tv {
+	font-family: "Comic Sans MS";
+	font-size: 1.1em;
+	color: yellow;
+}
+
 
 @media screen and (max-width: 600px) {
 	body { font-size: 80%; }
@@ -296,7 +322,8 @@ a.broken, #story-output a.broken { color: red; }
 		text-justify: none;
 	}
 	.story-text input { width: 10em; }
-	.story-text textarea.multiline { height: 6.5em; width: 18em;}
+	.story-text textarea.multiline { height: 6.5em; width: 18em; }
+	#banner { text-align: left; }
 }
 @media screen and (max-height: 420px) {
 	#dialog-output { max-height: 70vh; }
@@ -309,12 +336,4 @@ a.broken, #story-output a.broken { color: red; }
 }
 @media screen and (max-height: 220px) {
 	#dialog-output { max-height: 50vh; }
-}
-
-/* ====== game specific ====== */
-
-.demo-tv {
-	font-family: "Comic Sans MS";
-	font-size: 1.1em;
-	color: yellow;
 }

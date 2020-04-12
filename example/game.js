@@ -177,7 +177,7 @@
 			// First param is the text output, second is the title of the window
 			// (if it has one), and third is an array of all items to show/hide
 			// when showDialog() and closeDialog() are called.
-			sadako.setupDialog("#dialog-output", "#dialog-title", ["#dialog", "#overlay"]);
+			sadako.setupDialog("#dialog-output", "#dialog-title", ["#dialog", "#dialog-overlay"]);
 			
 			// Setting title in the banner at the top of the page.
 			sadako.dom("#banner-status").innerHTML = "A Rainy Day";

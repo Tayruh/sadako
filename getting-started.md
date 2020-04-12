@@ -132,6 +132,8 @@ Here is an example with a working dialog box.
                 color: black;
                 background-color: white;
             }
+            
+            #dialog-output { min-height: 1em; }
 
             #dialog-title, #dialog-output {
                 min-width: 200px;
