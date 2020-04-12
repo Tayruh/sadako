@@ -72,7 +72,7 @@ That's basically it. You now have a running game.
 
 #### Setting up a Dialog Box
 
-If you do not define a dialog box, either by calling the function or by adding the default IDs to your HTML page, dialog actions will be disabled.
+If you do not define a dialog box, dialog actions will be disabled. To define a dialog box, you must create one in HTML and then call `sadako.setupDialog()` with the respective IDs. The following is an example on how to do this.
 
 Here is an example with a working dialog box.
 
