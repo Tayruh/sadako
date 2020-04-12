@@ -884,24 +884,19 @@ There are five ways to use the `+` reveal token:
 
 1. Alone. It will replace the link with solid text and that'll be it. It's a time time deal.
 `[:+ Replacment text @: Link name:]`
-<br>
 
 2. With an `=` eval token. This will replace the text once with the evaluated script.
 `[:+= "The sum of 1 + 1 = " + (1 + 1) @: Let's do some math:]`
-<br>
 
 3. With a `&` code token. Instead of a one-time replacement, this will repeatedly call the script every click and replace the link name with the output. 
 The following example replaces the link name with a random item every click.
 `[:+& sadako.randomItem(["apple", "orange", "banana"]) @: Link name:]`
-<br>
 
 4. With a `#` page token. It will replace the link with the output of an included page. This acts exactly like including with the `>>=` include token, except it doesn't display until you click the link.
 `[:+# some_page @: link name:]`
-<br>
 
 5. With a `%` label token. It will replace the link with the output of an included label. This acts exactly like including with the `>>=` include token, except it doesn't display until you click the link.
 `[:+% some_label @: link name:]`
-
 
 With both included pages and included labels, the inclusion will stop once it sees a choice and will not include any choices. 
 
@@ -917,27 +912,24 @@ You can use the `*` dialog token in five ways:
 
 1. Just output straight text to a dialog window.
 `[:* Some text @: Link name:]`
-<br>
 
 2. With an `=` eval token. The script is evaluated before being displayed in the dialog window.
 `[:*= "Here's some math: " + (1 + 2) @: Link name:]`
-<br>
 
 3. With a `&` code token. Instead of displaying the text directly in a dialog window, the dialog will be displayed empty and the script will be evaluated. However, The output target of functions like `sadako.doLink()`, `sadako.overwrite()`, `sadako.writeOutput()`, and such will be redirected to the dialog window.
     The following will write `Bleh` to the dialog window after it displays.
 `[:*& sadako.overwrite("Bleh") @: Link name:]`
-<br>
 
 4. With a `#` page token. The dialog will be shown with the included page.
 `[:*# some_page @: link name:]`
-<br>
 
 5. With a `%` label token. The dialog will be shown with the included label.
 `[:*% some_label @ label_name:]`
 
 As with the `+` reveal token, you can add an `=` eval token to the page and label tokens to evaluate the name of the page or label to display in the dialog. For example, the following will display the page named `page3` in a dialog window:
  `[:*#= "page" + (1 + 2) @: Link name:]`
-
+ 
+There isn't a standard dialog window defined in **Sadako**. The user must define one themselves in HTML. The "[getting started](getting-started.md)" guide has an example on how to get this up and running.
 
 
 ### Macros

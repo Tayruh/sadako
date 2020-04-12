@@ -848,36 +848,6 @@
 		return true;
 	};
 
-	var startGame = function(page) {
-		/*
-			Begins the game.
-
-			- If "page" is provided, it will start there instead of "start".
-			- If autosave is enabled, it will load the autosave.
-
-			page (string): Page to begin game on.
-		*/
-
-		if (page !== undefined) sadako.page = page;
-
-		if (sadako.defaultData === undefined || isEmpty(sadako.defaultData)) {
-			sadako.defaultData = copy(getCurrentState(), true);
-		}
-		else loadState(sadako.defaultData);
-
-		if (!sadako.autosave_enabled) {
-			if (localStorage.getItem(sadako.savename + "_savedata_auto") !== null) {
-				localStorage.removeItem(sadako.savename + "_savedata_auto");
-			}
-		}
-
-		sadako.current_line = [sadako.page, 0, 0];
-
-		if (!sadako.autosave_enabled || !sadako.loadGame("auto", true)) {
-			doLink("#" + sadako.page);
-		}
-	};
-
 	var back = function() {
 		/*
 			Goes back one state in the history.
@@ -923,6 +893,9 @@
 		location.reload(true);
 	};
 
+
+	/* Dialog */
+	
 	sadako.freezeData = function(id) {
 		/*
 			"Freezes" the current state.
@@ -961,27 +934,6 @@
 		sadako.output_id = sadako.freeze_data.output_id;
 	};
 
-
-	/* Dialog */
-
-	sadako.setupDialog = function(output_id, title_id, display_ids) {
-		/*
-			Assigns ids to the elements associated with the dialog.
-
-			- ids should begin with a '#' symbol.
-
-			output_id (string): The element in which the output text will be written.
-			title_id (string): The element containing the title of the dialog window.
-			display_ids (array): An array containing one or more elements
-				to show/hide in order to show/hide the dialog window (ie. the DIV containing
-				both the title and output area DIVs).
-		*/
-
-		sadako.dialog_ids.output = output_id;
-		sadako.dialog_ids.title = title_id;
-		sadako.dialog_ids.display = display_ids;
-	};
-
 	sadako.closeDialog = function(cleanup) {
 		/*
 			Closes the dialog window.
@@ -1016,6 +968,11 @@
 			title (string): Text to display in title bar
 			text (string): Text to display in dialog body
 		*/
+		
+		if (!sadako.dialog_ids.output) { 
+			console.error("Dialog is not set up properly.");
+			return false;
+		}
 
 		sadako.run();
 
@@ -1034,7 +991,7 @@
 		var temp;
 		if (text === undefined) sadako.dom(sadako.dialog_ids.output).innerHTML = "";
 		else {
-			if ((temp = sadako.isToken(text, sadako.token.page_embed))) doJump("#" + temp);
+			if ((temp = sadako.isToken(text, sadako.token.page_embed))) doLink("#" + temp);
 			else if ((temp = sadako.isToken(text, sadako.token.label_embed))) sadako.doLink(temp);
 			else sadako.dom(sadako.dialog_ids.output).innerHTML = text;
 		}
@@ -1043,6 +1000,8 @@
 		for (a = 0; a < sadako.dialog_ids.display.length; ++a) {
 			sadako.addClass(sadako.dialog_ids.display[a], "open");
 		}
+		
+		return true;
 	};
 
 
@@ -1166,13 +1125,13 @@
 			if (!(temp in sadako.labels)) broken = true;
 		}
 
-		if (broken === undefined || broken === false) return "<a onClick='" + command + "'>" + name + "</a>";
-		return "<a class='broken' title='" + command + "'>" + name + "</a>";
+		if (broken === undefined || broken === false) return "<a class='link' onClick='" + command + "'>" + name + "</a>";
+		return "<a class='link broken' title='" + command + "'>" + name + "</a>";
 	};
 	
 	sadako.fadeIn = function(text) {
-		var id = sadako.evals.length;
-		sadako.evals.push([]);
+		var id = "reveal_" + sadako.reveal_id;
+		sadako.reveal_id += 1;
 		var output = format("<span id='{0}' class='hide'>{1}</span>", id, text);
 		setTimeout(function() {
 			removeClass(id, "hide");
@@ -1206,11 +1165,11 @@
 			}
 			
 			if ((temp = isToken(script, t.page_embed)) && !(temp in sadako.story)) {
-				return sadako.writeLink(name, 'sadako.doInclude(#"' + script + '")', true);
+				return sadako.writeLink(name, 'sadako.doInclude("#' + temp + '")', true);
 			}
 			
 			if ((temp = isToken(script, t.label_embed)) && !(temp in sadako.labels)) {
-				return sadako.writeLink(name, 'sadako.doInclude(%"' + script + '")', true);
+				return sadako.writeLink(name, 'sadako.doInclude("%' + temp + '")', true);
 			}
 			
 			sadako.evals.push(function() {
@@ -1243,7 +1202,7 @@
 			});
 		}
 		
-		return format("<span id='{0}'><a id='{0}A' onclick='sadako.evals[{1}]()'>{2}</a></span>", id, sadako.evals.length - 1, name);
+		return format("<span id='{0}'><a id='{0}A' class='link' onclick='sadako.evals[{1}]()'>{2}</a></span>", id, sadako.evals.length - 1, name);
 	};
 
 	sadako.writeInput = function(script, name) {
@@ -1384,7 +1343,7 @@
 
 				// Choice taken from script
 				if ("line" in sadako.choices[a]) {
-					text += sadako.format("<li class='choice'><span class='{0}'><a onclick='sadako.doChoice({1})'>{2}</a></span></li>", temp[1].join(" "), a, name);
+					text += sadako.format("<li class='choice'><span class='{0}'><a class='link' onclick='sadako.doChoice({1})'>{2}</a></span></li>", temp[1].join(" "), a, name);
 				}
 				// Choice added via addChoice()
 				else {
@@ -1410,6 +1369,10 @@
 
 				displayText(text, []);
 			}
+			
+			// writing the output should always be the last step of any text processing,
+			// so we'll ensure the script is set to end
+			sadako.end();
 		}();
 	};
 
@@ -1590,6 +1553,8 @@
 			
 			var id = sadako.evals.length;
 			
+			var is_broken = false;
+			
 			if ((temp = isToken(script, sadako.token.page_embed))) {
 				script = temp;
 				eval_script = isToken(temp, sadako.token.eval_value);
@@ -1598,6 +1563,11 @@
 					if (eval_script) script = eval(eval_script);
 					if ((temp = isToken(script, sadako.token.page_embed))) script = temp;
 					sadako.showDialog("", "#" + script); 
+				}
+				
+				if (!eval_script && !(script in sadako.story)) {
+					is_broken = true;
+					command = format('sadako.showDialog("#{0}")', script);
 				}
 			}
 			else if ((temp = isToken(script, sadako.token.label_embed))) {
@@ -1609,11 +1579,16 @@
 					if ((temp = isToken(script, sadako.token.label_embed))) script = temp;
 					sadako.showDialog("", "%" + localizeLabel(script));
 				}
+				
+				if (!eval_script && !(localizeLabel(script) in sadako.labels)) {
+					is_broken = true;
+					command = format('sadako.showDialog("%{0}")', script);
+				}
 			}
 			else if ((temp = isToken(script, sadako.token.eval_code))) {
 				script = temp;
 				command = function() { 
-					sadako.showDialog();
+					if (!sadako.showDialog()) return;
 					sadako.clear();
 					eval(script);
 				}
@@ -1621,19 +1596,20 @@
 			else if ((temp = isToken(script, sadako.token.eval_value))) {
 				script = temp;
 				command = function() { 
-					sadako.showDialog();
+					if (!sadako.showDialog()) return;
 					sadako.overwrite(eval(script));
 				}
 			} 
 			else {
-				command = function() { 
-					sadako.showDialog();
+				command = function() {
+					if (!sadako.showDialog()) return;
 					sadako.overwrite(script);
 				}
 			}
 			
 			sadako.evals.push(command);
 			
+			if (is_broken) return (sadako.writeLink(name, command, true));
 			return sadako.writeLink(name, format("sadako.evals[{0}]()", id));
 		}
 		
@@ -2389,8 +2365,8 @@
 				if ("ALL" in sadako.after) sadako.after.ALL();
 				if (sadako.script_status === ABORT) return;
 
-				sadako.writeOutput();
 				sadako.scrollToTop();
+				sadako.writeOutput();
 			}
 		};
 		
@@ -2479,6 +2455,68 @@
 		}
 
 		if (sadako.story === undefined) console.error("Sadako script not found");
+	};
+	
+	sadako.setupDialog = function(output_id, title_id, display_ids) {
+		/*
+			Assigns ids to the elements associated with the dialog.
+
+			- ids should begin with a '#' symbol.
+
+			output_id (string): The element in which the output text will be written.
+			title_id (string): The element containing the title of the dialog window.
+			display_ids (array): An array containing one or more elements
+				to show/hide in order to show/hide the dialog window (ie. the DIV containing
+				both the title and output area DIVs).
+		*/
+		
+		var a;
+		var ids = [output_id, title_id].concat(display_ids);
+		
+		var is_valid = true;
+		for (a = 0; a < ids.length; ++a) {
+			if (ids[a] === undefined) continue;
+			if (!dom(ids[a])) {
+				console.error("Dialog ID `" + ids[a] + "` is not defined.");
+				is_valid = false;
+			}
+		}
+		
+		if (!is_valid) return;
+
+		sadako.dialog_ids.output = output_id;
+		sadako.dialog_ids.title = title_id;
+		sadako.dialog_ids.display = display_ids;
+	};
+	
+	var startGame = function(page) {
+		/*
+			Begins the game.
+
+			- If "page" is provided, it will start there instead of "start".
+			- If autosave is enabled, it will load the autosave.
+
+			page (string): Page to begin game on.
+		*/
+
+		if (page !== undefined) sadako.page = page;
+
+		if (sadako.defaultData === undefined || isEmpty(sadako.defaultData)) {
+			sadako.defaultData = copy(getCurrentState(), true);
+		}
+		else loadState(sadako.defaultData);
+
+		if (!sadako.autosave_enabled) {
+			if (localStorage.getItem(sadako.savename + "_savedata_auto") !== null) {
+				localStorage.removeItem(sadako.savename + "_savedata_auto");
+			}
+		}
+
+		sadako.current_line = [sadako.page, 0, 0];
+
+		if (!sadako.autosave_enabled || !sadako.loadGame("auto", true)) {
+			doLink("#" + sadako.page);
+		}
 	};
 
 	// functions intended to be used as-is
