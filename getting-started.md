@@ -145,7 +145,7 @@ Here is an example with a working dialog box.
             #dialog-title {
                 text-align: center;
                 background-color: silver;
-                color: black;
+                color: white;
             }
         </style>
     </head>
@@ -161,7 +161,7 @@ Here is an example with a working dialog box.
         <textarea id="source">
             ## start
                 Hello world
-                [:* Hello world! @: Dialog Test:]
+                [:* Hello world! @: Dialog Test @: Test:]
                 + Choice one[] was chosen.
                     Maybe try choice two next time?
                 + Choice two[] was chosen.

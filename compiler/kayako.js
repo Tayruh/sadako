@@ -1,4 +1,4 @@
-// version: 0.9.6
+// version: 0.9.7
 
 (function(sadako) {
 	
@@ -233,6 +233,7 @@
 	var parseStory = function(text) {
 		var separateScriptBlock = function(breaks, lines) {
 			var a, b, temp, temp2, index, script;
+			var cond_char = sadako.token.cond.charAt(0);
 			
 			// index through script blocks. we do this to retain line breaks in script blocks
 			for (a = 0; a < breaks.length; ++a) {
@@ -253,6 +254,10 @@
 				script = breaks[a].substring(0, index).split("\n");
 				for (b = 0; b < script.length; ++b) {
 					script[b] = script[b].trim();
+					
+					// safety buffer to avoid clashing if last character of line
+					// matches first character of inline condition token
+					if (script[b].charAt(script[b].length - 1) === cond_char) script[b] += " ";
 				}
 				
 				// add script block and rest of line after script block to end of previous line 

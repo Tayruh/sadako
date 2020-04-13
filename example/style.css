@@ -233,9 +233,7 @@ a.broken, #story-output a.broken { color: red; }
 	left: 50%;
 	transform: translate(-50%);
 	padding: 0;
-	z-index: 300;
-}
-	
+	z-index: 300;	
 }
 #dialog-output {
 	overflow-y: auto;
@@ -311,6 +309,51 @@ a.broken, #story-output a.broken { color: red; }
 	color: yellow;
 }
 
+.article {
+	background: #444444;
+	padding: 1em;
+	text-align: justify;
+}
+
+.notebook {
+	margin: auto;
+	text-align:center;
+}
+.notebook a.link {
+	margin-left: 6px;
+	margin-right: 6px;
+}
+.notebook hr {
+	margin-top: 0;
+}
+.notebook a.active {
+	color: white;
+	cursor: auto;
+}
+.notebook li { text-align: left; } 
+li > .completed {
+	color: #666666;
+	text-decoration: line-through;
+}
+
+.notebook-art, .story-art { text-align: center; }
+.notebook-art img { max-width: 350px; }
+.story-art img { 
+	max-width: 400px; 
+	margin: 0.5em;
+}
+
+.info { 
+	padding-right: 1em; 
+	padding-left: 1em; 
+	font-style: italic; 
+	color: darkgoldenrod; 
+}
+.inline-icon { 
+	vertical-align: text-top;
+	height: 1em;
+}
+
 
 @media screen and (max-width: 600px) {
 	body { font-size: 80%; }
@@ -324,6 +367,10 @@ a.broken, #story-output a.broken { color: red; }
 	.story-text input { width: 10em; }
 	.story-text textarea.multiline { height: 6.5em; width: 18em; }
 	#banner { text-align: left; }
+	
+	/* ==== game specific ==== */
+	.notebook-art img { max-width: 200px; }
+	.story-art img { max-width: 300px; }
 }
 @media screen and (max-height: 420px) {
 	#dialog-output { max-height: 70vh; }

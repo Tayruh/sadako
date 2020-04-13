@@ -908,6 +908,8 @@ Page and label names can also be derived from script evaulation using an `=` eva
 
 The `*` dialog token is used to display a popup when the link is clicked. Like usual, the link name is taken from the text following the `@:` name token.
 
+By default, the dialog title is blank. However, if you follow the link name with a second `@:` name token, that will be used as the title of the dialog window. **Sadako** will continue to use that text for the title until it is defined again or until the dialog is closed. To force the title to be cleared, using the `@:` token without a value.
+
 You can use the `*` dialog token in six ways:
 
 1. With an `!` action token. This closes the dialog window. If a name is given, it will close after clicking the link. If none is given, it will close immediately. Any text following the `!` action token will be discarded.<br>
@@ -915,7 +917,7 @@ Close immediately: `[:*!:]`<br>
 Close with link: `[:*! @: Link name:]`
 
 2. Just output straight text to a dialog window.<br>
-`[:* Some text @: Link name:]`
+`[:* Some text @: Link name @: Dialog Title:]`
 
 3. With an `=` eval token. The script is evaluated before being displayed in the dialog window.<br>
 `[:*= "Here's some math: " + (1 + 2) @: Link name:]`

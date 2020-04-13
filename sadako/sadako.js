@@ -1,7 +1,7 @@
 (function(sadako) {
 
-	sadako.version = "0.10.2";
-	sadako.kayako_version = "0.9.6";
+	sadako.version = "0.10.3";
+	sadako.kayako_version = "0.9.7";
 
 	var localStorage;
 
@@ -837,7 +837,9 @@
 
 		if (!no_confirm && !confirm("Load save file? Current progress will be lost.")) return;
 
-		sadako.unfreezeData();
+		if (sadako.in_dialog) sadako.closeDialog();
+		else sadako.unfreezeData();
+
 		loadData(JSON.parse(saveData));
 
 		if (!no_confirm) alert("Load succesful!" );
@@ -973,8 +975,14 @@
 		*/
 		
 		var updateDialog = function() {
+			if (sadako.dialog_ids.title) {
+				// clear dialog title if none is assigned on opening of dialog
+				if (title !== null && title !== undefined) sadako.dom(sadako.dialog_ids.title).innerHTML = title;
+				else if (!sadako.in_dialog) sadako.dom(sadako.dialog_ids.title).innerHTML = "";
+			}
+			
+			sadako.in_dialog = true;
 			sadako.clear();
-			if (sadako.dialog_ids.title) sadako.dom(sadako.dialog_ids.title).innerHTML = title || "";
 			
 			if (text) {
 				var temp;
@@ -995,7 +1003,6 @@
 		}
 		
 		sadako.freezeData();
-		sadako.in_dialog = true;
 		updateDialog();
 
 		var a;
@@ -1212,12 +1219,19 @@
 		return format("<span id='{0}'><a id='{0}A' class='link' onclick='sadako.evals[{1}]()'>{2}</a></span>", id, sadako.evals.length - 1, name);
 	};
 	
-	sadako.writeDialog = function(name, script) {
+	sadako.writeDialog = function(title, name, script) {
 		var write = function(name, command, is_broken) {
 			var id = sadako.evals.length;
 			sadako.evals.push(command);
 			if (is_broken) return (sadako.writeLink(name, command, true));
 			return sadako.writeLink(name, format("sadako.evals[{0}]()", id));
+		}
+		
+		// if script is undefined, slide each argument over by one to ignore title
+		if (!script === undefined) {
+			script = name;
+			name = title;
+			title = null;
 		}
 		
 		if (!name || !name.trim().length) {
@@ -1226,6 +1240,7 @@
 		}
 		
 		var temp, eval_script;
+		// if (title === undefined) title = 
 		
 		// close dialog
 		if (isToken(script, sadako.token.eval_action) !== false) {
@@ -1247,7 +1262,7 @@
 			return write(name, function() { 
 				if (eval_script) script = eval(eval_script);
 				if ((temp = isToken(script, sadako.token.page_embed))) script = temp;
-				sadako.showDialog("", "#" + script); 
+				sadako.showDialog(title, "#" + script); 
 			});
 		}
 
@@ -1263,7 +1278,7 @@
 			return write(name, function() { 
 				if (eval_script) script = eval(eval_script);
 				if ((temp = isToken(script, sadako.token.label_embed))) script = temp;
-				sadako.showDialog("", "%" + localizeLabel(script));
+				sadako.showDialog(title, "%" + localizeLabel(script));
 			});
 		}
 
@@ -1271,7 +1286,7 @@
 		if ((temp = isToken(script, sadako.token.eval_code))) {
 			script = temp;
 			return write(name, function() { 
-				if (!sadako.showDialog()) return;
+				if (!sadako.showDialog(title)) return;
 				sadako.clear();
 				eval(script);
 			});
@@ -1281,14 +1296,14 @@
 		if ((temp = isToken(script, sadako.token.eval_value))) {
 			script = temp;
 			return write(name, function() {
-				if (!sadako.showDialog()) return;
+				if (!sadako.showDialog(title)) return;
 				sadako.overwrite(eval(script));
 			});
 		}
 
 		// normal text
 		return write(name, function() {
-			if (!sadako.showDialog()) return;
+			if (!sadako.showDialog(title)) return;
 			sadako.overwrite(script);
 		});
 	}
@@ -1529,15 +1544,18 @@
 		var doRename = function(text) {
 			var items = text.split(sadako.token.rename);
 
-			if (items.length < 2) return [items[0], null];
+			if (items.length < 2) return [items[0], null, null];
 
+			var title;
 			var script = items[0].trim();
 			var name = items[1].trim();
+			if (items.length > 2) title = items[2].trim();
 
-			var temp = isToken(name, sadako.token.eval_value);
-			if (temp) name = eval(temp);
-
-			return [script, name];
+			var temp;
+			if ((temp = isToken(name, sadako.token.eval_value)) !== false) name = eval(temp);
+			if (title && (temp = isToken(title, sadako.token.eval_value)) !== false) title = eval(temp);
+			
+			return [script, name, title];
 		}
 
 		var doCode = function(text) {
@@ -1636,14 +1654,15 @@
 			var items = doRename(text);
 			var script = items[0];
 			var name = items[1];
+			var title = items[2];
 			
 			// if no name is given for the action token, we close the dialog immediately
 			if (!name && isToken(script, sadako.token.eval_action) !== false) {
 				sadako.closeDialog();
 				return "";
-			}
+			}	
 			
-			return sadako.writeDialog(name, script);
+			return sadako.writeDialog(title, name, script);
 		}
 		
 		return function() {
@@ -1676,8 +1695,8 @@
 		return format('<span class="{0}">{1}</span>', class_name, text);
 	};
 
-	var processScript = function(line) {
-		var a, sections, script, cond;
+	var processScript = function(script) {
+		// var a, script;
 
 		var doReplace = function(text) {
 			var replaceVar = function(text, token, replacement) {
@@ -1795,22 +1814,24 @@
 			}
 			return text;
 		}
-
+	
 		return function() {
-			line = doReplace(line);
-			line = doInline(line);
-			line = doSpan(line);
-			line = doMacro(line);
-
-			var index = line.lastIndexOf(sadako.token.cond);
-			if (index === -1) sections = [line];
-			else sections = [line.substring(0, index), line.substring(index + sadako.token.cond.length)];
-
-			script = sections[0];
-			cond = (sections.length > 1) ? cond = sections[1] : null;
-
+			var index = script.lastIndexOf(sadako.token.cond);
 			try {
-				if (eval(cond) || cond == null) {
+				var cond;
+				var cond_pass = true;
+				if (index !== -1) {
+					cond = script.substring(index + sadako.token.cond.length);
+					cond_pass = eval(processScript(cond));
+					script = script.substring(0, index);
+				}
+								
+				script = doReplace(script);
+				script = doInline(script);
+				script = doSpan(script);
+				script = doMacro(script);
+				
+				if (cond_pass) {
 					var result = doInline(script);
 					result = doEval(result);
 					if (result === null || !result.replace(/<br>/gi, '').trim().length) return "";
@@ -1818,7 +1839,7 @@
 				}
 			}
 			catch (e) {
-				console.error("index: ", a, "\nscript:", script, "\ncondition:", cond);
+				console.error("\nscript:", script, "\ncondition:", cond);
 				throw new Error(e);
 			}
 

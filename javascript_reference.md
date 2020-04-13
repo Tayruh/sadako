@@ -252,10 +252,16 @@ Returns an html link that will display the dialog window when clicked.
 
 The command is structured the same as the `[:* :]` dialog token. That is, it includes pages and labels if the command is preprended with a `#` page or `%` label token, will evaluate script before displaying its output with a `=` eval token, a `&` code token will display an empty window before processing the script, and a `!` action token will close the dialog window. See the [reference](reference.md#dialog-links) for more details.
 
+The function is overloaded so that title does not have to be defined. In other words, these two commands are indentical:<br>
+`sadako.writeDialog("name", "command")`<br> `sadako.writeDialog(undefined, "name", "command")`.
+
 Arguments:
 
+* `title` (string): Title to be displayed. Sets title if value is a string. Ignores if `null` or `undefined`.
 * `name` (string): Link name to be displayed.
 * `command` (script): The script command.
+
+`
 
 Returns:
 
