@@ -196,7 +196,7 @@ Adds a choice to the global choice array.
 
 Arguments:
 
-* `name` (string): Choice text. Be aware that formatting using [] will not work.
+* `name` (string): Choice text. Be aware that formatting using `[ ]` will not work.
 * `command` (string): String to evaluate when choice is selected
 * `tags` (string): A string of classes in script format. example: `"~:class:completed ~:title:blargh"`
 
