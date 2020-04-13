@@ -397,10 +397,11 @@
 				// Sadako doesn't touch the inside of script blocks when parsing
 				// a page.
 			
-				// This closes the dialog window. Passing a value of true
-				// readies Sadako to display new text. Don't pass true if
-				// you're only closing the window.
-				sadako.closeDialog(true);
+				// The [:* :] dialog token is for opening and closing the dialog
+				// window. [:*!:] closes the dialog window immediately. If we
+				// were to give it a name, like [:*! @: Close:], it would create
+				// a link that would close the dialog when you click it.
+				[:*!:]
 				game.move(null, "remote");
 			:]
 			You hand the remote to Erin.

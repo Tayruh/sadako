@@ -156,10 +156,8 @@
 	
 	+ [Use]
 		~~ if ($.bookmark === "erin.remote")
-			[:&
-				sadako.closeDialog(true);
-				game.move(null, "remote");
-			:]
+			[:*!:]
+			[:& game.move(null, "remote"); :]
 			You hand the remote to Erin.
 			"Thanks, $:name!"
 			She points it at the TV and turns the volume up a couple notches. "Ah. Much better."

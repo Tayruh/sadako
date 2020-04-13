@@ -233,7 +233,7 @@ If the command begins with `#` (ie. `#page2`) or `%` (ie. `%page2.test`), it wil
 
 #### sadako.writeReveal()
 
-Returns an html link that will display the rendered in the command. 
+Returns an html link that will display the rendered in command when clicked.
 
 The command is structured the same as the `[:+ :]` reveal token. That is, it includes pages and labels if the command is preprended with a `#` page or `%` label token, will evaluate script before displaying its output with a `=` eval token, and a `&` code token will repeatedly call the script and replace the link name with each click. See the [reference](reference.md#reveal-links) for more details.
 
@@ -241,6 +241,25 @@ Arguments:
 
 * `name` (string): Link name to be displayed. This will be the text that will be replaced.
 * `command` (script): The script command.
+
+Returns:
+
+* (string): Text containing HTML link.
+
+#### sadako.writeDialog()
+
+Returns an html link that will display the dialog window when clicked.
+
+The command is structured the same as the `[:* :]` dialog token. That is, it includes pages and labels if the command is preprended with a `#` page or `%` label token, will evaluate script before displaying its output with a `=` eval token, a `&` code token will display an empty window before processing the script, and a `!` action token will close the dialog window. See the [reference](reference.md#dialog-links) for more details.
+
+Arguments:
+
+* `name` (string): Link name to be displayed.
+* `command` (script): The script command.
+
+Returns:
+
+* (string): Text containing HTML link.
 
 #### sadako.doLink()
 
