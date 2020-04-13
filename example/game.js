@@ -164,14 +164,14 @@
 			// performed before every line is processed.
 			// 
 			// The parameters for addScene are 'id', 'checkStart', 'checkEnd',
-			// 'doStart', and 'doEnding'. The 'checkStart' and 'checkEnd'
-			// conditions can be either a string to be evaluated (which may
+			// 'doStart', 'doEnding', 'doBefore', 'doAfter'. Excluding 'id', all
+			// arguments can be either a string to be evaluated (which may
 			// contain sadako script) or a function that returns true when
-			// conditions are met. 'doStart' and 'doEnding' are functions. 
+			// conditions are met.
 			// 
 			// In this example, we don't do anything on start, but on end we set
 			// the complete flag for the game.
-			sadako.addScene("waiting_for_remote", "%.erin.talked", "%.remote.gave", null, function() { sadako.var.demo_complete = true; });
+			sadako.addScene("waiting_for_remote", "%.erin.talked", "%.remote.gave", null, "$.demo_complete = true");
 			
 			// Sets up the dialog window by passing it the HTML element IDs.
 			// First param is the text output, second is the title of the window

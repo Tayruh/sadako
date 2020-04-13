@@ -341,8 +341,8 @@ Arguments:
 * `checkEnd` (string or function): The condition(s) to check for the end of the scene.
 * `doStart` (string or function): The script to be run when `checkStart` evaluates to `true`.
 * `doEnd` (string or function): The script to be run when `checkEnd` evaluates to `true`.
-* `doAfter` (string or function): The script to run after every page renders while the scene is active.
 * `doBefore` (string or function): The script to run before every page renders while the scene is active.
+* `doAfter` (string or function): The script to run after every page renders while the scene is active.
 * `isRecurring` (boolean): Whether the scene should be run again if the start conditions are met after the scene has ended.
 
 #### sadako.setupDialog
