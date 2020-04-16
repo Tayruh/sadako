@@ -1383,11 +1383,11 @@
 		return text;
 	};
 	
-	sadako.displayText = function(id) {
+	sadako.displayOutput = function(id) {
 		var delay = 0;
 		var delay_adjust = 0;
 
-		var displayLine = function(line) {
+		var outputLine = function(line) {
 			/*
 				Writes a single line out to the display area.
 			*/
@@ -1409,19 +1409,8 @@
 			line.classes.push("hide");
 
 			if (line.text.length < 1) return;
-
-			var el = document.createElement('div');
-			el.className = line.classes.join(" ");
-			el.innerHTML = line.text;
-
-			if (id) dom(id).appendChild(el);
-			else if (sadako.in_dialog && sadako.dialog_ids.output) dom(sadako.dialog_ids.output).appendChild(el);
-			else dom(sadako.output_id).appendChild(el);
-
-			// Fade in paragraph after a short delay
-			setTimeout(function() {
-				el.className = remove(el.className.split(" "), "hide").join(" ");
-			}, delay + delay_adjust);
+			
+			sadako.displayLine(id, line, delay + delay_adjust);
 
 			delay += sadako.text_delay;
 		}
@@ -1430,22 +1419,37 @@
 			var a;
 			// sadako.display_lines = sadako.display_lines.concat(sadako.display_choices);
 			for (a = 0; a < sadako.display_lines.length; ++a) {
-				displayLine(sadako.display_lines[a]);
+				outputLine(sadako.display_lines[a]);
 			}
 			
 			if (sadako.display_choices.length) {
 				var line; 
 				if ((line = sadako.stylizeChoices())) {
-					displayLine(line);
+					outputLine(line);
 					return;
 				}
 				
 				for (a = 0; a < sadako.display_choices.length; ++a) {
 					line = sadako.display_choices[a];
-					displayLine(line);
+					outputLine(line);
 				}
 			}
 		}();
+	};
+	
+	sadako.displayLine = function(id, line, delay) {
+		var el = document.createElement('div');
+		el.className = line.classes.join(" ");
+		el.innerHTML = line.text;
+		
+		if (id) sadako.dom(id).appendChild(el);
+		else if (sadako.in_dialog && sadako.dialog_ids.output) sadako.dom(sadako.dialog_ids.output).appendChild(el);
+		else sadako.dom(sadako.output_id).appendChild(el);
+		
+		// Fade in paragraph after a short delay
+		setTimeout(function() {
+			el.className = sadako.remove(el.className.split(" "), "hide").join(" ");
+		}, delay + sadako.text_delay);
 	};
 	
 	sadako.stylizeChoices = function() {
@@ -1539,7 +1543,7 @@
 			// so we'll ensure the script is set to end
 			sadako.end();
 			
-			sadako.displayText(id);
+			sadako.displayOutput(id);
 		}();
 	};
 
