@@ -12,7 +12,12 @@ The reference for Sadako specific JavaScript functions and variables is [here](j
 
 A more complex demo is my personal game in progress, **[Monster](https://tayruh.github.io/monster/)**. Its source code is [here](https://github.com/Tayruh/tayruh.github.io/tree/master/monster).
 
-![alt text](https://github.com/Tayruh/sadako/blob/master/screenshot.png "Screenshot")
+![monster screenshot](https://github.com/Tayruh/sadako/blob/master/screenshot.png "monster screenshot")
+
+For example of how customizable Sadako is, I have written a simple [visual novel demo](https://tayruh.github.io/visual_novel/). The source for it is [here](https://github.com/Tayruh/tayruh.github.io/tree/master/visual_novel).<br>
+The demo currently uses images from [Higurashi no Naku Koro ni](https://store.steampowered.com/app/310360/Higurashi_When_They_Cry_Hou__Ch1_Onikakushi/) as placeholders. (Please buy the series because it's amazing.)
+
+![visual novel screenshot](https://github.com/Tayruh/sadako/blob/master/vn.jpg "visual novel screenshot")
 
 The following is a short example written in Sadako script.
 
@@ -79,4 +84,4 @@ The following is a short example written in Sadako script.
 
 Why the name *Sadako* for a hypertext fiction engine? 
 
-The engine is named after one of my favorite things, which is japanese horror. I love Ringu and Juon, so I chose Sadako as the main engine, and I thought it'd be humorous to have Kayako as the compiler. Sadako vs Kayako. Yes, I'm lame. Please forgive me. 🙏
+The engine is named after one of my favorite things, which is japanese horror. I love Ringu and Juon, so I chose Sadako as the main engine, and I thought it'd be humorous to have Kayako as the compiler. Sadako vs Kayako. Yes, I'm a dork.
