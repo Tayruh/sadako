@@ -38,7 +38,7 @@
         * [Redirects](#redirects) `[: :]` `[:# :]` `[:% :]`
         * [JavaScript](#javascript) `[:& :]` `[:= :]`
         * [Input Boxes](#input-boxes) `[:> :]` `[:>> :]`
-        * [Reveal Links](#reveal-links) `[:+ :]` `[:+# :]` `[:+% :]` `[:+& :]` `[:+= :]`
+        * [Reveal Links](#reveal-links) `[:+ :]` `[:+# :]` `[:+% :]` `[:+& :]` `[:+= :]` `[:+> :]`
         * [Dialog Links](#dialog-links) `[:* :]` `[:*! :]` `[:*# :]` `[:*% :]` `[:*& :]` `[:*= :]`
     * [Macros](#macros) `(: :)`
 
@@ -880,7 +880,7 @@ Please type something.
 
 The `+` token inside a script block creates a reveal link, with the `@:` name token separating the name of the link as per usual. Once a reveal link is clicked, it will replace the link with the new text.
 
-There are five ways to use the `+` reveal token:
+There are six ways to use the `+` reveal token:
 
 1. Alone. It will replace the link with solid text and that'll be it. It's a time time deal.<br>
 `[:+ Replacment text @: Link name:]`
@@ -892,10 +892,18 @@ There are five ways to use the `+` reveal token:
 The following example replaces the link name with a random item every click.<br>
 `[:+& sadako.randomItem(["apple", "orange", "banana"]) @: Link name:]`
 
-4. With a `#` page token. It will replace the link with the output of an included page. This acts exactly like including with the `>>=` include token, except it doesn't display until you click the link.<br>
+4. With an `>` input token you can create a cycling text link that will cycle through a list and store the current item into a variable.<br>
+To the left of the `@:` name token is the variable to store the value and to the right is a list separated by `::` tokens.<br>
+`[:+> $.color @: blue::red::purple::green:]`<br>
+You can also use an `=` eval token to get the list from an evaluated script. The script must evaluate to an array. Either of the following examples work.
+    * `[:& _.colors = ["blue", "red", "purple", "green"] :]`<br>
+    ` [:+> $.colors @: _.colors:]`
+    * `[:+> $.color @:= ["blue", "red", "purple", "green"] :]`
+
+5. With a `#` page token. It will replace the link with the output of an included page. This acts exactly like including with the `>>=` include token, except it doesn't display until you click the link.<br>
 `[:+# some_page @: link name:]`
 
-5. With a `%` label token. It will replace the link with the output of an included label. This acts exactly like including with the `>>=` include token, except it doesn't display until you click the link.<br>
+6. With a `%` label token. It will replace the link with the output of an included label. This acts exactly like including with the `>>=` include token, except it doesn't display until you click the link.<br>
 `[:+% some_label @: link name:]`
 
 With both included pages and included labels, the inclusion will stop once it sees a choice and will not include any choices.

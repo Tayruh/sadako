@@ -21,7 +21,7 @@
             }
 
             :not(.hide) {
-                transition: opacity 400ms ease-in;
+                transition: opacity 300ms ease-in;
                 opacity: 1;
             }
         </style>
@@ -80,73 +80,75 @@ Here is an example with a working dialog box.
 <html>
     <head>
         <style type="text/css">
-            a.link {
-                cursor: pointer;
-                color: orange;
-            }
-
-            .choice { font-size: 1.1em; }
-
-            #source { display: none; }
-
-            .hide {
-                transition: opacity initial;
-                opacity: 0;
-            }
-
-            :not(.hide) {
-                transition: opacity 400ms ease-in;
-                opacity: 1;
-            }
-
-            #dialog:not(.open), #dialog-overlay:not(.open) {
-                transition: visibility 200ms step-end, opacity 200ms ease-in;
-                visibility: hidden;
-                opacity: 0;
-            }
-
-            #dialog.open, #dialog-overlay.open {
-                transition: opacity 200ms ease-in;
-                visibility: visible;
-                opacity: 1;
-            }
-
-            #dialog-overlay {
-                background-color: #000;
-                position: fixed;
-                top: 0;
-                left: 0;
-                height: 100%;
-                width: 100%;
-                z-index: 100;
-            }
-            #dialog-overlay.open { opacity: 0.4; }
-
-            #dialog {
-                position: fixed;
-                top: 5vh;;
-                left: 50%;
-                transform: translate(-50%);
-                padding: 0;
-                z-index: 200;
-                color: black;
-                background-color: white;
-            }
-            
-            #dialog-output { min-height: 1em; }
-
-            #dialog-title, #dialog-output {
-                min-width: 200px;
-                margin: auto;
-                padding: 0.5em;
-                z-index: 250;
-            }
-
-            #dialog-title {
-                text-align: center;
-                background-color: silver;
-                color: white;
-            }
+        a.link {
+            cursor: pointer;
+            color: orange;
+        }
+    
+        .choice { font-size: 1.1em; }
+        
+        #source { display: none; }
+        
+        .hide {
+            transition: opacity initial;
+            opacity: 0;
+        }
+        
+        :not(.hide) {
+            transition: opacity 300ms ease-in;
+            opacity: 1;
+        }
+        
+        #dialog:not(.open), #dialog-overlay:not(.open) {
+            transition: visibility 200ms step-end, opacity 200ms ease-in;
+            visibility: hidden;
+            opacity: 0;
+        }
+        
+        #dialog.open, #dialog-overlay.open {
+            transition: opacity 200ms ease-in;
+            visibility: visible;
+            opacity: 1;	
+        }
+        
+        #dialog-overlay {
+            background-color: #000;
+            position: fixed;
+            top: 0; 
+            left: 0;
+            height: 100%;
+            width: 100%;
+            z-index: 100;
+        }
+        #dialog-overlay.open { opacity: 0.4; }
+        
+        #dialog {
+            position: fixed;
+            top: 5vh;;
+            left: 50%;
+            transform: translate(-50%);
+            padding: 0;
+            z-index: 200;
+            color: black;
+            background-color: white;
+        }
+        
+        #dialog-output {
+            min-height: 1em;
+        }
+        
+        #dialog-title, #dialog-output {
+            min-width: 200px;
+            margin: auto;
+            padding: 0.5em;
+            z-index: 250;
+        }
+        
+        #dialog-title {
+            text-align: center;
+            background-color: silver;
+            color: white;
+        }
         </style>
     </head>
     <body>

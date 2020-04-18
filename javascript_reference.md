@@ -12,6 +12,8 @@ The first method is autosaving which can be toggled on and off by means of the b
 
 You can limit the amount of history states with `sadako.history_limit`. The default is `10`. You can disable rewinding the history altogether by setting the value to `0`.
 
+---
+
 ### Variables
 
 #### sadako.savename
@@ -141,6 +143,8 @@ Saves state to an autosave save slot if set to `true`. Default is `false`.
 
 Autosave is saved whenever possible (see `Saving` details above) and reloaded automatically when the game starts if the value is set to `true`.
 
+---
+
 ### Functions
 
 There are not many functions that you need to run **Sadako**. In fact, the only two you absolutely *need* are `sadako.init()` and `sadako.startGame()` as mentioned above. However, there are a few you may use often to enhance the capability of your script, and also a handful of helper functions for convenience.
@@ -260,8 +264,6 @@ Arguments:
 * `title` (string): Title to be displayed. Sets title if value is a string. Ignores if `null` or `undefined`.
 * `name` (string): Link name to be displayed.
 * `command` (script): The script command.
-
-`
 
 Returns:
 
@@ -383,3 +385,76 @@ Closes the dialog window.
 Arguments:
 
 * `cleanup` (boolean): if true, clears lines and choices arrays.
+
+---
+### Functions to be Overwritten
+
+These are functions that are exposed to be overwritten with customized functions. They are designed to be called by the engine, not the user.
+
+#### sadako.displayOutput()
+
+This function is the one that displays the queued lines and choices to the screen. It shouldn't ever have to be called in your script, but it is exposed so that you can overwrite it with a method that better suits your game.
+
+Arguments:
+
+* `id`: The ID of the HTML element to be written to. This is passed to `sadako.displayLine()`.
+
+#### sadako.displayLine()
+
+This function writes a single line to the output. Like `sadako.displayOutput()`, this function should never have to be called by the user. It's left exposed in order to be overwritten.
+
+Arguments:
+
+* `id` (string): The ID of the HTML element to be written to.
+* `delay` (integer): How long to delay this line for. Total time to delay is `sadako.text_delay + delay`.
++ `line` (line object): Line to be displayed. It's a line object, which is formatted like so:<br>
+`{"text": "Text to display.", "classes": ["class1", "class2"], "tags": ["tag1", "tag2"]}`
+
+If this is undefined, it uses the dialog output ID if the dialog is open and the standard output ID if it is not.
+
+#### sadako.stylizeChoices()
+
+This function is called by `sadako.writeOutput()`. It takes the list of queued choices in the choice array and turns it into a list of lines ready to be displayed. This function is intended to be overwritten by the user to style the display of choices however they like.
+
+Returns:
+
+* (array of objects): The objects are formatted like this:<br>
+`{"text": "Text to display.", "classes": ["class1", "class2"], "tags": ["tag1", "tag2"]}`<br>
+`classes` are CSS classes to be added to the HTML element of the choice.<br>
+`tags` are the items to be processed by `sadako.doChoiceTag()`.
+
+#### sadako.doLineTag()
+
+This function is for a processing tag. 
+
+The default assignment of this function does nothing except return the text given to it. Its purpose is to be overwritten by the user to perform actions specific to their story when a tag is seen.
+
+Arguments:
+
+* `text` (string): Text current line that is about to be displayed.
+* `tag` (string): Current tag being processed.
+
+Returns:
+
+* (string): Text to be written out to display.
+
+Example:
+
+```
+// javascript
+sadako.doLineTag(text, tag) {
+    if (tag === "say") return 'You say, "' + text + '"';
+    return text;
+}
+
+// sadako script
+Hello world! ~:say
+
+
+// outputs
+You say, "Hello world!"
+```
+
+#### sadako.doChoiceTag()
+
+Exactly the same as `sadako.doLineTag()` but for choices.
