@@ -10,11 +10,11 @@ The engine is named after one of my favorite things, which is japanese horror. I
 
 ## Documentation
 
-A guide on how to setup an HTML page for use with Sadako can be viewed [here](getting-started.md).
+* [Getting Started](getting-started.md): A guide on how to setup an HTML page for use with Sadako.
 
-A reference and guide on how to use Sadako script, the scripting language developed for Sadako, can be viewed [here](reference.md).
+* [Sadako Script Reference](reference.md): A reference and guide on how to use Sadako script, the scripting language developed for Sadako.
 
-The reference for Sadako specific JavaScript functions and variables is [here](javascript_reference.md).
+* [JavaScript Reference](javascript_reference.md): The reference for Sadako specific JavaScript functions and variables.
 
 ## Game Demos
 
