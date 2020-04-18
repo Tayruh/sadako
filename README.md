@@ -24,12 +24,12 @@ A simple demo of Sadako in action. You can find its commented source code [here]
 ### [Monster](https://tayruh.github.io/monster/)
 This is the first chapter of my game project and serves as a more complex demo. Its source code is [here](https://github.com/Tayruh/tayruh.github.io/tree/master/monster).
 
-[![monster screenshot](https://github.com/Tayruh/sadako/blob/master/screenshot.png "monster screenshot")](https://tayruh.github.io/monster/)
+[![monster screenshot](https://github.com/Tayruh/sadako/blob/master/screenshot.png "View monster demo")](https://tayruh.github.io/monster/)
 
 ### [Visual Novel Demo](https://tayruh.github.io/visual_novel)
 For an example of how customizable Sadako is, I have written a simple visual novel example. The source for it is [here](https://github.com/Tayruh/tayruh.github.io/tree/master/visual_novel).
 
-[![visual novel screenshot](https://github.com/Tayruh/sadako/blob/master/vn.jpg "visual novel screenshot")](https://tayruh.github.io/visual_novel)
+[![visual novel screenshot](https://github.com/Tayruh/sadako/blob/master/vn.jpg "View visual novel demo")](https://tayruh.github.io/visual_novel)
 
 The demo currently uses images from [Higurashi no Naku Koro ni](https://store.steampowered.com/app/310360/Higurashi_When_They_Cry_Hou__Ch1_Onikakushi/) as placeholders. (Please buy the series because it's amazing.)
 
