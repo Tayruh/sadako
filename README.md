@@ -1,6 +1,14 @@
 # Sadako
 
+### What is it?
+
 Sadako is a JavaScript library for creating hyperlink-based interactive fiction similar to [Twine](https://twinery.org/), [ChoiceScript](https://www.choiceofgames.com/make-your-own-games/choicescript-intro/), and [Ink](https://www.inklestudios.com/ink/). Sadako is my attempt at merging Twine-like markup and Ink-like choice trees into a cohesive scripting language that I call *Sadako script*.
+
+### Why the name?
+
+The engine is named after one of my favorite things, which is japanese horror. I love Ringu and Juon, so I chose Sadako as the main engine, and I thought it'd be humorous to have Kayako as the compiler. Sadako vs Kayako. Yes, I'm a dork.
+
+### Documentation
 
 A guide on how to setup an HTML page for use with Sadako can be viewed [here](getting-started.md).
 
@@ -8,19 +16,24 @@ A reference and guide on how to use Sadako script, the scripting language develo
 
 The reference for Sadako specific JavaScript functions and variables is [here](javascript_reference.md).
 
-**[Rainy Day](https://tayruh.github.io/rainy_day/)** is a simple demo of Sadako in action. You can find its commented source code [here](https://github.com/Tayruh/tayruh.github.io/tree/master/rainy_day).
+### Game Demos
 
-A more complex demo is my personal game in progress, **[Monster](https://tayruh.github.io/monster/)**. Its source code is [here](https://github.com/Tayruh/tayruh.github.io/tree/master/monster).
+#### [Rainy Day](https://tayruh.github.io/rainy_day/)
+A simple demo of Sadako in action. You can find its commented source code [here](https://github.com/Tayruh/tayruh.github.io/tree/master/rainy_day).
+
+#### [Monster](https://tayruh.github.io/monster/)
+This is the first chapter of my game project and serves as a more complex demo. Its source code is [here](https://github.com/Tayruh/tayruh.github.io/tree/master/monster).
 
 ![monster screenshot](https://github.com/Tayruh/sadako/blob/master/screenshot.png "monster screenshot")
 
-For an example of how customizable Sadako is, I have written a simple [visual novel demo](https://tayruh.github.io/visual_novel/). The source for it is [here](https://github.com/Tayruh/tayruh.github.io/tree/master/visual_novel).
+#### [Visual Novel Demo](https://tayruh.github.io/visual_novel/)
+For an example of how customizable Sadako is, I have written a simple visual novel example. The source for it is [here](https://github.com/Tayruh/tayruh.github.io/tree/master/visual_novel).
 
 ![visual novel screenshot](https://github.com/Tayruh/sadako/blob/master/vn.jpg "visual novel screenshot")
 
 The demo currently uses images from [Higurashi no Naku Koro ni](https://store.steampowered.com/app/310360/Higurashi_When_They_Cry_Hou__Ch1_Onikakushi/) as placeholders. (Please buy the series because it's amazing.)
 
----
+### Script Example
 
 The following is a short example written in Sadako script.
 
@@ -84,7 +97,3 @@ The following is a short example written in Sadako script.
     + {mop_ret} [Back]
         >> #main_room
 ```
-
-Why the name *Sadako* for a hypertext fiction engine? 
-
-The engine is named after one of my favorite things, which is japanese horror. I love Ringu and Juon, so I chose Sadako as the main engine, and I thought it'd be humorous to have Kayako as the compiler. Sadako vs Kayako. Yes, I'm a dork.
