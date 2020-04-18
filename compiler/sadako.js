@@ -101,7 +101,6 @@
 	sadako.in_dialog = false;
 	sadako.in_include = false;
 	sadako.scene_checks = {};
-	sadako.reveal_id = 0;
 
 	// global variables saved to state
 	sadako.current = null;
@@ -420,17 +419,23 @@
 
 	var addClass = function(id, classname) {
 		// Adds a class to an HTML element.
+		// id can be either a string id or the element itself
+		
+		var el = (isStr(id)) ? dom(id) : id;
 
-		var classes = add(dom(id).className.split(" "), classname).join(" ");
-		dom(id).className = classes;
+		var classes = add(el.className.split(" "), classname).join(" ");
+		el.className = classes;
 		return classes;
 	};
 
 	var removeClass = function(id, classname) {
 		// Removes a class from an HTML element.
+		// id can be either a string id or the element itself
+		
+		var el = (isStr(id)) ? dom(id) : id;
 
-		var classes = remove(dom(id).className.split(" "), classname).join(" ");
-		dom(id).className = classes;
+		var classes = remove(el.className.split(" "), classname).join(" ");
+		el.className = classes;
 		return classes;
 	};
 
@@ -1109,28 +1114,25 @@
 	};
 	
 	sadako.fadeIn = function(id, delay, text) {
+		var el;
+		
 		if (!id) {
-			var el;
-			
-			id = "reveal_" + sadako.reveal_id;
-			sadako.reveal_id += 1;
-			
 			el = document.createElement("span");
-			el.id = id;
 			el.className = "hide";
 			el.innerHTML = text;
 			
 			setTimeout(function() {
-				removeClass(id, "hide");
+				removeClass(el, "hide");
 			}, sadako.text_delay + delay);
 			
 			return el.outerHTML;
 		}
 		
-		addClass(id, "hide");
-		dom(id).innerHTML = text || dom(id).innerHTML;
+		el = dom(id);
+		addClass(el, "hide");
+		el.innerHTML = text || el.innerHTML;
 		setTimeout(function() {
-			removeClass(id, "hide");
+			removeClass(el, "hide");
 		}, sadako.text_delay + delay);
 	}
 	
@@ -1393,15 +1395,12 @@
 			*/
 			
 			var a, temp;
+			var is_choice = has(line.tags, "choice");
 			for (a = 0; a < line.tags.length; ++a) {
 				if ((temp = isToken(line.tags[a], "delay:"))) {
 					delay_adjust = parseInt(temp);
 					continue;
 				}
-			}
-			
-			var is_choice = has(line.tags, "choice");
-			for (a = 0; a < line.tags.length; ++a) {
 				if (is_choice) line.text = sadako.doChoiceTag(line.text, line.tags[a]);
 				else line.text = sadako.doLineTag(line.text, line.tags[a]);
 			}
@@ -1417,21 +1416,15 @@
 		
 		return function() {
 			var a;
-			// sadako.display_lines = sadako.display_lines.concat(sadako.display_choices);
 			for (a = 0; a < sadako.display_lines.length; ++a) {
 				outputLine(sadako.display_lines[a]);
 			}
 			
 			if (sadako.display_choices.length) {
-				var line; 
-				if ((line = sadako.stylizeChoices())) {
-					outputLine(line);
-					return;
-				}
+				var choices = sadako.stylizeChoices();
 				
-				for (a = 0; a < sadako.display_choices.length; ++a) {
-					line = sadako.display_choices[a];
-					outputLine(line);
+				for (a = 0; a < choices.length; ++a) {
+					outputLine(choices[a]);
 				}
 			}
 		}();
@@ -1442,18 +1435,19 @@
 		el.className = line.classes.join(" ");
 		el.innerHTML = line.text;
 		
+		delay = delay || 0;
+		
 		if (id) sadako.dom(id).appendChild(el);
 		else if (sadako.in_dialog && sadako.dialog_ids.output) sadako.dom(sadako.dialog_ids.output).appendChild(el);
 		else sadako.dom(sadako.output_id).appendChild(el);
 		
 		// Fade in paragraph after a short delay
 		setTimeout(function() {
-			el.className = sadako.remove(el.className.split(" "), "hide").join(" ");
+			removeClass(el, "hide");
 		}, delay + sadako.text_delay);
 	};
 	
 	sadako.stylizeChoices = function() {
-		// return false;
 		var text = "";
 		
 		var a, b, choice;
@@ -1465,7 +1459,7 @@
 			text += format("<li class='choice'><span class='{0}'>{1}</span></li>", choice.classes.join(" "), choice.text);
 		}
 		text = "<hr><ul>" + text + "</ul>";
-		return {"text": text, "classes": [], "tags": ["choice"]};
+		return [{"text": text, "classes": [], "tags": ["choice"]}];
 	};
 	
 	var splitTags = function(text) {
