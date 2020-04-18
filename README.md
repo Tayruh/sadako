@@ -14,10 +14,12 @@ A more complex demo is my personal game in progress, **[Monster](https://tayruh.
 
 ![monster screenshot](https://github.com/Tayruh/sadako/blob/master/screenshot.png "monster screenshot")
 
-For example of how customizable Sadako is, I have written a simple [visual novel demo](https://tayruh.github.io/visual_novel/). The source for it is [here](https://github.com/Tayruh/tayruh.github.io/tree/master/visual_novel).<br>
+For an example of how customizable Sadako is, I have written a simple [visual novel demo](https://tayruh.github.io/visual_novel/). The source for it is [here](https://github.com/Tayruh/tayruh.github.io/tree/master/visual_novel).<br>
+![visual novel screenshot](https://github.com/Tayruh/sadako/blob/master/vn.jpg "visual novel screenshot")
+
 The demo currently uses images from [Higurashi no Naku Koro ni](https://store.steampowered.com/app/310360/Higurashi_When_They_Cry_Hou__Ch1_Onikakushi/) as placeholders. (Please buy the series because it's amazing.)
 
-![visual novel screenshot](https://github.com/Tayruh/sadako/blob/master/vn.jpg "visual novel screenshot")
+---
 
 The following is a short example written in Sadako script.
 
