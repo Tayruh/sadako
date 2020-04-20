@@ -285,9 +285,23 @@ Arguments:
 
 * `label` (string) The page or label to include. Pages should be prefixed with `#` and labels with `%`. Will default to a label if no token is specified.
 
+#### sadako.replaceVars()
+
+Replaces abbreviations like `$:name` with the value of `saddako.var.name` in strings.
+
+Arguments:
+
+* `text`(string): Text to be processed;
+
+Returns:
+
+* (string): The string resulting from the variable value replacements.
+
 #### sadako.processScript(text)
 
-This function renders the script tags inside a string as its equivalent HTML and javascript. This does not work correctly with depth tokens like `-`, `=`, `~`, `*`, and `+`, since they are rendered at compile time.
+This function renders the script tags inside a string as its equivalent HTML and javascript. For example, `<:asdf::some text:>` will become `<span class="asdf">some text</span>`. This does not work correctly with depth tokens like `-`, `=`, `~`, `*`, and `+`, since they are rendered at compile time.
+
+This function also calls `sadako.replaceVars()` on the string.
 
 Arguments:
 

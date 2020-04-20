@@ -1,7 +1,7 @@
 (function(sadako) {
 
 	sadako.version = "0.11.0";
-	sadako.kayako_version = "0.9.7";
+	sadako.kayako_version = "0.10.0";
 
 	var localStorage;
 
@@ -67,7 +67,7 @@
 
 	// global variables intended to changed
 	sadako.savename = "sadako";
-	sadako.text_delay = 60.0;
+	sadako.text_delay = 80.0;
 	sadako.output_id = "#output";
 	sadako.autosave_enabled = false;
 
@@ -117,6 +117,57 @@
 	sadako.cond_states = [];
 	sadako.enter_text = [];
 	sadako.scenes = {};
+	
+	var getMarkup = function(text, open, close) {
+		var firstIndex = text.indexOf(open);
+		if (firstIndex === -1) return {"before": "", "markup": "", "after": text};
+		
+		var markup;
+		var lastIndex = 0;
+		var closeIndex;
+		
+		while (closeIndex !== -1) {
+			closeIndex = text.indexOf(close, lastIndex);
+			if (closeIndex === -1) break;
+			lastIndex = closeIndex + close.length;
+			markup = text.substring(firstIndex, lastIndex);
+			if (markup.split(open).length === markup.split(close).length) break;
+		}
+		
+		if (closeIndex === -1) {
+			console.error("Script:", text);
+			throw new Error("Unmatched " + open + " and " + close + " tokens.");
+		}
+		
+		var before = text.substring(0, firstIndex);
+		var after = text.substring(closeIndex + close.length);
+		
+		return {"before": before, "markup": markup, "after": after};
+	}
+	
+	var parseMarkup = function(text, open, close, action) {
+		if (text.indexOf(open) === -1) {
+			return text;
+		}
+		
+		var before;
+		var temp = getMarkup(text, open, close);
+		
+		var result = "";
+		
+		while (temp.markup.trim().length) {
+			before = temp.before;
+			text = temp.after;
+			
+			result += before + action(temp);
+
+			temp = getMarkup(text, open, close);
+		}
+		
+		result += temp.after;
+
+		return result;
+	}
 
 	/* Utility Functions */
 
@@ -386,14 +437,6 @@
 		*/
 
 		return (list.indexOf(id) !== -1);
-
-		/*
-		var a;
-		for (a = 0; a < list.length; ++a) {
-			if (list[a] === id) return true;
-		}
-		return false;
-		*/
 	};
 
 	var add = function(list, id) {
@@ -1727,79 +1770,79 @@
 			return sadako.writeDialog(title, name, script);
 		}
 		
+		
 		return function() {
-			sadako.text = "";
-
-			var temp = text.split(sadako.token.script_open);
-			if (temp.length < 2) return text;
-
-			var script, a;
-			for (a = 0; a < temp.length; ++a) {
-				var parts = temp[a].split(sadako.token.script_close);
-				if (parts.length < 2) sadako.text += parts[0];
-				else {
-					if ((script = isToken(parts[0], sadako.token.eval_code)) !== false) doCode(script);
-					else if ((script = isToken(parts[0], sadako.token.eval_value)) !== false) doValue(script);
-					else if ((script = isToken(parts[0], sadako.token.label_embed)) !== false) sadako.text += doLabelLink(script);
-					else if ((script = isToken(parts[0], sadako.token.eval_input)) !== false) doInput(script);
-					else if ((script = isToken(parts[0], sadako.token.eval_reveal)) !== false) sadako.text += doReveal(script);
-					else if ((script = isToken(parts[0], sadako.token.eval_dialog)) !== false) sadako.text += doDialog(script);
-					else sadako.text += doPageLink(parts[0]);
-					sadako.text += parts[1];
-				}
+			if (text.indexOf(sadako.token.script_open) === -1) {
+				sadako.text = text;
+				return text;
 			}
+			
+			text = parseMarkup(text, sadako.token.script_open, sadako.token.script_close, function(markup) {
+				var script;
+				var inside = markup.markup.slice(sadako.token.script_open.length, 0 - sadako.token.script_close.length);
 
-			return sadako.text;
+				sadako.text = "";
+
+				if ((script = isToken(inside, sadako.token.eval_code)) !== false) doCode(script);
+				else if ((script = isToken(inside, sadako.token.eval_value)) !== false) doValue(script);
+				else if ((script = isToken(inside, sadako.token.label_embed)) !== false) sadako.text += doLabelLink(script);
+				else if ((script = isToken(inside, sadako.token.eval_input)) !== false) doInput(script);
+				else if ((script = isToken(inside, sadako.token.eval_reveal)) !== false) sadako.text += doReveal(script);
+				else if ((script = isToken(inside, sadako.token.eval_dialog)) !== false) sadako.text += doDialog(script);
+				else sadako.text += doPageLink(inside);
+				
+				return processScript(sadako.text);
+			});
+			
+			return text;
 		}();
 	};
 	
 	sadako.writeSpan = function(class_name, text) {
 		return format('<span class="{0}">{1}</span>', class_name, text);
 	};
-
-	var processScript = function(script) {
-		// var a, script;
-
-		var doReplace = function(text) {
-			var replaceVar = function(text, token, replacement) {
-				var regexp = new RegExp("(^|\\s+|[^a-zA-Z0-9]+)" + token + "([a-zA-Z0-9]+(?:[\\._]?[a-zA-Z0-9]+)*)", "g");
-				return text.replace(regexp, replacement);
-			}
-
-			var t = sadako.token;
-
-			text = replaceVar(text, t.label_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.label_seen["' + p2 + '"]'; });
-			text = replaceVar(text, t.page_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.page_seen["' + p2 + '"]'; });
-			
-			text = replaceVar(text, t.var_embed + t.cond_embed, function(match, p1, p2) { return p1 + "sadako.var." + p2; });
-			text = replaceVar(text, t.tmp_embed + t.cond_embed, function(match, p1, p2) { return p1 + "sadako.tmp." + p2; });
-			text = replaceVar(text, t.scene_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.scenes.' + p2; });
-			
-			text = replaceVar(text, t.script_embed + t.cond_embed, function(match, p1, p2) {
-				if (isFunc(eval("sadako.scripts." + p2))) return p1 + "sadako.scripts." + p2 + "()";
-				return p1 + "sadako.scripts." + p2;
-			});
-
-			text = replaceVar(text, t.label_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.label_seen[p2]; });
-			text = replaceVar(text, t.page_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.page_seen[p2]; });
-
-			text = replaceVar(text, t.var_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.var." + p2); });
-			text = replaceVar(text, t.tmp_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.tmp." + p2); });
-			text = replaceVar(text, t.scene_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.scenes." + p2); });
-			
-			text = replaceVar(text, t.script_embed + t.value_embed, function(match, p1, p2) {
-				var text;
-				if (isFunc(eval("sadako.scripts." + p2))) text = eval("sadako.scripts." + p2 + "()");
-				else text = eval("sadako.scripts." + p2);
-				return p1 + ((text !== undefined) ? text : "");
-			});
-
-			text = text.replace(RegExp(t.write_embed, 'g'), 'sadako.text = ');
-			text = text.replace(RegExp(t.pluswrite_embed, 'g'), 'sadako.text += ');
-
-			return text;
+	
+	var replaceVars = function(text) {
+		var doReplace = function(text, token, replacement) {
+			var regexp = new RegExp("(^|\\s+|[^a-zA-Z0-9]+)" + token + "([a-zA-Z0-9]+(?:[\\._]?[a-zA-Z0-9]+)*)", "g");
+			return text.replace(regexp, replacement);
 		}
 
+		var t = sadako.token;
+
+		text = doReplace(text, t.label_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.label_seen["' + p2 + '"]'; });
+		text = doReplace(text, t.page_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.page_seen["' + p2 + '"]'; });
+		
+		text = doReplace(text, t.var_embed + t.cond_embed, function(match, p1, p2) { return p1 + "sadako.var." + p2; });
+		text = doReplace(text, t.tmp_embed + t.cond_embed, function(match, p1, p2) { return p1 + "sadako.tmp." + p2; });
+		text = doReplace(text, t.scene_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.scenes.' + p2; });
+		
+		text = doReplace(text, t.script_embed + t.cond_embed, function(match, p1, p2) {
+			if (isFunc(eval("sadako.scripts." + p2))) return p1 + "sadako.scripts." + p2 + "()";
+			return p1 + "sadako.scripts." + p2;
+		});
+
+		text = doReplace(text, t.label_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.label_seen[p2]; });
+		text = doReplace(text, t.page_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.page_seen[p2]; });
+
+		text = doReplace(text, t.var_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.var." + p2); });
+		text = doReplace(text, t.tmp_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.tmp." + p2); });
+		text = doReplace(text, t.scene_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.scenes." + p2); });
+		
+		text = doReplace(text, t.script_embed + t.value_embed, function(match, p1, p2) {
+			var text;
+			if (isFunc(eval("sadako.scripts." + p2))) text = eval("sadako.scripts." + p2 + "()");
+			else text = eval("sadako.scripts." + p2);
+			return p1 + ((text !== undefined) ? text : "");
+		});
+
+		text = text.replace(RegExp(t.write_embed, 'g'), 'sadako.text = ');
+		text = text.replace(RegExp(t.pluswrite_embed, 'g'), 'sadako.text += ');
+
+		return text;
+	}
+
+	var processScript = function(script) {		
 		var doInline = function(text) {
 			var parseInline = function(text) {
 				var sections = text.split(sadako.token.cond, 3);
@@ -1810,17 +1853,13 @@
 				if (eval(sections[0])) return sections[1];
 				return sections[2];
 			}
-
-			var temp = text.split(sadako.token.inline_open);
-			if (temp.length < 2) return text;
-
-			text = "";
-			var a, temp2;
-			for (a = 0; a < temp.length; ++a) {
-				temp2 = temp[a].split(sadako.token.inline_close);
-				if (temp2.length < 2) text += temp2[0];
-				else text += parseInline(temp2[0]) + temp2[1];
-			}
+			
+			text = parseMarkup(text, sadako.token.inline_open, sadako.token.inline_close, function(markup) {
+				var inside = markup.markup.slice(sadako.token.inline_open.length, 0 - sadako.token.inline_close.length);
+				inside = processBlocks(inside);
+				return parseInline(inside);
+			});
+			
 			return text;
 		}
 
@@ -1833,17 +1872,13 @@
 
 				return sadako.writeSpan(sections[0], text);
 			}
-
-			var temp = text.split(sadako.token.span_open);
-			if (temp.length < 2) return text;
-
-			text = "";
-			var a, temp2;
-			for (a = 0; a < temp.length; ++a) {
-				temp2 = temp[a].split(sadako.token.span_close);
-				if (temp2.length < 2) text += temp2[0];
-				else text += parseSpan(temp2[0]) + temp2[1];
-			}
+			
+			text = parseMarkup(text, sadako.token.span_open, sadako.token.span_close, function(markup) {
+				var inside = markup.markup.slice(sadako.token.span_open.length, 0 - sadako.token.span_close.length);
+				inside = processBlocks(inside);
+				return parseSpan(inside);
+			});
+			
 			return text;
 		}
 
@@ -1863,30 +1898,49 @@
 				text = text.substring(0, index);
 				return pre + "sadako.macros." + text + "(" + command + ")" + sadako.token.script_close;
 			}
+			
+			text = parseMarkup(text, sadako.token.macro_open, sadako.token.macro_close, function(markup) {
+				var inside = markup.markup.slice(sadako.token.macro_open.length, 0 - sadako.token.macro_close.length);
+				inside = processBlocks(inside);
+				return parseMacro(inside);
+			});
 
-			var temp = text.split(sadako.token.macro_open);
-			if (temp.length < 2) return text;
-
-			text = "";
-			var a, temp2;
-			for (a = 0; a < temp.length; ++a) {
-				temp2 = temp[a].split(sadako.token.macro_close);
-				if (temp2.length < 2) text += temp2[0];
-				else text += parseMacro(temp2[0]) + temp2[1];
+			return text;
+		}
+		var processBlocks = function(text) {
+			var token;
+			var index = -1;
+			
+			var inline_index = script.indexOf(sadako.token.inline_open);
+			var span_index = script.indexOf(sadako.token.span_open);
+			var macro_index = script.indexOf(sadako.token.macro_open);
+			var script_index = script.indexOf(sadako.token.script_open);
+			if (script_index === -1) script_index = text.length;
+			
+			if (index < inline_index && inline_index < script_index) { 
+				token = "inline"; index = inline_index;
 			}
+			
+			if (index < span_index && span_index < script_index) { 
+				token = "span"; index = span_index;
+			}
+			if (index < macro_index && macro_index < script_index) { 
+				token = "macro"; index = macro_index;
+			}
+			
+			if (token === "inline") return doInline(text);
+			if (token === "span") return doSpan(text);
+			if (token === "macro") return doMacro(text)
 			return text;
 		}
 	
 		return function() {
-			script = doReplace(script);
-			script = doInline(script);
-			script = doSpan(script);
-			script = doMacro(script);
+			script = replaceVars(script);
+			script = processBlocks(script);
 
 			try {
-				var result = doInline(script);
-				result = doEval(result);
-				if (result === null || !result.replace(/<br>/gi, '').trim().length) return "";
+				var result = doEval(script);
+				if (result === null || !result.trim().length) return "";
 				return result.trim();
 			}
 			catch (e) {
@@ -1898,9 +1952,9 @@
 
 	var doChoice = function(choice) {
 		/*
-		Function called by choice hyperlinks.
+			Function called by choice hyperlinks.
 
-		choice (integer): index of choice in 'sadako.choices' array
+			choice (integer): index of choice in 'sadako.choices' array
 		*/
 		
 		if (!sadako.in_dialog && !sadako.in_include) sadako.reveal_id = 0;
@@ -2114,14 +2168,14 @@
 			if (scene.hasEnded && !scene.isRecurring) continue;
 			if (!scene.isActive) {
 				if (sadako.isStr(check.checkStart)) {
-					if (!eval(sadako.processScript(check.checkStart))) continue;
+					if (!eval(sadako.replaceVars(check.checkStart))) continue;
 				}
 				else if (!check.checkStart()) continue;
 
 				scene.isActive = true;
 				scene.hasStarted += 1;
 				if (check.doStart !== undefined && check.doStart !== null) {
-					if (sadako.isStr(check.doStart)) eval(sadako.processScript(check.checkStart));
+					if (sadako.isStr(check.doStart)) eval(sadako.replaceVars(check.checkStart));
 					else check.doStart();
 				}
 				checkScenes();
@@ -2129,7 +2183,7 @@
 			}
 			else if (check.checkEnd !== undefined && check.checkEnd !== null) {
 				if (sadako.isStr(check.checkEnd)) {
-					if (!eval(sadako.processScript(check.checkEnd))) continue;
+					if (!eval(sadako.replaceVars(check.checkEnd))) continue;
 				}
 				else if (!check.checkEnd()) continue;
 
@@ -2666,6 +2720,7 @@
 	sadako.addChoice = addChoice;
 	sadako.addScene = addScene;
 	sadako.writeOutput = writeOutput
+	sadako.replaceVars = replaceVars;
 	
 	// functions intended to be overridden
 	// sadako.write
@@ -2688,6 +2743,8 @@
 	sadako.doChoice = doChoice;
 	sadako.processScript = processScript;
 	sadako.parseLink = parseLink;
+	sadako.getMarkup = getMarkup;
+	sadako.parseMarkup = parseMarkup;
 
 	// convenient utility functions
 	sadako.rollDice = rollDice;

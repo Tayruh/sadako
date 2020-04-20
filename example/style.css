@@ -18,6 +18,20 @@ html, body {
 	font-size:100%;
 }
 
+.unselectable {
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.all {
+	-moz-user-select: all;
+	-webkit-user-select: all;
+	-ms-user-select: all;
+	user-select: all;
+}
+
 .choice { 
 	font-size: 1.1em;
 	line-height: 2;
@@ -104,7 +118,7 @@ div:not(:first-of-type) > #room-title {
 }
 
 .story-text :not(.hide) {
-	transition: opacity 400ms ease-in;
+	transition: opacity 300ms ease-in;
 	opacity: 1;
 }
 
