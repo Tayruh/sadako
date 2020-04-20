@@ -1,4 +1,4 @@
-// version: 0.9.7
+// version: 0.10.0
 
 (function(sadako) {
 	
@@ -231,57 +231,38 @@
 	}
 
 	var parseStory = function(text) {
-		var separateScriptBlock = function(breaks, lines) {
-			var a, b, temp, temp2, index, script;
-			var cond_char = sadako.token.cond.charAt(0);
-			
-			// index through script blocks. we do this to retain line breaks in script blocks
-			for (a = 0; a < breaks.length; ++a) {
-				index = breaks[a].indexOf(sadako.token.script_close);
-				if (index === -1) {
-					console.error("Error: Script block open token found without closing token.\nScript: " + breaks[a]);
-					continue;
-				}
-				
-				// collect after script block 
-				temp = breaks[a].substring(index).split(sadako.token.line);
-				temp2 = [];
-				for (b = 0; b < temp.length; ++b) {
-					temp2 = temp2.concat(temp[b].split("\n"));
-				}
-				
-				// remove leading and trailing spaces from script lines
-				script = breaks[a].substring(0, index).split("\n");
-				for (b = 0; b < script.length; ++b) {
-					script[b] = script[b].trim();
-					
-					// safety buffer to avoid clashing if last character of line
-					// matches first character of inline condition token
-					if (script[b].charAt(script[b].length - 1) === cond_char) script[b] += " ";
-				}
-				
-				// add script block and rest of line after script block to end of previous line 
-				lines[lines.length - 1] += sadako.token.script_open + script.join("\n") + temp2.shift();
-
-				// add lines after script block
-				lines = lines.concat(temp2);
-			}
-			return lines;
-		};
-		
 		var splitLines = function(text) {
-			var a, temp, temp2;
-			var lines = [];
+			/*
+				Splits lines by line breaks and line tokens while maintaining
+				line breaks and line tokens inside script blocks
+			*/
 			
-			temp = text.split(sadako.token.script_open);
-			
-			// add lines before first script block to array
-			temp2 = temp.shift().split(sadako.token.line);
-			for (a = 0; a < temp2.length; ++a) {
-				lines = lines.concat(temp2[a].split("\n"));
+			var lines = [""];
+						
+			var doSplit = function(text) {
+				var token = new RegExp(sadako.token.line, 'g');
+				text = text.replace(token, "\n");
+				return text.split("\n");
 			}
-
-			return separateScriptBlock(temp, lines);
+			
+			var temp = sadako.getMarkup(text, sadako.token.script_open, sadako.token.script_close);
+			var current;
+			
+			while (temp.markup.trim().length) {
+				current = doSplit(temp.before);
+				
+				lines[lines.length - 1] += current.shift();
+				lines = lines.concat(current);
+				lines[lines.length - 1] += temp.markup;
+			
+				temp = sadako.getMarkup(temp.after, sadako.token.script_open, sadako.token.script_close);
+			}
+			
+			current = doSplit(temp.after);
+			lines[lines.length - 1] += current.shift();
+			lines = lines.concat(current);
+			
+			return lines;
 		}
 		
 		var getPageTags = function(title) {
@@ -321,7 +302,6 @@
 
 				title = getPageTags(title);
 
-				// text = text.substring(text.indexOf(sadako.token.line) + sadako.token.line.length);
 				data = parseData(lines);
 				data = parseLines(data, title);
 				
@@ -334,16 +314,10 @@
 		}
 
 		var removeComments = function(text) {
-			// return text.replace(/(\/\*.*\*\/)/g, "");
-			
 			var before, after;
-
-			// remove block comments
-			while (text.indexOf(sadako.token.comment_open) !== -1) {
-				before = text.substring(0, text.indexOf(sadako.token.comment_open));
-				after = text.substring(text.indexOf(sadako.token.comment_close) + sadako.token.comment_close.length);
-				text = before + after;
-			}
+			
+			// remove comment blocks
+			text = sadako.parseMarkup(text, sadako.token.comment_open, sadako.token.comment_close, function() { return ""; })
 			
 			var a, line;
 			before = text.split("\n");
