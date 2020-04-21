@@ -1,6 +1,6 @@
 (function(sadako) {
 
-	sadako.version = "0.11.0";
+	sadako.version = "0.11.1";
 	sadako.kayako_version = "0.10.0";
 
 	var localStorage;
@@ -67,7 +67,7 @@
 
 	// global variables intended to changed
 	sadako.savename = "sadako";
-	sadako.text_delay = 80.0;
+	sadako.text_delay = 75.0;
 	sadako.output_id = "#output";
 	sadako.autosave_enabled = false;
 
@@ -117,57 +117,7 @@
 	sadako.cond_states = [];
 	sadako.enter_text = [];
 	sadako.scenes = {};
-	
-	var getMarkup = function(text, open, close) {
-		var firstIndex = text.indexOf(open);
-		if (firstIndex === -1) return {"before": "", "markup": "", "after": text};
-		
-		var markup;
-		var lastIndex = 0;
-		var closeIndex;
-		
-		while (closeIndex !== -1) {
-			closeIndex = text.indexOf(close, lastIndex);
-			if (closeIndex === -1) break;
-			lastIndex = closeIndex + close.length;
-			markup = text.substring(firstIndex, lastIndex);
-			if (markup.split(open).length === markup.split(close).length) break;
-		}
-		
-		if (closeIndex === -1) {
-			console.error("Script:", text);
-			throw new Error("Unmatched " + open + " and " + close + " tokens.");
-		}
-		
-		var before = text.substring(0, firstIndex);
-		var after = text.substring(closeIndex + close.length);
-		
-		return {"before": before, "markup": markup, "after": after};
-	}
-	
-	var parseMarkup = function(text, open, close, action) {
-		if (text.indexOf(open) === -1) {
-			return text;
-		}
-		
-		var before;
-		var temp = getMarkup(text, open, close);
-		
-		var result = "";
-		
-		while (temp.markup.trim().length) {
-			before = temp.before;
-			text = temp.after;
-			
-			result += before + action(temp);
 
-			temp = getMarkup(text, open, close);
-		}
-		
-		result += temp.after;
-
-		return result;
-	}
 
 	/* Utility Functions */
 
@@ -419,8 +369,6 @@
 				return args[n];
 			});
 			if (!loop || old_text === str) { break; }
-
-			// console.log(a, old_text, str);
 		}
 
 		return str;
@@ -582,6 +530,128 @@
 			document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
 		}
 	}
+	
+	
+	/* Markup Parsing */
+	
+	var getMarkup = function(text, open, close) {
+		var firstIndex = text.indexOf(open);
+		if (firstIndex === -1) return {"before": "", "markup": "", "after": text};
+		
+		var markup;
+		var lastIndex = 0;
+		var closeIndex;
+		
+		while (closeIndex !== -1) {
+			closeIndex = text.indexOf(close, lastIndex);
+			if (closeIndex === -1) break;
+			lastIndex = closeIndex + close.length;
+			markup = text.substring(firstIndex, lastIndex);
+			if (markup.split(open).length === markup.split(close).length) break;
+		}
+		
+		if (closeIndex === -1) {
+			console.error("Script:", text);
+			throw new Error("Unmatched " + open + " and " + close + " tokens.");
+		}
+		
+		var before = text.substring(0, firstIndex);
+		var after = text.substring(closeIndex + close.length);
+		
+		return {"before": before, "markup": markup, "after": after};
+	}
+	
+	var parseMarkup = function(text, open, close, action) {
+		if (text.indexOf(open) === -1) {
+			return text;
+		}
+		
+		var before;
+		var temp = getMarkup(text, open, close);
+		
+		var result = "";
+		
+		while (temp.markup.trim().length) {
+			before = temp.before;
+			text = temp.after;
+			
+			result += before + action(temp);
+
+			temp = getMarkup(text, open, close);
+		}
+		
+		result += temp.after;
+
+		return result;
+	}
+	
+	var getToken = function(text) {
+		var checkIndex = function(token_type, value) {
+			if (value === -1) return;
+			if (value > index) return;
+			
+			token = token_type;
+			index = value;
+		}
+		
+		var t = sadako.token;
+		
+		var index = text.length;
+		var inline_index = text.indexOf(t.inline_open);
+		var span_index = text.indexOf(t.span_open);
+		var macro_index = text.indexOf(t.macro_open);
+		var script_index = text.indexOf(t.script_open);
+		
+		var token = false;
+		checkIndex("script", script_index);
+		checkIndex("inline", inline_index);
+		checkIndex("span", span_index);
+		checkIndex("macro", macro_index);
+		
+		return {"token": token, "index": index};
+	}
+	
+	var splitMarkup = function(text, split_token) {
+		
+		if (text.indexOf(sadako.token.cond) === -1) return [text, ""];
+	
+		var before = "";
+		var script;
+		
+		var t = sadako.token;
+		
+		var tokens = {
+			"script": [t.script_open, t.script_close],
+			"inline": [t.inline_open, t.inline_close],
+			"span": [t.span_open, t.span_close],
+			"macro": [t.macro_open, t.macro_close]
+		}
+	
+		var split_index, temp;
+		while (text.length) {
+			temp = getToken(text);
+			
+			split_index = text.indexOf(split_token);
+			
+			if (split_index !== -1 && split_index < temp.index) {
+				before += text.substring(0, split_index);
+				text = text.substring(split_index + sadako.token.cond.length);
+				return [before, text];
+			}
+			
+			if (!temp.token) {
+				before += text;
+				text = "";
+				break;
+			}
+			
+			script = getMarkup(text, tokens[temp.token][0], tokens[temp.token][1]);
+			before += text.substring(0, temp.index + script.markup.length);
+			text = text.substring(temp.index + script.markup.length);
+		}
+		
+		return [before, text];
+	}
 
 
 	/* Saving & Loading */
@@ -664,8 +734,6 @@
 			var: copy(sadako.var, true),
 			tmp: copy(sadako.tmp, true)
 		}
-
-		// console.log(sadako.current_line)
 
 		return state;
 	};
@@ -1240,7 +1308,7 @@
 			else items = name.split(sadako.token.cond);
 			
 			var index;
-			var value = eval(processScript(temp));
+			var value = eval(temp);
 			
 			var a;
 			for (a = 0; a < items.length; ++a) { items[a] = items[a].trim(); }
@@ -1256,7 +1324,7 @@
 			
 			if (value === undefined) {
 				index = 0;
-				eval(processScript(format("{0} = '{1}'", temp, items[index])));
+				eval(format("{0} = '{1}'", temp, items[index]));
 			}
 			
 			name = items[index];
@@ -1264,7 +1332,7 @@
 			sadako.evals.push(function() {
 				index += 1;
 				if (index > items.length - 1) index = 0;
-				eval(processScript(format("{0} = '{1}'", temp, items[index])));
+				eval(format("{0} = '{1}'", temp, items[index]));
 				text = items[index];
 				sadako.fadeIn(cid, 0, text);
 			});
@@ -1282,7 +1350,7 @@
 			var text;
 			sadako.evals.push(function() {
 				text = script;
-				if (eval_script) text = processScript(eval_script);
+				if (eval_script) text = eval_script;
 				if (link || eval_script) text = eval(text);
 				sadako.fadeIn(cid, 0, text);
 			});
@@ -1300,7 +1368,7 @@
 		}
 		
 		// if script is undefined, slide each argument over by one to ignore title
-		if (!script === undefined) {
+		if (script === undefined) {
 			script = name;
 			name = title;
 			title = null;
@@ -1312,7 +1380,6 @@
 		}
 		
 		var temp, eval_script;
-		// if (title === undefined) title = 
 		
 		// close dialog
 		if (isToken(script, sadako.token.eval_action) !== false) {
@@ -1429,7 +1496,7 @@
 	};
 	
 	sadako.displayOutput = function(id) {
-		var delay = 0;
+		var delay = 0 - sadako.text_delay;
 		var delay_adjust = 0;
 
 		var outputLine = function(line) {
@@ -1550,7 +1617,6 @@
 			var text = "";
 			
 			sadako.display_choices = choices;
-			// choices = choices.concat(sadako.choices);
 			
 			var a, line, name;
 			for (a = 0; a < sadako.choices.length; ++a) {
@@ -1669,7 +1735,7 @@
 			var items = doRename(text, sadako.token.eval_code);
 			var script = items[0];
 			var name = items[1];
-
+			
 			if (name === null) eval(script);
 			else {
 				sadako.text += sadako.writeLink(name, 'eval(sadako.evals[' + (sadako.evals.length) + '])');
@@ -1680,7 +1746,7 @@
 		var doValue = function(text) {
 			/* evaluates text marked with 'value' token */
 
-			eval("sadako.text += " + text);
+			eval("sadako.text += sadako.processScript(" + text + ")");
 		}
 
 		var doLabelLink = function(text) {
@@ -1772,10 +1838,7 @@
 		
 		
 		return function() {
-			if (text.indexOf(sadako.token.script_open) === -1) {
-				sadako.text = text;
-				return text;
-			}
+			if (text.indexOf(sadako.token.script_open) === -1) return text;
 			
 			text = parseMarkup(text, sadako.token.script_open, sadako.token.script_close, function(markup) {
 				var script;
@@ -1791,7 +1854,7 @@
 				else if ((script = isToken(inside, sadako.token.eval_dialog)) !== false) sadako.text += doDialog(script);
 				else sadako.text += doPageLink(inside);
 				
-				return processScript(sadako.text);
+				return sadako.text;
 			});
 			
 			return text;
@@ -1799,7 +1862,7 @@
 	};
 	
 	sadako.writeSpan = function(class_name, text) {
-		return format('<span class="{0}">{1}</span>', class_name, text);
+		return format("<span class='{0}'>{1}</span>", class_name, text);
 	};
 	
 	var replaceVars = function(text) {
@@ -1842,96 +1905,92 @@
 		return text;
 	}
 
-	var processScript = function(script) {		
-		var doInline = function(text) {
-			var parseInline = function(text) {
-				var sections = text.split(sadako.token.cond, 3);
-
-				if (sections.length < 2) return text;
-				if (sections.length < 3) sections.push("");
-
-				if (eval(sections[0])) return sections[1];
-				return sections[2];
-			}
+	var processScript = function(script) {
+		var doInline = function(text) {		
+			text = text.slice(sadako.token.inline_open.length, 0 - sadako.token.inline_close.length);
 			
-			text = parseMarkup(text, sadako.token.inline_open, sadako.token.inline_close, function(markup) {
-				var inside = markup.markup.slice(sadako.token.inline_open.length, 0 - sadako.token.inline_close.length);
-				inside = processBlocks(inside);
-				return parseInline(inside);
-			});
+			var index = text.indexOf(sadako.token.cond);
 			
-			return text;
+			if (index === -1) return text;
+			
+			var cond = text.substring(0, index);
+			var options = text.substring(index + sadako.token.cond.length);
+			
+			options = splitMarkup(options, sadako.token.cond);
+			
+			if (eval(cond)) return options[0];
+			return options[1];
 		}
 
 		var doSpan = function(text) {
-			var parseSpan = function(text) {
-				var sections = text.split(sadako.token.cond);
-
-				if (sections.length < 2) return text;
-				text = text.substring(sections[0].length + sadako.token.cond.length);
-
-				return sadako.writeSpan(sections[0], text);
-			}
+			text = text.slice(sadako.token.span_open.length, 0 - sadako.token.span_close.length);
+		
+			var index = text.indexOf(sadako.token.cond);
 			
-			text = parseMarkup(text, sadako.token.span_open, sadako.token.span_close, function(markup) {
-				var inside = markup.markup.slice(sadako.token.span_open.length, 0 - sadako.token.span_close.length);
-				inside = processBlocks(inside);
-				return parseSpan(inside);
-			});
+			if (index === -1) return text;
 			
-			return text;
+			var class_name = text.substring(0, index);
+			text = text.substring(index + sadako.token.cond.length);
+			
+			return sadako.writeSpan(class_name, text);
 		}
 
 		var doMacro = function(text) {
-			var parseMacro = function(text) {
-				var type = sadako.token.eval_code;
-				var temp;
-				if ((temp = isToken(text, sadako.token.eval_value)) !== false) {
-					text = temp;
-					type = sadako.token.eval_value;
-				}
-				var pre = sadako.token.script_open + type + " ";
-				var index = text.indexOf(" ");
-				if (index === -1) return pre + "sadako.macros." + text + "()" + sadako.token.script_close;
-
-				var command = text.substring(index + 1);
-				text = text.substring(0, index);
-				return pre + "sadako.macros." + text + "(" + command + ")" + sadako.token.script_close;
-			}
+			text = text.slice(sadako.token.macro_open.length, 0 - sadako.token.macro_close.length);
 			
-			text = parseMarkup(text, sadako.token.macro_open, sadako.token.macro_close, function(markup) {
-				var inside = markup.markup.slice(sadako.token.macro_open.length, 0 - sadako.token.macro_close.length);
-				inside = processBlocks(inside);
-				return parseMacro(inside);
-			});
+			var type = sadako.token.eval_code;
+			var temp;
+			if ((temp = isToken(text, sadako.token.eval_value)) !== false) {
+				text = temp;
+				type = sadako.token.eval_value;
+			}
+			var pre = sadako.token.script_open + type + " ";
+			var index = text.indexOf(" ");
+			if (index === -1) return pre + "sadako.macros." + text + "()" + sadako.token.script_close;
 
-			return text;
+			var command = text.substring(index + 1);
+			text = text.substring(0, index);
+			
+			return pre + "sadako.macros." + text + "(" + command + ")" + sadako.token.script_close;
 		}
+		
 		var processBlocks = function(text) {
-			var token;
-			var index = -1;
+			var t = sadako.token;
 			
-			var inline_index = script.indexOf(sadako.token.inline_open);
-			var span_index = script.indexOf(sadako.token.span_open);
-			var macro_index = script.indexOf(sadako.token.macro_open);
-			var script_index = script.indexOf(sadako.token.script_open);
-			if (script_index === -1) script_index = text.length;
-			
-			if (index < inline_index && inline_index < script_index) { 
-				token = "inline"; index = inline_index;
+			var parseBlock = function(text, open, close, func) {
+				var script = getMarkup(text, open, close);
+				text = text.substring(0, index) + func(script.markup) + text.substring(index + script.markup.length);
+				
+				return text;
 			}
 			
-			if (index < span_index && span_index < script_index) { 
-				token = "span"; index = span_index;
-			}
-			if (index < macro_index && macro_index < script_index) { 
-				token = "macro"; index = macro_index;
-			}
+			var temp, index, script;
+			var token = true;
+			var pre_text = "";
 			
-			if (token === "inline") return doInline(text);
-			if (token === "span") return doSpan(text);
-			if (token === "macro") return doMacro(text)
-			return text;
+			var a = 0;
+			while (token) {
+				a += 1;
+				if (a > 10) break;
+				
+				temp = getToken(text);
+				index = temp.index;
+				token = temp.token;
+				
+				// we skip script blocks so we can execute them later
+				// this is because they may not need to be executed depending on inline conditions.
+				if (token === "script") {
+					script = getMarkup(text, t.script_open, t.script_close);
+					pre_text += text.substring(0, temp.index + script.markup.length);
+					text = text.substring(temp.index + script.markup.length);
+					continue;
+				}
+				
+				if (token === "inline") text = parseBlock(text, t.inline_open, t.inline_close, doInline);
+				else if (token === "span") text = parseBlock(text, t.span_open, t.span_close, doSpan);
+				else if (token === "macro") text = parseBlock(text, t.macro_open, t.macro_close, doMacro);
+			}
+			return pre_text + text;
 		}
 	
 		return function() {
@@ -2190,7 +2249,7 @@
 				scene.isActive = false;
 				scene.hasEnded += 1;
 				if (check.doEnd !== undefined && check.doEnd !== null) {
-					if (sadako.isStr(check.doEnd)) scene.ending = eval(sadako.processScript(check.doEnd));
+					if (sadako.isStr(check.doEnd)) scene.ending = eval(processScript(check.doEnd));
 					else scene.ending = check.doEnd();
 				}
 				if (scene.ending === undefined) scene.ending = null;
@@ -2359,7 +2418,7 @@
 			
 			if (index !== -1) {
 				cond = script.substring(index + sadako.token.cond.length);
-				cond_pass = eval(processScript(cond));
+				cond_pass = eval(replaceVars(cond));
 				script = script.substring(0, index);
 			}
 			if (cond_pass) return script;
