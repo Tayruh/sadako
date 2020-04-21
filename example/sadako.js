@@ -1,7 +1,7 @@
 (function(sadako) {
 
-	sadako.version = "0.11.1";
-	sadako.kayako_version = "0.10.0";
+	sadako.version = "0.11.2";
+	sadako.kayako_version = "0.10.1";
 
 	var localStorage;
 
@@ -67,7 +67,7 @@
 
 	// global variables intended to changed
 	sadako.savename = "sadako";
-	sadako.text_delay = 75.0;
+	sadako.text_delay = 80.0;
 	sadako.output_id = "#output";
 	sadako.autosave_enabled = false;
 
@@ -612,11 +612,7 @@
 	}
 	
 	var splitMarkup = function(text, split_token) {
-		
-		if (text.indexOf(sadako.token.cond) === -1) return [text, ""];
-	
-		var before = "";
-		var script;
+		if (text.indexOf(split_token) === -1) return [text];
 		
 		var t = sadako.token;
 		
@@ -626,22 +622,28 @@
 			"span": [t.span_open, t.span_close],
 			"macro": [t.macro_open, t.macro_close]
 		}
-	
-		var split_index, temp;
-		while (text.length) {
+		
+		var items = [];
+		var before = "";
+		var a, split_index, temp, script;
+		
+		// 1000 loops as a safety measure. It shoult break the loop before that.
+		for (a = 0; a < 1000; ++a) {
 			temp = getToken(text);
 			
 			split_index = text.indexOf(split_token);
 			
 			if (split_index !== -1 && split_index < temp.index) {
-				before += text.substring(0, split_index);
-				text = text.substring(split_index + sadako.token.cond.length);
-				return [before, text];
+				items.push(before + text.substring(0, split_index))
+				before = "";
+				text = text.substring(split_index + split_token.length);
+				continue;
 			}
 			
 			if (!temp.token) {
 				before += text;
 				text = "";
+				items.push(before);
 				break;
 			}
 			
@@ -649,8 +651,8 @@
 			before += text.substring(0, temp.index + script.markup.length);
 			text = text.substring(temp.index + script.markup.length);
 		}
-		
-		return [before, text];
+
+		return items;
 	}
 
 
@@ -1713,7 +1715,7 @@
 		*/
 
 		var doRename = function(text) {
-			var items = text.split(sadako.token.rename);
+			var items = splitMarkup(text, sadako.token.rename);
 
 			if (items.length < 2) return [items[0], null, null];
 
@@ -1736,7 +1738,7 @@
 			var script = items[0];
 			var name = items[1];
 			
-			if (name === null) eval(script);
+			if (!name) eval(script);
 			else {
 				sadako.text += sadako.writeLink(name, 'eval(sadako.evals[' + (sadako.evals.length) + '])');
 				sadako.evals[sadako.evals.length] = script;

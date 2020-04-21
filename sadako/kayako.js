@@ -245,15 +245,27 @@
 				return text.split("\n");
 			}
 			
+			var trimMarkup = function(text) {
+				var temp = text.split("\n");
+				var trimmed_lines = [];
+				for (a = 0; a < temp.length; ++a) {
+					if (!temp[a].length) continue;
+					trimmed_lines.push(temp[a].trim());
+				}
+				
+				return trimmed_lines.join("\n");
+			}
+			
 			var temp = sadako.getMarkup(text, sadako.token.script_open, sadako.token.script_close);
 			var current;
 			
+			var a;
 			while (temp.markup.trim().length) {
 				current = doSplit(temp.before);
 				
 				lines[lines.length - 1] += current.shift();
 				lines = lines.concat(current);
-				lines[lines.length - 1] += temp.markup;
+				lines[lines.length - 1] += trimMarkup(temp.markup);
 			
 				temp = sadako.getMarkup(temp.after, sadako.token.script_open, sadako.token.script_close);
 			}
