@@ -1097,7 +1097,7 @@
 		var updateDialog = function() {
 			if (sadako.dialog_ids.title) {
 				// clear dialog title if none is assigned on opening of dialog
-				if (title !== null && title !== undefined) sadako.dom(sadako.dialog_ids.title).innerHTML = title;
+				if (title !== null && title !== undefined) sadako.dom(sadako.dialog_ids.title).innerHTML = processScript(title);
 				else if (!sadako.in_dialog) sadako.dom(sadako.dialog_ids.title).innerHTML = "";
 			}
 			
