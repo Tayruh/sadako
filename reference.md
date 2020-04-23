@@ -28,19 +28,21 @@
 * [Variables and Conditionals](#variables-and-conditionals)
     * [Variable Embedding](#variable-embedding)
         * [For use in Story Script](#for-use-in-story-script) `$:` `_:` `*:` `#:` `%:` `^:`
-        * [For use in Script Blocks](#for-use-in-script-blocks) `$.` `_.` `*.` `#.` `%.` `^.` `~~=` `~~+`
+        * [For use in Script Blocks](#for-use-in-script-blocks) `$.` `_.` `*.` `#.` `%.` `^.` `~~=` `~~+` `{{ }}`
         * [var, tmp](#var-tmp)
         * [text](#text)
         * [scripts](#scripts)
+        * [process script](#process-script)
     * [Conditional Display](#conditional-display) `::`
     * [Inline Text Options](#inline-text-options) `{: :}`
-    * [Script Block](#script-block)
-        * [Redirects](#redirects) `[: :]` `[:# :]` `[:% :]`
-        * [JavaScript](#javascript) `[:& :]` `[:= :]`
-        * [Input Boxes](#input-boxes) `[:> :]` `[:>> :]`
-        * [Reveal Links](#reveal-links) `[:+ :]` `[:+# :]` `[:+% :]` `[:+& :]` `[:+= :]` `[:+> :]`
-        * [Dialog Links](#dialog-links) `[:* :]` `[:*! :]` `[:*# :]` `[:*% :]` `[:*& :]` `[:*= :]`
-    * [Macros](#macros) `(: :)`
+* [Script Blocks](#script-blocks)
+    * [Redirects](#redirects) `[: :]` `[:# :]` `[:% :]`
+    * [JavaScript](#javascript) `[:& :]` `[:= :]`
+        * [Internal Script Blocks](#internal-script-blocks)
+    * [Input Boxes](#input-boxes) `[:> :]` `[:>> :]`
+    * [Reveal Links](#reveal-links) `[:+ :]` `[:+# :]` `[:+% :]` `[:+& :]` `[:+= :]` `[:+> :]`
+    * [Dialog Links](#dialog-links) `[:* :]` `[:*! :]` `[:*# :]` `[:*% :]` `[:*& :]` `[:*= :]`
+* [Macros](#macros) `(: :)`
 
 * [Choices and Depths](#choices-and-depths)
     * [Choice formatting](#choice-formatting) `[ ]`
@@ -569,6 +571,7 @@ Script blocks will be described soon, but just know that the script inside the `
 * `^.foo` becomes `sadako.scripts.foo` (or `sadako.scripts.foo()` if a function)
 * `~~=foo` becomes `sadako.text = foo`
 * `~~+'foo'` becomes `sadako.text += 'foo'`
+* `{{foo}}` becomes `sadako.processScript(foo)`
 
 To make sense of this, a few things should be explained briefly.
 
@@ -625,6 +628,13 @@ Value of test: second
 The temporary variables aren't cleared with jumps.
 
 
+#### page_seen, label_seen
+
+The `sadako_page_seen` and `sadako.label_seen` arrays track how many times a page or label has been seen. Every time you access a page (this counts incuding the page) or a label, the count is increased by one. 
+
+If you select on a choice with a label, the count is also increased by one. The label count is not increased for a choice just by displaying it; only if it's chosen.
+
+
 #### text
 
 `sadako.text` is the variable that holds the text being processed for the current line. Just returning text from a function will not work unless you use the `=` value token inside the `[: :]` script block (which hopefully explains how the story script text replacements work). If you are inside a function and want to replace or add to the text output for the current line, `sadako.text` is the variable to use.
@@ -678,6 +688,12 @@ The total times called was: 2
 
 Regarding `sadako.page_seen` and `sadako.label_seen`, every time you  transition to a new page, progress past a label in the script, or select a choice that is preceded by a label, the counter for that page or label is increased by 1. This is convenient for checking whether you've seen a part of the script and how many times.
 
+#### processScript()
+
+The `{{ }}` process token is an abbreviation for `sadako.processScripts()`. This is a really useful function. It basically processes the script passed to it as if it were a `[:= :]` code eval script block. All the same rules that apply to a script block apply to this as well.
+
+Since the functionality of this token hinges entirely on the understanding of script blocks, it will be described a bit below in [this section](#javascript).
+
 
 ### Conditional Display
 
@@ -729,7 +745,7 @@ You carefully pick up the vase and put it back on the shelf.
 ```
 
 
-### Script Block
+## Script Blocks
 
 #### Redirects
 
@@ -821,6 +837,113 @@ It's also important to note that the `[: :]` script block is the only block to i
 <a onclick"sadako.doLink("Page1")>meh</a>
 ```
 
+Another important note is that while the contents of a script block have its variable names replaced, any script blocks inside this block will not be rendered. For example:
+
+```
+[:&
+    $.foo = 1;
+    $.add = "[:= 'math: ' + (1 + 1):]";
+    console.log("foo:", "$.foo)
+    console.log("add:", $.add)
+:]
+
+$:foo
+$:add
+
+
+// outputs:
+1
+math: 2
+
+// console output:
+foo: 1
+add: [:= 'math: ' + (1 + 1):]
+```
+
+As you can see, `$.add` is set to `[:= 'math: ' + (1 + 1):]` not `math: 2`. However, when you print its value on a normal line, it'll be rendered correctly. This is helpful if you want the value to keep changing due to updated variables. For example:
+
+```
+[:&
+    $.foo = 0;
+    $.add = "[:= 'math: ' + ($.foo += 1):]";    
+:]
+$:add, $:add, $:add
+
+// outputs
+math: 1, math: 2, math: 3
+```
+
+Finally, be aware that embedded values of variables using the `$:`, `_:`, and other such tokens is using the value it held when this line was reached. That's fine is most instances, but it's you're updating a value inside a script, it's not going to render correctly.
+
+Here's an example of it failing to do what you may want.
+
+```
+[:& $.foo = 1:]
+[:& $.foo += 1; ~~="Foo: actual: " + $.foo + ", embedded: $:foo":]
+[:= "Bleh: actual: " + (_.bleh = 1) + ", embedded: _:bleh":]
+
+// outputs:
+Foo: actual: 2, embedded: 1
+Bleh: actual: 1, embedded: undefined
+```
+
+As you can see, you can still use the embedded version of the variable to access its data using `$.` and `_.` and the like.
+
+
+##### Internal Script Blocks
+
+As described earlier, the `{{ }}` process token functions like a `[:= :]` eval code token. The reason for using a process token instead of the script token is becomes of the rules described just above this.
+
+To reiterate, `[:& foo = "[:= 'bleh':]":]` does not set `foo` to `"bleh"` like you may think. A script block prevents script blocks from rendering inside them, therefore you can never set a variable in this way. The `{{ }}` process token is the workaround for this. Additionally, it's allowed to be multi-lined just like a script block.
+
+This is an unnecessarily complex example, but it should help show why this is feature is useful.
+
+```
+before|[:& 
+    _.a = "middle [:& _.c = '[:& _.d = 1 :]':]";
+    console.log("a:", _.a);
+    
+    _.b = {{_.a}};
+    console.log("b:", _.b);
+    console.log("c:", _.c);
+    
+    {{_.c}};
+    console.log("d:", _.d);
+    
+    ~~+{{
+        (function() {
+            return "<:test::" + _.b + _.d + ":>";
+        }())
+    }};
+:]|after
+
+// outputs:
+before|middle 1|after
+
+// console output:
+a: middle [:& sadako.tmp.c = '[:& sadako.tmp.d = 1 :]':]
+b: middle 
+c: [:& sadako.tmp.d = 1 :]
+d: 1
+```
+
+This is a bit confusing so I placed console output into the example. Let's go over it step by step.
+
+1. If you look at each line spit out by the console, you'll see that `_.a` was set to `"middle [:& sadako.tmp.c = '[:& sadako.tmp.d = 1 :]':]"`. 
+2. When `_.b` is set to `{{_.a}}`, it renders the script and gives the output to `_.b`. Because the `[:& :]` token does not produce any text, `_.b` is only set to `"middle "`. The markdown doesn't show the trailing space, but it's there.
+3. Even though the script block inside `_.a` wasn't displayed, it *was* rendered. Because of that, `_.c` was created.
+4. Processing `_.c` with `{{_.c}}` created `_.d`. Its output is not assign to anything, but it would be `1` if it were.
+5. And finally, we use the `{{ }}` token to send its content directly to the output using the `~~+` text token.
+
+Step 5 could also be effectively accomplished using a line like so:
+
+```
+~~+'[:= function() { return "<:test::" + _.b + _.d + ":>"; }():]'
+```
+
+However, the difference is that in this version, it's writing the script block to the output of current line, and then the engine is rendering the script block once it's part of the line. To the end user it would look identical, but internally it's very different. The `{{ }}` process token is rendering the content down to its value *before* it gets assigned.
+
+
 #### Input Boxes
 
 The input boxes can be a bit tricky. They go like this.
@@ -861,7 +984,7 @@ Here's an example.
 // CSS
 textarea.multiline { height: 5em; width: 20em; }
 
-// in story script
+// in story script=
 [:>> $.test_val @: Please type something.^^:]
 
 
@@ -946,7 +1069,7 @@ As with the `+` reveal token, you can add an `=` eval token to the page and labe
 There isn't a standard dialog window defined in **Sadako**. The user must define one themselves in HTML. The "[getting started](getting-started.md)" guide has an example on how to get this up and running.
 
 
-### Macros
+## Macros
 
 `(:` `:)`
 
