@@ -33,7 +33,7 @@
         * [page_seen, label_seen](#page_seen-label_seen)
         * [text](#text)
         * [scripts](#scripts)
-        * [processScript()](#processScript)
+        * [processScript()](#processscript)
     * [Conditional Display](#conditional-display) `::`
     * [Inline Text Options](#inline-text-options) `{: :}`
 * [Script Blocks](#script-blocks)
