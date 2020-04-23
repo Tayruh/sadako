@@ -30,9 +30,10 @@
         * [For use in Story Script](#for-use-in-story-script) `$:` `_:` `*:` `#:` `%:` `^:`
         * [For use in Script Blocks](#for-use-in-script-blocks) `$.` `_.` `*.` `#.` `%.` `^.` `~~=` `~~+` `{{ }}`
         * [var, tmp](#var-tmp)
+        * [page_seen, label_seen](#page_seen-label_seen)
         * [text](#text)
         * [scripts](#scripts)
-        * [process script](#process-script)
+        * [processScript()](#processScript)
     * [Conditional Display](#conditional-display) `::`
     * [Inline Text Options](#inline-text-options) `{: :}`
 * [Script Blocks](#script-blocks)
@@ -837,7 +838,9 @@ It's also important to note that the `[: :]` script block is the only block to i
 <a onclick"sadako.doLink("Page1")>meh</a>
 ```
 
-Another important note is that while the contents of a script block have its variable names replaced, any script blocks inside this block will not be rendered. For example:
+Another important note is that while the contents of a script block have its variable names replaced, any tokens blocks inside this block will not be rendered. This applies not only to `[: :]` script blocks, but also `<: :>` spans, `{: :}` inline text options, and `(: :)` macros.
+
+For example:
 
 ```
 [:&
