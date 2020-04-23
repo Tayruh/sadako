@@ -2063,6 +2063,7 @@
 	};
 
 	var localizeLabel = function(label, throw_error) {
+		label = label.trim();
 		if (label.indexOf(".") === -1 || !(label in sadako.labels)) label = sadako.page + "." + label;
 		if (throw_error && !(label in sadako.labels)) throw new Error("Can't find label '" + label + "'");
 		return label;
@@ -2324,9 +2325,8 @@
 			var processLabelJump = function(label, include_text) {
 				var temp;
 				if ((temp = isToken(label, sadako.token.label_embed)) !== false) label = temp;
-
-				if (label.indexOf(".") === -1 || !(label in sadako.labels)) label = page + "." + label;
-				if (!(label in sadako.labels)) throw new Error("Can't find label '" + label + "'");
+				
+				label = localizeLabel(label);
 
 				var jump = sadako.labels[label];
 				var token = sadako.story[jump[0]][jump[1]][jump[2]].k;
