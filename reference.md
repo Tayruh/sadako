@@ -569,13 +569,13 @@ The color of the gem was a bright green.
 
 ```
 // javascript
-sadako.var.foo = function() {
+sadako.scripts.foo = function() {
     if (sadako.var.test) return "Success";
     return "Fail";
 }
 
 // sadako script
-Test result: $:foo
+Test result: ^:foo
 
 // outputs (assuming sadako.var.test is true)
 Test result: Success
