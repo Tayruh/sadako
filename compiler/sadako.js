@@ -1,7 +1,7 @@
 (function(sadako) {
 
-	sadako.version = "0.11.3";
-	sadako.kayako_version = "0.10.1";
+	sadako.version = "0.11.4";
+	sadako.kayako_version = "0.10.3";
 
 	var localStorage;
 
@@ -12,6 +12,7 @@
 	var RUN = "RUN";
 
 	sadako.token = {
+		"escape": "\\",
 		"line": ";;",
 		"cond": "::",
 		"script_open": "[:",
@@ -104,12 +105,14 @@
 	sadako.in_include = false;
 	sadako.scene_checks = {};
 	sadako.text = "";
+	sadako.evals_unsafe = true;
 
 	// global variables saved to state
 	sadako.current = null;
 	sadako.page = "start";
 	sadako.start = 0;
 	sadako.part = 0;
+	sadako.labels = {};
 	sadako.page_seen = {};
 	sadako.label_seen = {};
 	sadako.var = {};
@@ -1110,7 +1113,7 @@
 			if (text) {
 				var temp;
 				if ((temp = sadako.isToken(text, sadako.token.page_embed))) doLink("#" + temp);
-				else if ((temp = sadako.isToken(text, sadako.token.label_embed))) sadako.doLink(temp);
+				else if ((temp = sadako.isToken(text, sadako.token.label_embed))) doLink("%" + temp);
 				else sadako.overwrite(text);
 			}
 		}
@@ -1183,7 +1186,6 @@
 		sadako.lines = [];
 		sadako.write(text);
 		writeOutput(id);
-		sadako.scrollToTop(id);
 	};
 
 	var addChoice = function(name, command, tags) {
@@ -1295,10 +1297,13 @@
 			}
 
 			sadako.evals.push(function() {
+				var choices = copy(sadako.choices, true);
 				sadako.lines = [];
 				sadako.choices = [];
+				sadako.clear(id);
 				sadako.doInclude(script);
 				writeOutput(id);
+				sadako.choices = copy(choices, true);
 			});
 		}
 		else if ((temp = isToken(script, sadako.token.eval_input))) {
@@ -1500,6 +1505,14 @@
 		return text;
 	};
 
+	sadako.doBeforeDisplay = function(id) {
+		sadako.scrollToTop(id);
+		sadako.clear(id);
+	};
+
+	//eslint-disable-next-line no-unused-vars
+	sadako.doAfterDisplay = function(id) { };
+
 	sadako.displayOutput = function(id) {
 		var delay = 0 - sadako.text_delay;
 		var delay_adjust = 0;
@@ -1530,6 +1543,15 @@
 		}
 
 		return function() {
+			if (!id) {
+				if (sadako.in_dialog && sadako.dialog_ids.output) id = sadako.dialog_ids.output;
+				else id = sadako.output_id;
+			}
+
+			sadako.doBeforeDisplay(id);
+
+			sadako.evals_unsafe = false;
+
 			var a;
 			for (a = 0; a < sadako.display_lines.length; ++a) {
 				outputLine(sadako.display_lines[a]);
@@ -1542,6 +1564,8 @@
 					outputLine(choices[a]);
 				}
 			}
+
+			sadako.doAfterDisplay(id);
 		}();
 	};
 
@@ -1552,9 +1576,7 @@
 
 		delay = delay || 0;
 
-		if (id) sadako.dom(id).appendChild(el);
-		else if (sadako.in_dialog && sadako.dialog_ids.output) sadako.dom(sadako.dialog_ids.output).appendChild(el);
-		else sadako.dom(sadako.output_id).appendChild(el);
+		sadako.dom(id).appendChild(el);
 
 		// Fade in paragraph after a short delay
 		setTimeout(function() {
@@ -1571,10 +1593,10 @@
 			for (b = 0; b < choice.tags.length; ++b) {
 				choice.text = sadako.doChoiceTag(choice.text, choice.tags[b]);
 			}
-			text += format("<li class='choice'><span class='{0}'>{1}</span></li>", choice.classes.join(" "), choice.text);
+			text += format("<li><span class='{0}'>{1}</span></li>", choice.classes.join(" "), choice.text);
 		}
 		text = "<hr><ul>" + text + "</ul>";
-		return [{"text": text, "classes": [], "tags": ["choice"]}];
+		return [{"text": text, "classes": ["choice"], "tags": ["choice"]}];
 	};
 
 	var splitTags = function(text) {
@@ -1641,9 +1663,6 @@
 
 		return function() {
 			// Indexes through each line and choice and outputs them to the display
-
-			sadako.clear(id);
-
 			processLines();
 			processChoices();
 
@@ -2325,7 +2344,7 @@
 			var processLabelJump = function(label, include_text) {
 				var temp;
 				if ((temp = isToken(label, sadako.token.label_embed)) !== false) label = temp;
-				
+
 				label = localizeLabel(label);
 
 				var jump = sadako.labels[label];
@@ -2487,6 +2506,13 @@
 				text = processScript(text);
 				if (text === null) continue;
 
+				// if link is set to be rendered as a choice inside an include, stop the script
+				if (sadako.in_include) {
+					temp = text.split(sadako.token.tag);
+					temp.shift();
+					if (sadako.has(temp, "choice")) return [END];
+				}
+
 				// increase label seen count as long as this isn't a choice
 				if (is_not_choice && label) sadako.label_seen[label] += 1;
 
@@ -2618,7 +2644,6 @@
 				if ("ALL" in sadako.after) sadako.after.ALL();
 				if (sadako.script_status === ABORT) return;
 
-				sadako.scrollToTop();
 				writeOutput();
 			}
 		};
@@ -2630,6 +2655,7 @@
 			sadako.start = start;
 			sadako.part = part;
 			sadako.evals = [];
+			sadako.evals_unsafe = true;
 
 			doBefore();
 
@@ -2667,6 +2693,38 @@
 	};
 
 	sadako.init = function(story, id) {
+		var initializeData = function() {
+
+			// remove story data from story object to avoid possible conflicts
+			delete sadako.story.story_data;
+
+			var a, b, label;
+			
+			sadako.tags = {};
+			sadako.labels = {};
+			sadako.page_seen = {};
+			for (a in sadako.story) {
+				// set page seen
+				sadako.page_seen[a] = 0;
+				
+				if (!("tags" in sadako.story[a])) sadako.story[a].tags = {};
+				sadako.tags[a] = sadako.story[a].tags;
+				
+				if (!("labels" in sadako.story[a])) sadako.story[a].labels = {};
+
+				for (b in sadako.story[a].labels) {
+					label = a + "." + b;
+
+					// set label seen
+					sadako.label_seen[label] = 0;
+
+					// set labels array
+					if (!sadako.labels[label]) sadako.labels[label] = {};
+					sadako.labels[label] = sadako.story[a].labels[b];
+				}
+			}
+		}
+		
 		if (id) sadako.output_id = id;
 		else sadako.output_id = sadako.output_id || "#output";
 
@@ -2689,15 +2747,6 @@
 			sadako.tags = sadako.story.story_data.tags;
 			sadako.labels = sadako.story.story_data.labels;
 			sadako.depths = sadako.story.story_data.depths;
-
-			var a;
-			for (a in sadako.story) {
-				sadako.page_seen[a] = 0;
-			}
-			for (a in sadako.labels) {
-				sadako.label_seen[a] = 0;
-			}
-
 			checkVersion();
 		}
 		else {
@@ -2708,6 +2757,8 @@
 		}
 
 		if (sadako.story === undefined) console.error("Sadako script not found");
+
+		initializeData();
 	};
 
 	sadako.setupDialog = function(output_id, title_id, display_ids) {
@@ -2822,6 +2873,7 @@
 	sadako.find = find;
 	sadako.isDef = isDef;
 	sadako.isEmpty = isEmpty;
+	sadako.isFunc = isFunc;
 	sadako.isStr = isStr;
 	sadako.isNum = isNum;
 	sadako.isValidNum = isValidNum;

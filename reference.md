@@ -6,6 +6,7 @@
     *  [Comment Block](#comment-block) `/* */`
     *  [Line Comment](#line-comment) `//`
     * [Escape](#escape) `\`
+    * [Line Concatenation](#line-concatenation) `\`
 
 * [Story Sections](#story-sections)
     * [Pages](#pages) `##`
@@ -27,13 +28,14 @@
 
 * [Variables and Conditionals](#variables-and-conditionals)
     * [Variable Embedding](#variable-embedding)
-        * [For use in Story Script](#for-use-in-story-script) `$:` `_:` `*:` `#:` `%:` `^:`
-        * [For use in Script Blocks](#for-use-in-script-blocks) `$.` `_.` `*.` `#.` `%.` `^.` `~~=` `~~+` `{{ }}`
-        * [var, tmp](#var-tmp)
-        * [page_seen, label_seen](#page_seen-label_seen)
-        * [text](#text)
-        * [scripts](#scripts)
-        * [processScript()](#processscript)
+        * [For use in Story Script](#for-use-in-story-script) `:`
+        * [For use in Script Blocks](#for-use-in-script-blocks) `.`
+        * [var, tmp](#var-tmp) `$.` `$:` `_.` `_:`
+        * [page_seen, label_seen](#page_seen-label_seen) `#.` `#:` `%.` `%:`
+        * [text](#text) `~~=` `~~+`
+        * [scripts](#scripts) `^.` `^:`
+        * [scenes](#scenes) `*.` `*:`
+        * [processScript()](#processscript) `{{ }}`
     * [Conditional Display](#conditional-display) `::`
     * [Inline Text Options](#inline-text-options) `{: :}`
 * [Script Blocks](#script-blocks)
@@ -55,7 +57,7 @@
     * [Depth Labels](#depth-labels) `=`
     * [Condition Block](#condition-block) `~ if` `~ else if` `~ else`
 
-* [Scenes](#scenes) `*.` `*:`
+* [Scenes](#scenes-1) `*.` `*:`
     * [Examples](#examples)
     * [Defining](#defining)
 
@@ -93,8 +95,7 @@ This text will also display.
 
 `\`
 
-An escape token is used to prevent **Sadako** from recognizing a token that begins a line. This does not work for tokens that do not begin a line.
-
+An escape token is used to prevent **Sadako** from recognizing depth tokens such as `+`, `*`, `-`, and `~`. These tokens and their functions will be explained in depth later.
 ```
 *** You win! ***
 
@@ -108,6 +109,25 @@ An escape token is used to prevent **Sadako** from recognizing a token that begi
 *** You win! ***
 ```
 
+The collecting of these tokens by Sadako happens during compilation, and so this token is only looked for during compilation. Attempting to escape any tokens other than depth tokens will not work.
+
+
+### Line Concatenation
+
+`\`
+
+When the `\` escape token ends a line, it will join that line and following line together.
+
+```
+## page1 \
+    ~:tag1 \
+    ~:tag2
+
+// is read by the compiler as:
+## page1 ~:tag1 ~:tag2
+```
+
+Later on you will read about the `<>` attach token which appears to do something similar. The difference between this token and that token is that is this one is used during the compiling. By the time your game starts, these lines will have already been formed into a single line.
 
 ## Story Sections
 
@@ -631,10 +651,9 @@ The temporary variables aren't cleared with jumps.
 
 #### page_seen, label_seen
 
-The `sadako_page_seen` and `sadako.label_seen` arrays track how many times a page or label has been seen. Every time you access a page (this counts incuding the page) or a label, the count is increased by one. 
+The `sadako_page_seen` and `sadako.label_seen` arrays track how many times a page or label has been seen. Every time you  transition to a new page, progress past a label in the script, or select a choice that is preceded by a label, the counter for that page or label is increased by 1. This is convenient for checking whether you've seen a part of the script and how many times.
 
 If you select on a choice with a label, the count is also increased by one. The label count is not increased for a choice just by displaying it; only if it's chosen.
-
 
 #### text
 
@@ -685,9 +704,9 @@ The total times called was: 2
 
 ```
 
-`sadako.scenes` will be described in just a little bit. It's too in depth to describe here.
+#### scenes
 
-Regarding `sadako.page_seen` and `sadako.label_seen`, every time you  transition to a new page, progress past a label in the script, or select a choice that is preceded by a label, the counter for that page or label is increased by 1. This is convenient for checking whether you've seen a part of the script and how many times.
+`sadako.scenes` will be described later on in [this section](#scenes-1). It's too in depth to describe here.
 
 #### processScript()
 

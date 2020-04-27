@@ -82,14 +82,62 @@ sadako.macros.add = function(x, y) { sadako.write(x + y); }
 The above macro would write `"3"` to the output text.
 
 
+#### sadako.scripts
+
+Object list containing strings and functions to be written with the `^:` and `^.` script tokens. The functions defined never accept any arguments.
+
+
 #### sadako.in_include
 
-Returns `true` if the script is currently being run inside included script, and `false` if not. Script is included if it is displayed with `[:+# :]` or `[:+% :]` reveal tokens, the `>>=` include token, or the `sadako.doInclude()` function.
+Set to `true` if the script is currently being run inside included script, and `false` if not. Script is included if it is displayed with `[:+# :]` or `[:+% :]` reveal tokens, the `>>=` include token, or the `sadako.doInclude()` function.
 
 
 #### sadako.in_dialog
 
-Returns `true` if the script is currently being run inside a dialog window, and `false` if not.
+Set to `true` if the script is currently being run inside a dialog window, and `false` if not.
+
+### sadako.unsafe_evals
+
+When **Sadako** creates a link with script to be executed, it places it inside an array. That item of the array is then executed when the link is clicked. In order to not continuously save functions to memory and cause a memory leak, that array is cleared when entering a new page or selecting a choice. 
+
+This is perfectly safe with the default configuration of **Sadako**'s display methods. However, if you customize the display to not clear when displaying a new page and the links are still present, those links will throw an error if you attempt to click them.
+
+This variable was implemented to work around that. The value is normally set to false, but is set to true when you enter a new page or select a choice, and then set to false again upon returning from `sadako.doBeforeDisplay()`. Because of this, you can use that function to remove any bad links or choices from the page.
+
+Here's an example:
+
+```
+sadako.doBeforeDisplay = function(id) {
+    // clear output if in a dialog
+    if (sadako.in_dialog) {
+        sadako.scrollToTop();
+        sadako.clear(id);
+        return;
+    }
+
+    // we only remove the links from the page if they are unsafe
+    if (sadako.evals_unsafe) {
+        var a;
+        var choices = sadako.dom(id).getElementsByClassName("choice");
+        while (choices && choices.length) {
+            for (a = 0; a < choices.length; ++a) {
+                choices[a].remove();
+            }
+            choices = sadako.dom(id).getElementsByClassName("choice");
+        }
+        var links = sadako.dom(id).getElementsByClassName("link");
+        while (links && links.length) {
+            for (a = 0; a < links.length; ++a) {
+                // remove click action and class, turning it into normal text
+                links[a].onclick = "";
+                sadako.removeClass(links[a], "link");
+            }
+            links = sadako.dom(id).getElementsByClassName("link");
+        }
+    }
+};
+```
+
 
 #### sadako.onDialogClose
 
@@ -411,7 +459,36 @@ This function is the one that displays the queued lines and choices to the scree
 
 Arguments:
 
-* `id`: The ID of the HTML element to be written to. This is passed to `sadako.displayLine()`.
+* `id`: The ID of the HTML element to be written to. This is passed to `sadako.displayLine()`, `sadako.doBeforeDisplay()`, and `sadako.doAfterDisplay()`.
+
+#### sadako.doBeforeDisplay()
+
+This function is called as the first line of `sadako.displayOutput()`, so it runs before the `sadako.display_lines` are displayed, which is also before `sadako.stylizeChoices()` is run.
+
+The default definition of this function is this:
+
+```
+sadako.doBeforeDisplay = function(id) {
+    sadako.scrollToTop(id);
+    sadako.clear(id);
+};
+```
+
+All this does is scroll the window to the top and clears the output.
+
+Arguments:
+
+* `id`: The ID of the HTML element to be written to.
+
+#### sadako.doAfterDisplay()
+
+This function is run as the final line of `sadako.displayOutput()` and allows you to manipulate the display before returning control back to the user.
+
+This function is empty by default.
+
+Arguments:
+
+* `id`: The ID of the HTML element to be written to.
 
 #### sadako.displayLine()
 
