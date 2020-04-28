@@ -1641,8 +1641,6 @@
 		};
 
 		var processChoices = function() {
-			var text = "";
-
 			sadako.display_choices = choices;
 
 			var a, line, name;
@@ -1656,9 +1654,6 @@
 				line.text = sadako.writeLink(name, "sadako.doChoice(" + a + ")");
 				sadako.display_choices.push(line);
 			}
-
-			if (text) text = "<hr><ul>" + text + "</u>";
-			return {"text": text, "classes": [], "tags": []};
 		};
 
 		return function() {
