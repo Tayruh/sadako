@@ -21,6 +21,8 @@
 		"attach": "<>",
 		"choice_format_open": "[",
 		"choice_format_close": "]",
+		"choice_link_open": "<<",
+		"choice_link_close": ">>",
 		"comment_open": "/*",
 		"comment_close": "*/",
 		"label_prop": ".",
@@ -1643,15 +1645,26 @@
 		var processChoices = function() {
 			sadako.display_choices = choices;
 
-			var a, line, name;
+			var t = sadako.token;
+			var a, line, name, link, start, end, before, after;
 			for (a = 0; a < sadako.choices.length; ++a) {
 				line = splitTags(sadako.choices[a].text);
 				add(line.tags, "choice");
 
 				name = sadako.parseLink(line.text);
 				if (name.trim().length < 1) continue;
+				
+				start = name.indexOf(t.choice_link_open);
+				before = (start === -1) ? "" : name.substring(0, start);
+				if (start === -1) start = 0 - t.choice_link_open.length;
+				
+				end = name.indexOf(t.choice_link_close);
+				after = (end === -1) ? "" : name.substring(end + t.choice_link_close.length);
+				if (end === -1) end = name.length;
+				
+				link = name.slice(start + t.choice_link_open.length, end);
 
-				line.text = sadako.writeLink(name, "sadako.doChoice(" + a + ")");
+				line.text = before + sadako.writeLink(link, "sadako.doChoice(" + a + ")") + after;
 				sadako.display_choices.push(line);
 			}
 		};
@@ -2190,6 +2203,11 @@
 	};
 
 	var parseLink = function(text, end) {
+		if (end) {
+			text = text.replace(sadako.token.choice_link_open, "");
+			text = text.replace(sadako.token.choice_link_close, "");
+		}
+		
 		var open = text.indexOf(sadako.token.choice_format_open);
 		var close = text.indexOf(sadako.token.choice_format_close);
 
@@ -2719,7 +2737,7 @@
 				}
 			}
 		}
-		
+
 		if (id) sadako.output_id = id;
 		else sadako.output_id = sadako.output_id || "#output";
 
