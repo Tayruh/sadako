@@ -1957,6 +1957,7 @@
 			options = splitMarkup(options, sadako.token.cond);
 
 			if (eval(cond)) return options[0];
+			if (options.length < 2) return "";
 			return options[1];
 		}
 
@@ -2533,7 +2534,7 @@
 				if (sadako.script_status !== RUN) return [sadako.script_status];
 
 				// if jump token, process jump
-				if ((temp = parseJump(text, page, start, a))) {
+				if (is_not_choice && (temp = parseJump(text, page, start, a))) {
 					if (temp[0] === CONTINUE) continue;
 					return temp;
 				}
