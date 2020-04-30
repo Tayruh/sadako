@@ -1156,6 +1156,44 @@ When displaying the choice, the text before and inside the tokens will be displa
 
 A handy trick is to put `[ ]` around all of the choice text. Doing so will prevent the choice text from displaying at all on the newly rendered page. This trick is used for most examples on this guide to make the example output easier to read.
 
+### Choice Links
+
+`<<` `>>`
+
+Normally the link of a choice spans the entirety of the choice text. However, that isn't always ideal. For example, it's nice to have only the page number in a choice like `Turn to page 26.` be the link instead of the text surrounding it. That can be accomplished with the `<< >>` choice link tokens.
+
+```
++ Turn to page <<26>>.
+
+// outputs (the <> brackets represent the link):
+Turn to page <26>.
+```
+
+In the above example, only the number `26` is a clickable link. The rest of the choice is just normal text.
+
+The way that it works is that anything before `<<` and after `>>` is normal text. Everything else is a link.
+
+```
++ Example 1. Everything is a link.
++ Example 2. Only <<this part>> is a link.
++ Example 2. <<This is a link.
++ Example 3.>> This is normal text.
+
+// outputs:
+<Example 1. Everything is a link.>
+Example 2. Only <this part> is a link.
+Example 3. <This is a link.>
+<Example 4.> This is normal text.
+```
+
+The `<<` and `>>` choice link tokens are also removed when displaying the formatted choice text on the next page. You can use them in combination with the `[]` choice formatting tokens.
+
+```
++ You open the <<door[>>.], but there was no one there.
+
+(choice text): You open the <door>.
+(new text): You open the door, but there was no one there.
+```
 
 ### Static Choice
 
