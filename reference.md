@@ -48,7 +48,8 @@
 * [Macros](#macros) `(: :)`
 
 * [Choices and Depths](#choices-and-depths)
-    * [Choice formatting](#choice-formatting) `[ ]`
+    * [Choice Formatting](#choice-formatting) `[ ]`
+    * [Choice Links](#choice-links) `<< >>`
     * [Static Choice](#static-choice) `+`
     * [Labels](#labels) `{ }`
     * [Limited Choice](#limited-choice) `*`
