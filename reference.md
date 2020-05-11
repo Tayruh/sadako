@@ -1537,9 +1537,13 @@ Because of the way that labels are handled by **Sadako**, it is recommended that
 
 `~`
 
-The condition block allows you to display or not display blocks of story script based on conditions. It's basically `if`/`else if`/`else` from javascript, except it runs story script instead.
+The condition block allows you to display or not display blocks of story script based on conditions. It's basically `if`/`else if`/`else`/`for`/`while` from javascript, except it runs story script instead.
 
 It's important to note that the `~` condition token acts the same as a `+` choice token in that the levels of depth are based on the number of leading tokens, and the script inside the block increases by one depth.
+
+Be aware `{ }` inline labels are not allowed with condition blocks and will be stripped during compiling.
+
+#### if, else if, else
 
 ```
 ~ if ($.money > 100)
@@ -1612,7 +1616,130 @@ story: [Page1] [0] [2]
 eval: (1 == 1)
 ```
 
-Be aware `{ }` inline labels are not allowed with condition blocks and will be stripped during compiling.
+#### for, while
+
+`for` loop blocks work exactly like they do in javascript. For those unaccustomed to them, it goes like this:
+
+```
+~ for (_.a = 0; _.a < 5; _.a++)
+    value: _:a
+    
+// outputs
+value: 0
+value: 1
+value: 2
+value: 3
+value: 4
+```
+
+The breakdown of this is that values passed to `for` are divided into subsections by the `;` operator. Here is how they work:
+
+1. The first value is an expression or variable declartion to be executed before the loop begins. This is only run once and is typically used to set an iterative variable to its initial value, as is done in the example.
+2. The second value is the condition in which to break the loop (stop looping and continue with the rest of the script). In the example, it breaks once `_.a` is equal to `5`.
+3. The third and final value is the code to run at the end of every loop. Usually this code is used to increase an iterator value as is done in the example. This is run at the very end of the loop before the condition in the second value is checked. Therefore in the example, `_.a` will never equal `5` inside the loop. This is because after the value is increased, the condition check sees that it's `5`, and so it immediately exits the loop.
+
+It's recommended to use temporary variables for loops because you won't want throwaway variables like `a` being saved to your save files with `$.a` or having having it clogging up the browser window object (`a = 1` is actually `window.a = 1` for those unaware. This is a quirk of javascript).
+
+Since this is normal sadako story script, most of the usual things work, like jumps and conditions. You can also do loops inside of loops as long as you increase the depth, just like placing an `if` statement inside of an `if` statement.
+
+```
+~ for (_.a = 0; _.a < 3; ++_.a)
+    A loop: _:a, B loop:
+    ~~ for (_.b = 0; _.b < 3; ++_.b)
+        <> _:b
+        
+// outputs
+A loop: 0, B loop: 0 1 2
+A loop: 1, B loop: 0 1 2
+A loop: 2, B loop: 0 1 2
+```
+
+`while` loops are also just like their javascript counterparts. Unlike a `for` loop, `while` loops will loop forever as long as the condition check continues to return true.
+
+```    
+[:& _.list = ["blargh", "foo", "bleh"]:]
+~ while (_.list.length)
+    [:= _.list.pop():]
+    
+// outputs
+blargh
+foor
+bleh
+```
+This will loop until `_.list` is empty. We remove an item each loop, so it'll eventually be empty and the loop will end.
+
+But what if we want to leave the loop early? This is where `<< BREAK` comes in. The `<< BREAK` command forces the loop to end immediately without processing the remainder of the lines in the loop. Unlike `<< END` or `<< ABORT` which stops the script entirely, `<< BREAK` allows the script to resume running after exiting the loop.
+
+```
+[:& _.list = ["blargh", "foo", "bleh"]:]
+~ while (_.list.length)
+    [:& _.value = _.list.pop():]
+    _:value
+    ~~ if (_.value == "foo")
+        << BREAK
+-
+All done.
+
+
+// outputs:
+blargh
+foo
+All done.
+```
+
+`<< BREAK` is reserved for use in loops and will not work correctly elsewhere.
+
+One last command that is reserved for loop use is `<< CONTINUE`. This is similar to `<< BREAK` except that instead of leaving the loop, it starts the next iteration.
+
+```
+~ for (_.a = 1; _.a <= 3; ++_.a)
+    ~~ if (_.a == 2)
+        Let's skip this one.
+        << CONTINUE
+    --
+    Loop: _:a
+    
+// outputs:
+Loop: 1
+Let's skip this one.
+Loop: 3
+```
+
+Calling `<< BREAK` or `<< CONTINUE` outside of a loop is the equivelent of calling `<< END`.
+
+Loops do have a couple restrictions to the script being run:
+
+1. Jumping to a label inside a loop from outside of the loop will not loop when it hits the end, but will instead continue on with the rest of the script.
+
+2. Choices will not work inside of a loop and the script will begin its next loop as soon as it sees a choice. If you need to use a loop in combination with choices, you can accomplish this by creating a loop via jumps and labels.
+
+The following is an example of creating a loop with jumps and labels:
+
+```
+[:& $.x = 0:]
+= loop
+Please select a choice.
++ Choice One
+    There you go.
+    >> loop_end
++ Choice Two
+    Not that one.
++ Choice Three
+    Not that one.
+- [:& $.x += 1:]
+~ if ($.x == 3)
+    Sorry. Too many tries.
+    >> loop_end
+- >> loop
+
+= loop_end
+The end.
+[:& delete $.x:]
+```
+
+This will loop forever until you select `Choice One` or `$.x` equals `3`, which will then jump outside of the loop. Simple but effective. 
+
+Temporary variables are cleared once you select a choice, so we use a saved variable instead since it will carry from choice to choice. Of course, we don't actually want this variable saved when saving your game, so we delete it in the last line. `delete` is a javascript command that deletes a variable, including a member of an object.
 
 
 ## Scenes

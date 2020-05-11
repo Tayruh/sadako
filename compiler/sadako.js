@@ -111,6 +111,7 @@
 	sadako.text = "";
 	sadako.evals_unsafe = true;
 	sadako.loop_result = null;
+	sadako.in_loop = false;
 
 	// global variables saved to state
 	sadako.current = null;
@@ -2413,6 +2414,8 @@
 
 		var parseConditions = function(text, page, start, part) {
 			var processLoop = function(cond) {
+				var looping = sadako.in_loop;
+				sadako.in_loop = true;
 				eval(processScript(format(
 					cond + "{ " +
 					"doLines('{0}', '{1}', 0, true); " +
@@ -2421,6 +2424,7 @@
 					"sadako.loop_result = null; }",
 					page, start + "." + part
 				)));
+				sadako.in_loop = looping;
 				if (sadako.loop_result === END) return [END];
 				if (sadako.loop_result === ABORT) return [ABORT];
 				return [NEXT];
@@ -2527,8 +2531,8 @@
 				is_choice = (token === sadako.token.choice || token === sadako.token.static);
 				is_not_choice = (token !== sadako.token.choice && token !== sadako.token.static);
 
-				// processing scripts halts at choices in includes
-				if (is_choice && sadako.in_include) return [END];
+				// processing scripts halts at choices in includes or loops
+				if (is_choice && (sadako.in_include || sadako.in_loop)) return [END];
 
 				// if choices have been listed and new line is not a choice, stop the script
 				if (choice_seen === true && is_not_choice) return [END];
@@ -2558,7 +2562,7 @@
 				if (text === null) continue;
 
 				// if link is set to be rendered as a choice inside an include, stop the script
-				if (sadako.in_include) {
+				if (sadako.in_include || sadako.in_loop) {
 					temp = text.split(sadako.token.tag);
 					temp.shift();
 					if (sadako.has(temp, "choice")) return [END];
