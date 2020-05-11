@@ -8,8 +8,10 @@
 	var JUMP = "JUMP";
 	var END = "END";
 	var ABORT = "ABORT";
-	var CONTINUE = "CONTINUE";
+	var NEXT = "NEXT";
 	var RUN = "RUN";
+	var BREAK = "BREAK";
+	var CONTINUE = "CONTINUE";
 
 	sadako.token = {
 		"escape": "\\",
@@ -108,6 +110,7 @@
 	sadako.scene_checks = {};
 	sadako.text = "";
 	sadako.evals_unsafe = true;
+	sadako.loop_result = null;
 
 	// global variables saved to state
 	sadako.current = null;
@@ -1250,7 +1253,7 @@
 
 		el = dom(id);
 		addClass(el, "hide");
-		el.innerHTML = text || el.innerHTML;
+		el.innerHTML = (text === undefined) ? el.innerHTML : text;
 		setTimeout(function() {
 			removeClass(el, "hide");
 		}, sadako.text_delay + delay);
@@ -1653,15 +1656,15 @@
 
 				name = sadako.parseLink(line.text);
 				if (name.trim().length < 1) continue;
-				
+
 				start = name.indexOf(t.choice_link_open);
 				before = (start === -1) ? "" : name.substring(0, start);
 				if (start === -1) start = 0 - t.choice_link_open.length;
-				
+
 				end = name.indexOf(t.choice_link_close);
 				after = (end === -1) ? "" : name.substring(end + t.choice_link_close.length);
 				if (end === -1) end = name.length;
-				
+
 				link = name.slice(start + t.choice_link_open.length, end);
 
 				line.text = before + sadako.writeLink(link, "sadako.doChoice(" + a + ")") + after;
@@ -1778,7 +1781,7 @@
 		var doValue = function(text) {
 			/* evaluates text marked with 'value' token */
 
-			eval("sadako.text += sadako.processScript(" + text + ")");
+			eval("sadako.text += processScript(" + text + ")");
 		}
 
 		var doLabelLink = function(text) {
@@ -1894,8 +1897,13 @@
 	};
 
 	var replaceVars = function(text) {
-		var doReplace = function(text, token, replacement) {
+		var doSimpleReplace = function(text, token, replacement) {
 			var regexp = new RegExp("(^|\\s*|[^a-zA-Z0-9]+)" + token + "([a-zA-Z0-9]+(?:[\\._]?[a-zA-Z0-9]+)*)", "g");
+			return text.replace(regexp, replacement);
+		}
+
+		var doComplexReplace = function(text, token, replacement) {
+			var regexp = new RegExp("(^|\\s*|[^a-zA-Z0-9]+)" + token + "([a-zA-Z0-9]+(_[a-zA-Z0-9]+)?(?:(\\[[\\\"\\']?[a-zA-Z0-9]+([\\._][a-zA-Z0-9]+)*[\\\"\\']?\\])*(\\.[a-zA-Z0-9]+([\\._][a-zA-Z0-9]+)*)*)*)", "g");
 			return text.replace(regexp, replacement);
 		}
 
@@ -1909,26 +1917,26 @@
 
 		var t = sadako.token;
 
-		text = doReplace(text, t.label_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.label_seen["' + p2 + '"]'; });
-		text = doReplace(text, t.page_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.page_seen["' + p2 + '"]'; });
+		text = doSimpleReplace(text, t.label_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.label_seen["' + p2 + '"]'; });
+		text = doSimpleReplace(text, t.page_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.page_seen["' + p2 + '"]'; });
 
-		text = doReplace(text, t.var_embed + t.cond_embed, function(match, p1, p2) { return p1 + "sadako.var." + p2; });
-		text = doReplace(text, t.tmp_embed + t.cond_embed, function(match, p1, p2) { return p1 + "sadako.tmp." + p2; });
-		text = doReplace(text, t.scene_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.scenes.' + p2; });
+		text = doSimpleReplace(text, t.var_embed + t.cond_embed, function(match, p1, p2) { return p1 + "sadako.var." + p2; });
+		text = doSimpleReplace(text, t.tmp_embed + t.cond_embed, function(match, p1, p2) { return p1 + "sadako.tmp." + p2; });
+		text = doSimpleReplace(text, t.scene_embed + t.cond_embed, function(match, p1, p2) { return p1 + 'sadako.scenes.' + p2; });
 
-		text = doReplace(text, t.script_embed + t.cond_embed, function(match, p1, p2) {
+		text = doSimpleReplace(text, t.script_embed + t.cond_embed, function(match, p1, p2) {
 			if (isFunc(eval("sadako.scripts." + p2))) return p1 + "sadako.scripts." + p2 + "()";
 			return p1 + "sadako.scripts." + p2;
 		});
 
-		text = doReplace(text, t.label_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.label_seen[p2]; });
-		text = doReplace(text, t.page_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.page_seen[p2]; });
+		text = doSimpleReplace(text, t.label_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.label_seen[p2]; });
+		text = doSimpleReplace(text, t.page_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.page_seen[p2]; });
 
-		text = doReplace(text, t.var_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.var." + p2); });
-		text = doReplace(text, t.tmp_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.tmp." + p2); });
-		text = doReplace(text, t.scene_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.scenes." + p2); });
+		text = doComplexReplace(text, t.var_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.var." + p2); });
+		text = doComplexReplace(text, t.tmp_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.tmp." + p2); });
+		text = doSimpleReplace(text, t.scene_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.scenes." + p2); });
 
-		text = doReplace(text, t.script_embed + t.value_embed, function(match, p1, p2) {
+		text = doSimpleReplace(text, t.script_embed + t.value_embed, function(match, p1, p2) {
 			var text;
 			if (isFunc(eval("sadako.scripts." + p2))) text = eval("sadako.scripts." + p2 + "()");
 			else text = eval("sadako.scripts." + p2);
@@ -2208,7 +2216,7 @@
 			text = text.replace(sadako.token.choice_link_open, "");
 			text = text.replace(sadako.token.choice_link_close, "");
 		}
-		
+
 		var open = text.indexOf(sadako.token.choice_format_open);
 		var close = text.indexOf(sadako.token.choice_format_close);
 
@@ -2305,7 +2313,7 @@
 		}
 	};
 
-	var doLines = function(page, start, part) {
+	var doLines = function(page, start, part, block_only) {
 		/*
 		Parses, evaluates, and renders a line of the script.
 
@@ -2327,8 +2335,12 @@
 			}
 
 			var processReturn = function(temp) {
-				if (temp === "END") return [END];
-				if (temp === "ABORT") return [ABORT];
+				if (temp in list(END, ABORT, CONTINUE, BREAK)) {
+					sadako.loop_result = temp;
+					if (temp in list("CONTINUE", "BREAK", "END")) return [END];
+					if (temp === "ABORT") return [ABORT];
+					return [NEXT];
+				}
 				if (temp === "RETURN" || (temp === "BACK" && sadako.history_limit < 1)) {
 					sadako.current = "#" + page;
 					doJump(sadako.current);
@@ -2336,7 +2348,7 @@
 				}
 				if (temp === "BACK") {
 					back();
-					return [CONTINUE];
+					return [NEXT];
 				}
 				if (sadako.jumps.length < 1) return [END];
 
@@ -2348,7 +2360,7 @@
 				label = "#" + label;
 				if (include_text) {
 					doInclude(label);
-					return [CONTINUE];
+					return [NEXT];
 				}
 
 				doJump(label);
@@ -2366,7 +2378,7 @@
 
 				if (include_text) {
 					doInclude(label);
-					return [CONTINUE];
+					return [NEXT];
 				}
 
 				if (token === sadako.token.choice || token === sadako.token.static) {
@@ -2400,6 +2412,28 @@
 		};
 
 		var parseConditions = function(text, page, start, part) {
+			var processLoop = function(cond) {
+				eval(processScript(format(
+					cond + "{ " +
+					"doLines('{0}', '{1}', 0, true); " +
+					"sadako.script_status = RUN; " +
+					"if (sadako.loop_result in sadako.list(ABORT, END, BREAK)) { sadako.loop_result = null; break; } " +
+					"sadako.loop_result = null; }",
+					page, start + "." + part
+				)));
+				if (sadako.loop_result === END) return [END];
+				if (sadako.loop_result === ABORT) return [ABORT];
+				return [NEXT];
+			};
+
+			var processFor = function(cond) {
+				return processLoop("for " + cond);
+			};
+
+			var processWhile = function(cond) {
+				return processLoop("while " + cond);
+			};
+
 			var processIf = function(cond, active, label) {
 				sadako.conditions[active] = true;
 				if (eval(cond)) {
@@ -2407,28 +2441,28 @@
 					return [JUMP, page, start + "." + part, 0];
 				}
 				sadako.conditions[label] = false;
-				return [CONTINUE];
-			}
+				return [NEXT];
+			};
 
 			var processElseIf = function(cond, active, label) {
 				if (sadako.conditions[active] === false) {
 					console.error(format("'else if' found without 'if' statement.\nstory: [{0}] [{1}] [{2}]\nscript: {3}", page, start, part, sadako.story[page][start][part].text));
-					return [CONTINUE];
+					return [NEXT];
 				}
 				sadako.conditions[active] = true;
-				if (!eval(cond)) return [CONTINUE];
+				if (!eval(cond)) return [NEXT];
 				sadako.conditions[label] = true;
 				return [JUMP, page, start + "." + part, 0];
-			}
+			};
 
 			var processElse = function(active) {
 				if (sadako.conditions[active] === false) {
 					console.error(format("'else' found without 'if' statement.\nstory: [{0}] [{1}] [{2}]", page, start, part));
-					return [CONTINUE];
+					return [NEXT];
 				}
 				sadako.conditions[active] = false;
 				return [JUMP, page, start + "." + part, 0];
-			}
+			};
 
 			return function() {
 				var temp;
@@ -2438,13 +2472,15 @@
 				if (!(active in sadako.conditions)) sadako.conditions[active] = false;
 				if (!(label in sadako.conditions)) sadako.conditions[label] = false;
 
-				if ((temp = isToken(text, "if "))) return processIf(temp, active, label);
+				if ((temp = isToken(text, "for"))) return processFor(temp);
+				else if ((temp = isToken(text, "while"))) return processWhile(temp);
+				else if ((temp = isToken(text, "if "))) return processIf(temp, active, label);
 				else if (!sadako.conditions[label]) {
 					if ((temp = isToken(text, "else if "))) return processElseIf(temp, active, label);
 					else if (isToken(text, "else") !== false) return processElse(active);
 				}
 
-				return [CONTINUE];
+				return [NEXT];
 			}();
 		};
 
@@ -2473,7 +2509,7 @@
 		var processLines = function(page, start, part) {
 			var a, text, temp, token, label;
 
-			if (!(start in sadako.story[page])) return [CONTINUE, page, start, null];
+			if (!(start in sadako.story[page])) return [NEXT, page, start, null];
 
 			sadako.page = page;
 
@@ -2481,6 +2517,7 @@
 			var choice_seen = false;
 
 			if (part === undefined) part = 0;
+			else part = parseInt(part);
 
 			var is_choice, is_not_choice;
 
@@ -2535,14 +2572,14 @@
 
 				// if jump token, process jump
 				if (is_not_choice && (temp = parseJump(text, page, start, a))) {
-					if (temp[0] === CONTINUE) continue;
+					if (temp[0] === NEXT) continue;
 					return temp;
 				}
 
 				// if condition token, process conditions
 				if (token === sadako.token.cond_block) {
 					temp = parseConditions(text, page, start, a);
-					if (temp[0] === CONTINUE) continue;
+					if (temp[0] === NEXT) continue;
 					return temp;
 				}
 
@@ -2563,12 +2600,18 @@
 				if (text.trim().length) doAttach(text);
 			}
 
-			return [(choice_seen) ? END : CONTINUE, page, start, a];
+			return [(choice_seen) ? END : NEXT, page, start, a];
 		}
 
 		return function() {
 			if (sadako.script_status === ABORT) return ABORT;
 			if (sadako.script_status === END) return END;
+
+			start = start || "0";
+
+
+			var orig_index = [page, start].join(".");
+			orig_index = orig_index.substring(0, orig_index.lastIndexOf("."));
 
 			var a, index, result;
 			for (a = 0; a < 200; ++a) {
@@ -2593,6 +2636,10 @@
 
 				index = result[1] + "." + result[2] + ((result[3] === null) ? "" : "." + result[3]);
 				while (index.indexOf(".") !== -1) {
+					if (block_only && index.substring(0, index.lastIndexOf(".")) === orig_index) {
+						return sadako.script_status;
+					}
+
 					if (index in sadako.depths) {
 						result = sadako.depths[index];
 						page = result[0];
@@ -2713,17 +2760,17 @@
 			delete sadako.story.story_data;
 
 			var a, b, label;
-			
+
 			sadako.tags = {};
 			sadako.labels = {};
 			sadako.page_seen = {};
 			for (a in sadako.story) {
 				// set page seen
 				sadako.page_seen[a] = 0;
-				
+
 				if (!("tags" in sadako.story[a])) sadako.story[a].tags = {};
 				sadako.tags[a] = sadako.story[a].tags;
-				
+
 				if (!("labels" in sadako.story[a])) sadako.story[a].labels = {};
 
 				for (b in sadako.story[a].labels) {
