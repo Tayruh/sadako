@@ -56,7 +56,9 @@
     * [Fallback Choice](#fallback-choice)
     * [Depth Token](#depth-token) `-`
     * [Depth Labels](#depth-labels) `=`
-    * [Condition Block](#condition-block) `~ if` `~ else if` `~ else`
+    * [Condition Block](#condition-block)
+        * [Branches](#branches) `~ if` `~ else if` `~ else`
+        * [Loops](#loops) `~ for` `~ while`
 
 * [Scenes](#scenes-1) `*.` `*:`
     * [Examples](#examples)
@@ -649,6 +651,24 @@ Value of test: second
 
 The temporary variables aren't cleared with jumps.
 
+It's also important to note that unlike all other embedded variables, the `$:` and `_:` tokens use a much more complex method of text replacement. These will actually allow javascript right in your story script, but only for this one variable.
+
+```
+[:&
+    $.bleh = {blargh: "meh", test: "See?"};
+    _.foo = "ABCDEF";
+:]
+
+The value of blargh in bleh is $:bleh.blargh.
+The first letter of foo is _:foo.charAt(0)!
+Values inside of quotes are safe. "$:bleh["test"]"
+
+
+// outputs
+The value of blargh in bleh is meh.
+The first letter of foo is A!
+Values inside of quotes are safe. "See?"
+```
 
 #### page_seen, label_seen
 
@@ -1537,13 +1557,17 @@ Because of the way that labels are handled by **Sadako**, it is recommended that
 
 `~`
 
-The condition block allows you to display or not display blocks of story script based on conditions. It's basically `if`/`else if`/`else`/`for`/`while` from javascript, except it runs story script instead.
+The condition block allows you to display or not display blocks of story script based on conditions. It's basically `if`/`else if`/`else`/`for`/`while` from javascript, except it runs story script.
 
 It's important to note that the `~` condition token acts the same as a `+` choice token in that the levels of depth are based on the number of leading tokens, and the script inside the block increases by one depth.
 
 Be aware `{ }` inline labels are not allowed with condition blocks and will be stripped during compiling.
 
-#### if, else if, else
+#### Branches
+
+Like in every programming language, a condition branch determines whether to run or not run a block of script depending on a condition check.
+
+`if` is the initial condition check. `else if` will be checked only if the preceding condition checks fail. You can have as many `else if` statements in a row that you want. And finally, the script in the `else` block will be executed if all of previous condition checks fail.
 
 ```
 ~ if ($.money > 100)
@@ -1616,7 +1640,9 @@ story: [Page1] [0] [2]
 eval: (1 == 1)
 ```
 
-#### for, while
+#### Loops
+
+Condition loops let you execute the same script over and over until a specific condition is met. When done correctly, this can save a lot of typing. One important use of loops is to iterate over an array of items.
 
 `for` loop blocks work exactly like they do in javascript. For those unaccustomed to them, it goes like this:
 
@@ -1652,6 +1678,19 @@ Since this is normal sadako story script, most of the usual things work, like ju
 A loop: 0, B loop: 0 1 2
 A loop: 1, B loop: 0 1 2
 A loop: 2, B loop: 0 1 2
+```
+
+There is another use of the `for` loop that's used for looping over a list of object members. For example:
+
+```
+[:& $.foo = {bleh: "asdf", blargh: 2, meh: true}:]
+~ for (_.k in $.foo)
+    The value of _:k is $:foo[_.k].
+    
+// outputs
+The value of bleh is asdf.
+The value of blargh is 2.
+The value of meh is true.
 ```
 
 `while` loops are also just like their javascript counterparts. Unlike a `for` loop, `while` loops will loop forever as long as the condition check continues to return true.
