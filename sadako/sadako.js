@@ -1,6 +1,6 @@
 (function(sadako) {
 
-	sadako.version = "0.11.4";
+	sadako.version = "0.12.0";
 	sadako.kayako_version = "0.10.3";
 
 	var localStorage;
@@ -1904,7 +1904,7 @@
 		}
 
 		var doComplexReplace = function(text, token, replacement) {
-			var regexp = new RegExp("(^|\\s*|[^a-zA-Z0-9]+)" + token + "([a-zA-Z0-9]+(_[a-zA-Z0-9]+)?(?:(\\[[\\\"\\']?[a-zA-Z0-9]+([\\._][a-zA-Z0-9]+)*[\\\"\\']?\\])*(\\.[a-zA-Z0-9]+([\\._][a-zA-Z0-9]+)*)*)*)", "g");
+			var regexp = new RegExp("(^|\\s*|[^a-zA-Z0-9]+)" + token + "([a-zA-Z0-9]+(\\_[a-zA-Z0-9]+)*(([\\.][a-zA-Z0-9]+(\\_[a-zA-Z0-9]+)*)|([\\[\\(]+([^\\[\\]\\(\\)\\s]*\\ *)*[\\)\\]]+))*)", "g");
 			return text.replace(regexp, replacement);
 		}
 
