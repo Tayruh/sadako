@@ -1,0 +1,82 @@
+---
+$schema: https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json
+scopeName: source.sadako
+name: Sadako
+
+# foldingStartMarker: "\\[:"
+# foldingStopMarker: "\\]:"
+    
+patterns:
+  # leading tokens in script blocks
+  - name: keyword.operator.sadako
+    match: (?<=\[:\s*)((#(\s*=)?|%(\s*=)?|&|=|>|>>)|(\+(\s*([#%](\s*=)?|[&=>]))?)|(\*(\s*([#%](\s*=)?|[!&=]))?))
+  
+    # attach token
+  - name: keyword.operator.sadako
+    match: (?<=^\s*(-\s*)*)<>|<>(?=\s*($|\n))
+
+  # condition blocks tokens
+  - name: keyword.operator.sadako
+    match: (?<=^|\n|;;)[~\s]*(?=if|else if|else|for|while)
+  
+  # start of line tokens
+  - name: keyword.operator.sadako
+    match: (?<=(^|\n|;;)\s*)(((-\s*)*(<<|>>(\s*=)?(\s*[#%])?))|(=\s*)+|(\+\s*)+|(\*(?![.:])\s*)+|(-\s*)+)
+
+  # page name
+  - name: support.class.sadako
+    match: (?<=##[\t ]*).*?(?=~:|\n|$)
+
+  # tag token
+  - name: keyword.operator.sadako
+    match: "~:"
+
+  # line concatenation and escape token
+  - name: keyword.operator.sadako
+    match: \\(?=\s*(\n|$))|(^|\n|;;)\s*\\
+  
+  # match anywhere
+  - name: keyword.operator.sadako
+    match: (;;|::|@:(\s*=)?|##|~~\+|~~=|{{|}})+
+
+  # condition blocks key words
+  - name: keyword.control.sadako
+    match: (?<=(^|\n|;;)\s*(~\s*)+)(if|else if|else|for|while)
+
+  # return key words
+  - name: support.constant.sadako
+    match: (?<=(^|\n|;;)\s*<<\s*)(END|CONTINUE|BREAK|ABORT|RETURN)
+
+  # script blocks
+  - name: storage.type.sadako
+    match: "(\\[:)|(:\\])|(\\(:)|(:\\))|(\\{:)|(:\\})|(\\<:)|(:\\>)"
+
+  # inline labels
+  - name: support.function.sadako
+    match: (?<=(^|;;|\n)\s*(((\+\s*)+|(\*\s*)+|(-\s*)+)|\s*)){.*(?<!:)}
+
+  # standalone label name
+  - name: support.function.sadako
+    match: (?<=(^|;;|\n)\s*(=\s*)+)[^=\s].*
+
+  # conditional choice text
+  - name: storage.type.sadako
+    match: (?<=(^|;;|\n)\s*((\+|\*)\s*)+.*)(\[|\]|<<|>>)
+
+  # single line comment
+  - name: comment.line.double-slash.sadako
+    match: \/\/.*
+
+  # comment block
+  - name: comment.block.sadako
+    begin: \/\*
+    end: \*\/
+
+  # simple embedded token
+  - name: string.interpolated.sadako
+    match: (([\$_%#^*]\.)|([%#^*]\:))([a-zA-Z0-9]+(?:[\._]?[a-zA-Z0-9]+)*)
+    
+  # complex embedded token
+  - name: string.interpolated.sadako
+    match: ([\$_]:([a-zA-Z0-9]+(\_[a-zA-Z0-9]+)*(([\.][a-zA-Z0-9]+(\_[a-zA-Z0-9]+)*)|([\[\(]+([^\[\]\(\)\s]*\ *)*[\)\]]+))*))
+...
