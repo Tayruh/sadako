@@ -1,7 +1,7 @@
 (function(sadako) {
 
-	sadako.version = "0.12.0";
-	sadako.kayako_version = "0.10.3";
+	sadako.version = "0.12.2";
+	sadako.kayako_version = "0.10.5";
 
 	var localStorage;
 
@@ -112,6 +112,7 @@
 	sadako.evals_unsafe = true;
 	sadako.loop_result = null;
 	sadako.in_loop = false;
+	sadako.include_choices = false;
 
 	// global variables saved to state
 	sadako.current = null;
@@ -1722,6 +1723,18 @@
 		sadako.script_status = ABORT;
 	};
 
+	var prepareScript = function() {
+		sadako.run();
+
+		sadako.lines = [];
+		sadako.choices = [];
+		sadako.chosen = null;
+		sadako.tmp = {};
+		sadako.include_choices = false;
+		sadako.in_include = false;
+		sadako.in_loop = false;
+	};
+
 	var doReturn = function() {
 		doLink("#" + sadako.page);
 	};
@@ -2067,19 +2080,12 @@
 
 		if (!sadako.in_dialog && !sadako.in_include) sadako.reveal_id = 0;
 
-		sadako.run();
-
-		sadako.chosen = choice;
 		var line = sadako.choices[choice].line;
-
 		var chosen = sadako.choices[choice];
 		var text = chosen.text;
 		var label = chosen.label;
 
-		sadako.lines = [];
-		sadako.choices = [];
-		sadako.tmp = {};
-		sadako.chosen = null;
+		prepareScript();
 
 		sadako.current_line = [line[0], line[1] + "." + line[2], 0];
 		sadako.current = null;
@@ -2163,12 +2169,7 @@
 	var doLink = function(label) {
 		if (!sadako.in_dialog && !sadako.in_include) sadako.reveal_id = 0;
 
-		sadako.run();
-
-		sadako.lines = [];
-		sadako.choices = [];
-		sadako.chosen = null;
-		sadako.tmp = {};
+		prepareScript();
 
 		var temp;
 		if ((temp = isToken(label, sadako.token.label_embed))) label = temp;
@@ -2343,7 +2344,7 @@
 					return [NEXT];
 				}
 				if (temp === "RETURN" || (temp === "BACK" && sadako.history_limit < 1)) {
-					sadako.current = "#" + page;
+					sadako.current = sadako.token.page_embed + page;
 					doJump(sadako.current);
 					return [END];
 				}
@@ -2358,7 +2359,8 @@
 
 			var processPageJump = function(label, include_text) {
 				if (!(label in sadako.story)) throw new Error("Can't find page '" + label + "'");
-				label = "#" + label;
+				label = sadako.token.page_embed + label;
+				
 				if (include_text) {
 					doInclude(label);
 					return [NEXT];
@@ -2511,7 +2513,7 @@
 		}
 
 		var processLines = function(page, start, part) {
-			var a, text, temp, token, label;
+			var a, text, temp, temp2, token, label;
 
 			if (!(start in sadako.story[page])) return [NEXT, page, start, null];
 
@@ -2532,7 +2534,7 @@
 				is_not_choice = (token !== sadako.token.choice && token !== sadako.token.static);
 
 				// processing scripts halts at choices in includes or loops
-				if (is_choice && (sadako.in_include || sadako.in_loop)) return [END];
+				if (is_choice && ((sadako.in_include && !sadako.include_choices) || sadako.in_loop)) return [END];
 
 				// if choices have been listed and new line is not a choice, stop the script
 				if (choice_seen === true && is_not_choice) return [END];
@@ -2562,7 +2564,7 @@
 				if (text === null) continue;
 
 				// if link is set to be rendered as a choice inside an include, stop the script
-				if (sadako.in_include || sadako.in_loop) {
+				if ((sadako.in_include && !sadako.include_choices) || sadako.in_loop) {
 					temp = text.split(sadako.token.tag);
 					temp.shift();
 					if (sadako.has(temp, "choice")) return [END];
@@ -2596,7 +2598,23 @@
 					}
 					// otherwise add choice to list
 					choice_seen = true;
+					if (token === sadako.token.static && (temp = isToken(text, sadako.token.jump))) {
+						if ((temp = isToken(temp, sadako.token.eval_value))) {
+							var include_choices = sadako.include_choices;
+							sadako.include_choices = true;
+
+							if (!isToken(temp, sadako.token.page_embed)) {
+								if ((temp2 = isToken(temp, sadako.token.label_embed))) temp = temp2;
+								temp = localizeLabel(temp);
+							}
+							doInclude(temp);
+							sadako.include_choices = include_choices;
+							continue;
+						}
+					}
+
 					sadako.choices.push({line: [page, start, a], text: text, label: label});
+
 					continue;
 				}
 

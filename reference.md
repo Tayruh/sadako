@@ -47,18 +47,21 @@
     * [Dialog Links](#dialog-links) `[:* :]` `[:*! :]` `[:*# :]` `[:*% :]` `[:*& :]` `[:*= :]`
 * [Macros](#macros) `(: :)`
 
-* [Choices and Depths](#choices-and-depths)
+* [Choices](#choices)
     * [Choice Formatting](#choice-formatting) `[ ]`
     * [Choice Links](#choice-links) `<< >>`
     * [Static Choice](#static-choice) `+`
     * [Labels](#labels) `{ }`
     * [Limited Choice](#limited-choice) `*`
     * [Fallback Choice](#fallback-choice)
+    
+* [Depths](#depths)
     * [Depth Token](#depth-token) `-`
     * [Depth Labels](#depth-labels) `=`
-    * [Condition Block](#condition-block)
-        * [Branches](#branches) `~ if` `~ else if` `~ else`
-        * [Loops](#loops) `~ for` `~ while`
+    
+* [Condition Block](#condition-block)
+    * [Branches](#branches) `~ if` `~ else if` `~ else`
+    * [Loops](#loops) `~ for` `~ while`
 
 * [Scenes](#scenes-1) `*.` `*:`
     * [Examples](#examples)
@@ -402,6 +405,13 @@ Hello!
 This text can be seen now.
 ```
 
+Includes do not process `+` static choices or `*` limited choices Once the include script sees a choice, it will return to the the script that included without adding the choice. To include choices in your `>>=` include, you must precede it with the `+` static choice token (adjusting for the correct depth level), like so:
+
+```
++ >>= some_page.choice_list 
+```
+
+Further information can be found in the [choice includes](#choice-includes) section.
 
 ## Text Formatting
 
@@ -1158,7 +1168,7 @@ Basically a macro is just a text replacement for a `[: :]` script block call to 
 Please be aware that `sadako.macros` is not saved when you save your game. Therefore, always define your macros in your javascript before you call `sadako.startGame()`.
 
 
-## Choices and Depths
+## Choices
 
 ### Choice Formatting
 
@@ -1446,6 +1456,87 @@ Notice that `Choice 4` is never displayed because of its inline condition. Becau
 
 Another thing to note is that the fallback is triggered when choices above it not available. That is to say, if you were to move the fallback choice to between `Choice 2` and `Choice 3`, the fallback will trigger once `Choice 1` and `Choice 2` are removed, even if `Choice 3` is still available.
 
+### Choice Includes
+
+As mentioned before, once a choice is seen by the script, the script will stop processing after seeing the next non-choice depth token or a choice that is a lower depth level than current. The drawback to this logic is that it's not possible to include a list of choices once a choice is seen. 
+
+For example, this works just fine because it jumps before seeing any choices:
+
+```
+Example text.
+>> choices
+- << END
+
+= choices
++ Choice 1
++ Choice 2
+
+// outputs:
+Example text.
+<Choice 1>
+<Choice 2>
+```
+
+However, this does not work to include a list of choices because the script stops once it sees the `-` depth token:
+
+```
+Example text.
++ Choice 1
+- >> choices
+<< END
+
+= choices
++ Choice 2
++ Choice 3
+
+// outputs:
+Example text.
+<Choice 1>
+```
+
+The fix for this is the `>>=` include token in conjunction with the `+` static choice token (this does not work with a `*` limited choice token). The `+ >>=` choice include token will include a page or label just like normal include (see the [includes](#includes) section for more informtion). Unlike a normal include that stops at choices, a choice include does not have that limitation. Therefore this example works as you would expect.
+
+```
+Example text.
++ Choice 1
++ >>= choices
++ Choice 4
+- << END
+
+= choices
++ Choice 2
++ Choice 3
+
+// outputs:
+Example text.
+<Choice 1>
+<Choice 2>
+<Choice 3>
+<Choice 4>
+```
+
+Be aware that a `+ >>=` choice include still includes a block of script, not only choices. Notice how the following adds the script in the included section to text ouput that is displayed before the choices.
+
+```
+Example text.
++ Choice 1
++ >>= choices
+- << END
+
+= choices
+Second choice.
++ Choice 2
+
+// outputs:
+Example text.
+Second choice.
+<Choice 1>
+<Choice 2>
+```
+
+Also note that `{ }` inline labels are not allowed to be used with `+ >>=` choice includes and they will be stripped during compile time.
+
+## Depths
 
 ### Depth Token
 
@@ -1553,7 +1644,7 @@ Some stuff to write
 Because of the way that labels are handled by **Sadako**, it is recommended that you only include alphanumeric characters and underscores in their naming.
 
 
-### Condition Block
+## Condition Block
 
 `~`
 
@@ -1563,7 +1654,7 @@ It's important to note that the `~` condition token acts the same as a `+` choic
 
 Be aware `{ }` inline labels are not allowed with condition blocks and will be stripped during compiling.
 
-#### Branches
+### Branches
 
 Like in every programming language, a condition branch determines whether to run or not run a block of script depending on a condition check.
 
@@ -1640,7 +1731,7 @@ story: [Page1] [0] [2]
 eval: (1 == 1)
 ```
 
-#### Loops
+### Loops
 
 Condition loops let you execute the same script over and over until a specific condition is met. When done correctly, this can save a lot of typing. One important use of loops is to iterate over an array of items.
 

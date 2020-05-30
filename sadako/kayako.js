@@ -1,4 +1,4 @@
-// version: 0.10.3
+// version: 0.10.5
 
 (function(sadako) {
 	
@@ -141,6 +141,17 @@
 			}
 		}
 
+		var addLabel = function() {
+			full_label = page + "." + label;
+			if (full_label in sadako.labels) {
+				console.error("Duplicate label for '" + full_label + "' found!");
+			}
+			else {
+				if (!data.labels) data.labels = {};
+				data.labels[label] = [page, a, b]
+			}
+		};
+
 		for (a in lines) {
 			parts = [];
 
@@ -164,17 +175,6 @@
 				
 				if (lines[a][b][2] !== null) line.k = lines[a][b][2];
 				
-				if (label && line.k !== sadako.token.cond_block) {
-					full_label = page + "." + label;
-					if (full_label in sadako.labels) {
-						console.error("Duplicate label for '" + full_label + "' found!");
-					}
-					else {
-						if (!data.labels) data.labels = {};
-						data.labels[label] = [page, a, b]
-					}
-				}
-				
 				if (line.k === sadako.token.label) {
 					if (text.length < 1) continue;
 					if (!depth_seen) {
@@ -185,14 +185,6 @@
 					}
 					
 					label =  line.t.trim();
-					full_label = page + "." + label;
-					if (full_label in sadako.labels) {
-						console.error("Duplicate label for '" + full_label + "' found!");
-					}
-					else {
-						if (!data.labels) data.labels = {};
-						data.labels[label] = [page, a, b]
-					}
 				}
 				else if (line.k === sadako.token.choice || line.k === sadako.token.static) {
 					if (!choice_seen) {
@@ -202,6 +194,13 @@
 					depth_seen = false;
 					choices.push(page + "." + a + "." + b);
 					choice_seen = true;
+
+					if (label && line.k === sadako.token.static && (temp = sadako.isToken(text, sadako.token.jump))) {
+						if ((temp = sadako.isToken(temp, sadako.token.eval_value))) {
+							console.error(sadako.format("Labels cannot be assigned to choice includes.\n[{0}] [{1}] [{2}]: {3}", page, a, b, lines[a][b][3].trim()));
+							label = null;
+						}
+					}
 				}
 				else if (line.k === sadako.token.cond_block) {
 					if (sadako.isToken(text, "if") !== false) {
@@ -211,6 +210,9 @@
 					}
 					depth_seen = false;
 					choices.push(page + "." + a + "." + b);
+
+					if (label) console.error(sadako.format("Labels cannot be assigned to conditon blocks.\n[{0}] [{1}] [{2}]: {3}", page, a, b, lines[a][b][3].trim()));
+					label = null;
 				}
 				else if (line.k === sadako.token.depth && !depth_seen) {
 					depth_seen = true;
@@ -219,7 +221,11 @@
 					choice_seen = true;
 				}
 
-				if (label && line.k !== sadako.token.cond_block) line.l = full_label;
+				if (label) {
+					addLabel(label);
+					line.l = full_label;
+				}
+
 				if (line.k === sadako.token.choice && !label && text.length > 1) console.error(sadako.format("Choice found without associated label.\n[{0}] [{1}] [{2}]: {3}", page, a, b, text));
 
 				parts.push(line);
