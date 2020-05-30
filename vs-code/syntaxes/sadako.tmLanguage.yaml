@@ -3,25 +3,25 @@ $schema: https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlangua
 scopeName: source.sadako
 name: Sadako
 
-# foldingStartMarker: "\\[:"
-# foldingStopMarker: "\\]:"
+foldingStartMarker: "\\[:"
+foldingStopMarker: "\\]:"
     
 patterns:
   # leading tokens in script blocks
   - name: keyword.operator.sadako
-    match: (?<=\[:\s*)((#(\s*=)?|%(\s*=)?|&|=|>|>>)|(\+(\s*([#%](\s*=)?|[&=>]))?)|(\*(\s*([#%](\s*=)?|[!&=]))?))
+    match: (?<=\[:[\t\ ]*)((#([\t\ ]*=)?|%([\t\ ]*=)?|&|=|>|>>)|(\+([\t\ ]*([#%]([\t\ ]*=)?|[&=>]))?)|(\*([\t\ ]*([#%]([\t\ ]*=)?|[!&=]))?))
   
     # attach token
   - name: keyword.operator.sadako
-    match: (?<=^\s*(-\s*)*)<>|<>(?=\s*($|\n))
+    match: (?<=^[\t\ ]*(-[\t\ ]*)*)<>|<>(?=[\t\ ]*($|\n|::))
 
   # condition blocks tokens
   - name: keyword.operator.sadako
-    match: (?<=^|\n|;;)[~\s]*(?=if|else if|else|for|while)
+    match: (?<=^|\n|;;)[~[\t\ ]]*(?=if|else if|else|for|while)
   
   # start of line tokens
   - name: keyword.operator.sadako
-    match: (?<=(^|\n|;;)\s*)(((-\s*)*(<<|>>(\s*=)?(\s*[#%])?))|(=\s*)+|(\+\s*)+|(\*(?![.:])\s*)+|(-\s*)+)
+    match: (?<=(^|\n|;;)[\t\ ]*)(((-[\t\ ]*)*(<<|>>([\t\ ]*=)?([\t\ ]*[#%])?))|(\+[\t\ ]*)+>>[\t\ ]*=([\t\ ]*[%#])?|(=[\t\ ]*)+|(\+[\t\ ]*)+|(\*(?![.:])[\t\ ]*)+|(-[\t\ ]*)+)
 
   # page name
   - name: support.class.sadako
@@ -33,19 +33,19 @@ patterns:
 
   # line concatenation and escape token
   - name: keyword.operator.sadako
-    match: \\(?=\s*(\n|$))|(^|\n|;;)\s*\\
+    match: \\(?=[\t\ ]*(\n|$))|(^|\n|;;)[\t\ ]*\\
   
   # match anywhere
   - name: keyword.operator.sadako
-    match: (;;|::|@:(\s*=)?|##|~~\+|~~=|{{|}})+
+    match: (;;|::|@:([\t\ ]*=)?|##|~~\+|~~=|{{|}})+
 
   # condition blocks key words
   - name: keyword.control.sadako
-    match: (?<=(^|\n|;;)\s*(~\s*)+)(if|else if|else|for|while)
+    match: (?<=(^|\n|;;)[\t\ ]*(~[\t\ ]*)+)(if|else if|else|for|while)
 
   # return key words
   - name: support.constant.sadako
-    match: (?<=(^|\n|;;)\s*<<\s*)(END|CONTINUE|BREAK|ABORT|RETURN)
+    match: (?<=(^|\n|;;)[\t\ ]*<<[\t\ ]*)(END|CONTINUE|BREAK|ABORT|RETURN)
 
   # script blocks
   - name: storage.type.sadako
@@ -53,15 +53,15 @@ patterns:
 
   # inline labels
   - name: support.function.sadako
-    match: (?<=(^|;;|\n)\s*(((\+\s*)+|(\*\s*)+|(-\s*)+)|\s*)){.*(?<!:)}
+    match: (?<=(^|;;|\n)[\t\ ]*(((\+[\t\ ]*)+|(\*[\t\ ]*)+|(-[\t\ ]*)+)|[\t\ ]*)){.*(?<!:)}
 
   # standalone label name
   - name: support.function.sadako
-    match: (?<=(^|;;|\n)\s*(=\s*)+)[^=\s].*
+    match: (?<=(^|;;|\n)[\t\ ]*(=[\t\ ]*)+)[^=[\t\ ]].*
 
   # conditional choice text
   - name: storage.type.sadako
-    match: (?<=(^|;;|\n)\s*((\+|\*)\s*)+.*)(\[|\]|<<|>>)
+    match: (?<=(^|;;|\n)[\t\ ]*((\+|\*)[\t\ ]*)+.*)(\[|\]|<<|>>)
 
   # single line comment
   - name: comment.line.double-slash.sadako
@@ -78,5 +78,5 @@ patterns:
     
   # complex embedded token
   - name: string.interpolated.sadako
-    match: ([\$_]:([a-zA-Z0-9]+(\_[a-zA-Z0-9]+)*(([\.][a-zA-Z0-9]+(\_[a-zA-Z0-9]+)*)|([\[\(]+([^\[\]\(\)\s]*\ *)*[\)\]]+))*))
+    match: ([\$_]:([a-zA-Z0-9]+(\_[a-zA-Z0-9]+)*(([\.][a-zA-Z0-9]+(\_[a-zA-Z0-9]+)*)|([\[\(]+([^\[\]\(\)[\t\ ]]*\ *)*[\)\]]+))*))
 ...
