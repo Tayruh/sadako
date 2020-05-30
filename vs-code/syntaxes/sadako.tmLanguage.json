@@ -2,22 +2,24 @@
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "scopeName": "source.sadako",
   "name": "Sadako",
+  "foldingStartMarker": "\\[:",
+  "foldingStopMarker": "\\]:",
   "patterns": [
     {
       "name": "keyword.operator.sadako",
-      "match": "(?<=\\[:\\s*)((#(\\s*=)?|%(\\s*=)?|&|=|>|>>)|(\\+(\\s*([#%](\\s*=)?|[&=>]))?)|(\\*(\\s*([#%](\\s*=)?|[!&=]))?))"
+      "match": "(?<=\\[:[\\t\\ ]*)((#([\\t\\ ]*=)?|%([\\t\\ ]*=)?|&|=|>|>>)|(\\+([\\t\\ ]*([#%]([\\t\\ ]*=)?|[&=>]))?)|(\\*([\\t\\ ]*([#%]([\\t\\ ]*=)?|[!&=]))?))"
     },
     {
       "name": "keyword.operator.sadako",
-      "match": "(?<=^\\s*(-\\s*)*)<>|<>(?=\\s*($|\\n))"
+      "match": "(?<=^[\\t\\ ]*(-[\\t\\ ]*)*)<>|<>(?=[\\t\\ ]*($|\\n|::))"
     },
     {
       "name": "keyword.operator.sadako",
-      "match": "(?<=^|\\n|;;)[~\\s]*(?=if|else if|else|for|while)"
+      "match": "(?<=^|\\n|;;)[~[\\t\\ ]]*(?=if|else if|else|for|while)"
     },
     {
       "name": "keyword.operator.sadako",
-      "match": "(?<=(^|\\n|;;)\\s*)(((-\\s*)*(<<|>>(\\s*=)?(\\s*[#%])?))|(=\\s*)+|(\\+\\s*)+|(\\*(?![.:])\\s*)+|(-\\s*)+)"
+      "match": "(?<=(^|\\n|;;)[\\t\\ ]*)(((-[\\t\\ ]*)*(<<|>>([\\t\\ ]*=)?([\\t\\ ]*[#%])?))|(\\+[\\t\\ ]*)+>>[\\t\\ ]*=([\\t\\ ]*[%#])?|(=[\\t\\ ]*)+|(\\+[\\t\\ ]*)+|(\\*(?![.:])[\\t\\ ]*)+|(-[\\t\\ ]*)+)"
     },
     {
       "name": "support.class.sadako",
@@ -29,19 +31,19 @@
     },
     {
       "name": "keyword.operator.sadako",
-      "match": "\\\\(?=\\s*(\\n|$))|(^|\\n|;;)\\s*\\\\"
+      "match": "\\\\(?=[\\t\\ ]*(\\n|$))|(^|\\n|;;)[\\t\\ ]*\\\\"
     },
     {
       "name": "keyword.operator.sadako",
-      "match": "(;;|::|@:(\\s*=)?|##|~~\\+|~~=|{{|}})+"
+      "match": "(;;|::|@:([\\t\\ ]*=)?|##|~~\\+|~~=|{{|}})+"
     },
     {
       "name": "keyword.control.sadako",
-      "match": "(?<=(^|\\n|;;)\\s*(~\\s*)+)(if|else if|else|for|while)"
+      "match": "(?<=(^|\\n|;;)[\\t\\ ]*(~[\\t\\ ]*)+)(if|else if|else|for|while)"
     },
     {
       "name": "support.constant.sadako",
-      "match": "(?<=(^|\\n|;;)\\s*<<\\s*)(END|CONTINUE|BREAK|ABORT|RETURN)"
+      "match": "(?<=(^|\\n|;;)[\\t\\ ]*<<[\\t\\ ]*)(END|CONTINUE|BREAK|ABORT|RETURN)"
     },
     {
       "name": "storage.type.sadako",
@@ -49,15 +51,15 @@
     },
     {
       "name": "support.function.sadako",
-      "match": "(?<=(^|;;|\\n)\\s*(((\\+\\s*)+|(\\*\\s*)+|(-\\s*)+)|\\s*)){.*(?<!:)}"
+      "match": "(?<=(^|;;|\\n)[\\t\\ ]*(((\\+[\\t\\ ]*)+|(\\*[\\t\\ ]*)+|(-[\\t\\ ]*)+)|[\\t\\ ]*)){.*(?<!:)}"
     },
     {
       "name": "support.function.sadako",
-      "match": "(?<=(^|;;|\\n)\\s*(=\\s*)+)[^=\\s].*"
+      "match": "(?<=(^|;;|\\n)[\\t\\ ]*(=[\\t\\ ]*)+)[^=[\\t\\ ]].*"
     },
     {
       "name": "storage.type.sadako",
-      "match": "(?<=(^|;;|\\n)\\s*((\\+|\\*)\\s*)+.*)(\\[|\\]|<<|>>)"
+      "match": "(?<=(^|;;|\\n)[\\t\\ ]*((\\+|\\*)[\\t\\ ]*)+.*)(\\[|\\]|<<|>>)"
     },
     {
       "name": "comment.line.double-slash.sadako",
@@ -74,7 +76,7 @@
     },
     {
       "name": "string.interpolated.sadako",
-      "match": "([\\$_]:([a-zA-Z0-9]+(\\_[a-zA-Z0-9]+)*(([\\.][a-zA-Z0-9]+(\\_[a-zA-Z0-9]+)*)|([\\[\\(]+([^\\[\\]\\(\\)\\s]*\\ *)*[\\)\\]]+))*))"
+      "match": "([\\$_]:([a-zA-Z0-9]+(\\_[a-zA-Z0-9]+)*(([\\.][a-zA-Z0-9]+(\\_[a-zA-Z0-9]+)*)|([\\[\\(]+([^\\[\\]\\(\\)[\\t\\ ]]*\\ *)*[\\)\\]]+))*))"
     }
   ]
 }
