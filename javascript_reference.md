@@ -18,7 +18,7 @@ You can limit the amount of history states with `sadako.history_limit`. The defa
 
 #### sadako.savename
 
-String containing filename of saves. Default is `sadako`, which saves the file as `sadako_savedata_1`, `sadako_savedata_auto`, etc.
+String containing filename of saves. Default is `sadako`, which saves the file as `sadako_savedata_1`, `sadako_savedata_auto`, `sadako_savedata_settings`, etc.
 
 #### sadako.text_delay
 
@@ -67,6 +67,12 @@ sadako.label_seen["kitchen.drawer"]
 %.kitchen.drawer
 ```
 
+#### sadako.settings
+
+Object containing settings independent of save files. Used to configuration settings or tracking game endings.
+
+The settings data is retrieved when the game is started. Changed settings must be saved using `sadako.saveSettings()`.
+
 #### sadako.macros
 
 Object list containing functions associated with sadako script `(:` `:)` macro tags.
@@ -96,7 +102,7 @@ Set to `true` if the script is currently being run inside included script, and `
 
 Set to `true` if the script is currently being run inside a dialog window, and `false` if not.
 
-### sadako.unsafe_evals
+#### sadako.unsafe_evals
 
 When **Sadako** creates a link with script to be executed, it places it inside an array. That item of the array is then executed when the link is clicked. In order to not continuously save functions to memory and cause a memory leak, that array is cleared when entering a new page or selecting a choice. 
 
@@ -242,6 +248,14 @@ Arguments:
 
 * `output` (string or array): String or array of strings to added to output.
 
+#### sadako.saveSettings()
+
+Writes the `sadako.settings` object to disk.
+
+#### sadako.loadSettings()
+
+Loads the data in the settings file to into `sadako.settings`.
+
 #### sadako.addChoice()
 
 Adds a choice to the global choice array.
@@ -345,7 +359,7 @@ Returns:
 
 * (string): The string resulting from the variable value replacements.
 
-#### sadako.processScript(text)
+#### sadako.processScript()
 
 This function renders the script tags inside a string as its equivalent HTML and javascript. For example, `<:asdf::some text:>` will become `<span class="asdf">some text</span>`. This does not work correctly with depth tokens like `-`, `=`, `~`, `*`, and `+`, since they are rendered at compile time.
 
@@ -395,10 +409,11 @@ Arguments:
     
 * `text` (string): Text to compare.
 * `token` (string): Token to look for.
+* `no_trim` (boolean): Prevents leading spaces from being trimmed if `true`.
 
 Returns:
 
-* (string or boolean): Returns the remainder of the string after removing the token and leading spaces. Returns `false` if not a match.
+* (string or boolean): Returns the remainder of the string after removing the token and leading spaces (unless `no_trim` is set to `true`). Returns `false` if not a match.
 
 #### sadako.addScene()
 
@@ -415,7 +430,7 @@ Arguments:
 * `doAfter` (string or function): The script to run after every page renders while the scene is active.
 * `isRecurring` (boolean): Whether the scene should be run again if the start conditions are met after the scene has ended.
 
-#### sadako.setupDialog
+#### sadako.setupDialog()
 
 This sets up the dialog for display. You only need to call thing function once. The elements in the `elements` array will be shown or hidden every time you call `sadako.showDialog()` and `sadako.hideDialog()`.
 

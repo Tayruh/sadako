@@ -1,6 +1,6 @@
 (function(sadako) {
 
-	sadako.version = "0.12.2";
+	sadako.version = "0.13.0";
 	sadako.kayako_version = "0.10.5";
 
 	var localStorage;
@@ -113,6 +113,7 @@
 	sadako.loop_result = null;
 	sadako.in_loop = false;
 	sadako.include_choices = false;
+	sadako.settings = {};
 
 	// global variables saved to state
 	sadako.current = null;
@@ -548,6 +549,24 @@
 	/* Markup Parsing */
 
 	var getMarkup = function(text, open, close) {
+		/*
+			Parses the text by the open and close tags.
+
+			- Performs tag matching, so it will only return the markup of the
+			  outer most block.
+			- Only looksk for first instance of open tag, so 'after' text may 
+			  contain more markup.
+
+			text (string): Text to be parsed.
+			open (string): Open tag.
+			close (string): Close tag.
+
+			returns (object):
+				before (string): Text before markup block.
+				markup (string): Text containing markup block.
+				after (string): Text after markup block.
+		*/
+
 		var firstIndex = text.indexOf(open);
 		if (firstIndex === -1) return {"before": "", "markup": "", "after": text};
 
@@ -575,6 +594,17 @@
 	}
 
 	var parseMarkup = function(text, open, close, action) {
+		/*
+			Indexes through text, performing 'action' function on parsed markup.
+
+			text (string): Text to parse.
+			open (string): Open markup tag.
+			close (string): Close markup tag.
+			action (function): Function to be applied to markup object.
+
+			returns (text): Modified text.
+		*/
+
 		if (text.indexOf(open) === -1) {
 			return text;
 		}
@@ -599,6 +629,16 @@
 	}
 
 	var getToken = function(text) {
+		/*
+			Finds first token block token.
+
+			text (string): Text containing token to find.
+
+			returns (object):
+				token (string): Token found.
+				index: (integer): Index in string of token.
+		*/
+
 		var checkIndex = function(token_type, value) {
 			if (value === -1) return;
 			if (value > index) return;
@@ -625,6 +665,15 @@
 	}
 
 	var splitMarkup = function(text, split_token) {
+		/*
+			Splits text by the 'split_token'. Text inside token blocks is ignored.
+
+			text (string): Text to split.
+			split_token (string): Token to split string with.
+
+			returns (array): An array of the split text.
+		*/
+
 		if (text.indexOf(split_token) === -1) return [text];
 
 		var t = sadako.token;
@@ -640,7 +689,7 @@
 		var before = "";
 		var a, split_index, temp, script;
 
-		// 1000 loops as a safety measure. It shoult break the loop before that.
+		// 1000 loops as a safety measure. It should break the loop before that.
 		for (a = 0; a < 1000; ++a) {
 			temp = getToken(text);
 
@@ -848,12 +897,7 @@
 		}
 
 		for (a in sadako.scenes) {
-			sadako.scenes[a] = (scenes && a in scenes) ? scenes[a] : {
-				"isActive": false,
-				"hasEnded": false,
-				"ending": null,
-				"isRecurring": false
-			};
+			if (scenes && a in scenes) sadako.scenes[a] = scenes[a];
 		}
 
 		sadako.var = copy(sadako.defaultData.var, true);
@@ -908,6 +952,16 @@
 
 		saveData();
 		if (sadako.autosave_enabled) sadako.saveGame("auto", true);
+	};
+
+	var saveSettings = function() {
+		var settingsData = JSON.stringify(sadako.settings);
+		localStorage.setItem(sadako.savename + "_savedata_settings", settingsData);
+	};
+
+	var loadSettings = function() {
+		var settingsData = localStorage.getItem(sadako.savename + "_savedata_settings");
+		if (settingsData !== null) sadako.settings = JSON.parse(settingsData);
 	};
 
 	sadako.saveGame = function(saveSlot, no_confirm) {
@@ -1105,6 +1159,8 @@
 
 			title (string): Text to display in title bar
 			text (string): Text to display in dialog body
+
+			return (boolean): true if dialog displays, false if not
 		*/
 
 		var updateDialog = function() {
@@ -1180,6 +1236,8 @@
 
 			choices (array): array of choice arrays to pass to the addChoice() function.
 				See the addChoice() function for more details.
+
+			id (string): ID of element to write output to.
 		*/
 
 		sadako.choices = [];
@@ -1217,6 +1275,8 @@
 			name (string): Link name
 			command (string): Command to be evaluated on click
 			broken (boolean): If true, displays the link using the 'broken' class
+
+			returns (string): HTML link.
 		*/
 
 		var temp;
@@ -1239,6 +1299,14 @@
 	};
 
 	sadako.fadeIn = function(id, delay, text) {
+		/*
+			Fades in a block of text.
+
+			id (string): ID of HTML element to fade in, if one exists
+			delay (integer): Length of delay in miliseconds
+			text (string): Text to fade in
+		*/
+
 		var el;
 
 		if (!id) {
@@ -1262,6 +1330,15 @@
 	}
 
 	sadako.writeReveal = function(name, script) {
+		/*
+			Creates a link that changed text when clicked.
+
+			name (string): Text of link before being clicked.
+			script (string): Text/script to be revealed.
+
+			returns (string): HTML link
+		*/
+
 		var temp;
 		var t = sadako.token;
 		var page_cond = t.page_embed + t.cond_embed;
@@ -2207,9 +2284,12 @@
 		doScript(line[0], line[1], line[2]);
 	}
 
-	var isToken = function(text, token) {
+	var isToken = function(text, token, no_trim) {
 		text = text.trimStart();
-		if (text.substring(0, token.length) === token) return text.substring(token.length).trimStart();
+		if (text.substring(0, token.length) === token) {
+			text = text.substring(token.length);
+			return (no_trim) ? text : text.trimStart();
+		}
 		return false;
 	};
 
@@ -2481,9 +2561,9 @@
 				if ((temp = isToken(text, "for"))) return processFor(temp);
 				else if ((temp = isToken(text, "while"))) return processWhile(temp);
 				else if ((temp = isToken(text, "if "))) return processIf(temp, active, label);
-				else if (!sadako.conditions[label]) {
-					if ((temp = isToken(text, "else if "))) return processElseIf(temp, active, label);
-					else if (isToken(text, "else") !== false) return processElse(active);
+				else if (!sadako.conditions[label] && (temp = isToken(text, "else")) !== false) {
+					if ((temp = isToken(temp, "if")) !== false) return processElseIf(temp, active, label);
+					return processElse(active);
 				}
 
 				return [NEXT];
@@ -2508,7 +2588,7 @@
 				cond_pass = eval(replaceVars(cond));
 				script = script.substring(0, index);
 			}
-			if (cond_pass) return script;
+			if (cond_pass) return script.trim();
 			return null;
 		}
 
@@ -2596,8 +2676,11 @@
 						sadako.choices = [];
 						return [JUMP, page, start + "." + a, 0];
 					}
+
 					// otherwise add choice to list
 					choice_seen = true;
+
+					// if static choice token followed by jump include token, perform a choice include
 					if (token === sadako.token.static && (temp = isToken(text, sadako.token.jump))) {
 						if ((temp = isToken(temp, sadako.token.eval_value))) {
 							var include_choices = sadako.include_choices;
@@ -2899,12 +2982,15 @@
 			}
 		}
 
+		loadSettings();
+
 		sadako.current_line = [sadako.page, 0, 0];
 
 		if (!sadako.autosave_enabled || !sadako.loadGame("auto", true)) {
 			doLink("#" + sadako.page);
 		}
 	};
+
 
 	// functions intended to be used as-is
 	sadako.doJump = doJump;
@@ -2926,6 +3012,8 @@
 	sadako.addScene = addScene;
 	sadako.writeOutput = writeOutput
 	sadako.replaceVars = replaceVars;
+	sadako.saveSettings = saveSettings;
+	sadako.loadSettings = loadSettings;
 
 	// functions intended to be overridden
 	// sadako.write
