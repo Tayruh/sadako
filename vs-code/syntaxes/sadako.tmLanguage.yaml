@@ -17,7 +17,7 @@ patterns:
 
   # condition blocks tokens
   - name: keyword.operator.sadako
-    match: (?<=^|\n|;;)[~[\t\ ]]*(?=if|else if|else|for|while)
+    match: (?<=^|\n|;;)[~[\t\ ]]*(?=if|else[\t\ ]*if|else|for|while)
   
   # start of line tokens
   - name: keyword.operator.sadako
@@ -41,7 +41,7 @@ patterns:
 
   # condition blocks key words
   - name: keyword.control.sadako
-    match: (?<=(^|\n|;;)[\t\ ]*(~[\t\ ]*)+)(if|else if|else|for|while)
+    match: (?<=(^|\n|;;)[\t\ ]*(~[\t\ ]*)+)(if|else[\t \ ]*if|else|for|while)
 
   # return key words
   - name: support.constant.sadako
