@@ -5,15 +5,13 @@
 
 	var localStorage;
 
-	var JUMP = "jump";
-	var END = "end";
-	var ABORT = "abort";
-	var NEXT = "next";
-	var RUN = "run";
-	var BREAK = "break";
-	var CONTINUE = "continue";
-	var RETURN = "return";
-	var BACK = "back";
+	var JUMP = "JUMP";
+	var END = "END";
+	var ABORT = "ABORT";
+	var NEXT = "NEXT";
+	var RUN = "RUN";
+	var BREAK = "BREAK";
+	var CONTINUE = "CONTINUE";
 
 	sadako.token = {
 		"escape": "\\",
@@ -74,68 +72,65 @@
 		"process_close": "}}"
 	};
 
-	var initializeValues = function() {
-		// global variables intended to changed
-		sadako.savename = "sadako";
-		sadako.text_delay = 80.0;
-		sadako.output_id = "#output";
-		sadako.autosave_enabled = false;
+	// global variables intended to changed
+	sadako.savename = "sadako";
+	sadako.text_delay = 80.0;
+	sadako.output_id = "#output";
+	sadako.autosave_enabled = false;
 
-		// global variables not saved to storage
-		sadako.tmp = {};
-		sadako.evals = [];
-		sadako.default_data = {};
-		// sadako.story = {};
-		sadako.tags = {};
-		sadako.labels = {};
-		sadako.depths = {};
-		sadako.lines = [];
-		sadako.display_lines = [];
-		sadako.display_choices = [];
-		sadako.history = [];
-		sadako.history_limit = 10;
-		sadako.state = {};
-		sadako.before = {};
-		sadako.after = {};
-		sadako.savestate_enabled = true;
-		sadako.freeze_data = {};
-		sadako.script_status = null;
-		sadako.dialog_ids = {};
-		sadako.onDialogClose = null;
-		sadako.macros = {};
-		sadako.scripts = {};
-		sadako.is_frozen = false;
-		sadako.save_data = {};
-		sadako.current_line = [];
-		sadako.script_level = 1;
-		sadako.in_dialog = false;
-		sadako.in_include = false;
-		sadako.in_reveal = false;
-		sadako.scene_checks = {};
-		sadako.text = "";
-		sadako.evals_unsafe = true;
-		sadako.loop_result = null;
-		sadako.in_loop = false;
-		sadako.include_choices = false;
-		sadako.settings = {};
+	// global variables not saved to storage
+	sadako.tmp = {};
+	sadako.evals = [];
+	sadako.defaultData = {};
+	// sadako.story = {};
+	sadako.tags = {};
+	sadako.labels = {};
+	sadako.depths = {};
+	sadako.lines = [];
+	sadako.display_lines = [];
+	sadako.display_choices = [];
+	sadako.history = [];
+	sadako.history_limit = 10;
+	sadako.state = {};
+	sadako.before = {};
+	sadako.after = {};
+	sadako.savestate_enabled = true;
+	sadako.freeze_data = {};
+	sadako.script_status = null;
+	sadako.dialog_ids = {};
+	sadako.onDialogClose = null;
+	sadako.macros = {};
+	sadako.scripts = {};
+	sadako.is_frozen = false;
+	sadako.save_data = {};
+	sadako.current_line = [];
+	sadako.script_level = 1;
+	sadako.in_dialog = false;
+	sadako.in_include = false;
+	sadako.scene_checks = {};
+	sadako.text = "";
+	sadako.evals_unsafe = true;
+	sadako.loop_result = null;
+	sadako.in_loop = false;
+	sadako.include_choices = false;
+	sadako.settings = {};
 
-		// global variables saved to state
-		sadako.current = null;
-		sadako.page = "start";
-		sadako.start = 0;
-		sadako.part = 0;
-		sadako.labels = {};
-		sadako.page_seen = {};
-		sadako.label_seen = {};
-		sadako.var = {};
-		sadako.jumps = [];
-		sadako.choices = [];
-		sadako.chosen = null;
-		sadako.conditions = {};
-		sadako.cond_states = [];
-		sadako.enter_text = [];
-		sadako.scenes = {};
-	}
+	// global variables saved to state
+	sadako.current = null;
+	sadako.page = "start";
+	sadako.start = 0;
+	sadako.part = 0;
+	sadako.labels = {};
+	sadako.page_seen = {};
+	sadako.label_seen = {};
+	sadako.var = {};
+	sadako.jumps = [];
+	sadako.choices = [];
+	sadako.chosen = null;
+	sadako.conditions = {};
+	sadako.cond_states = [];
+	sadako.enter_text = [];
+	sadako.scenes = {};
 
 
 	/* Utility Functions */
@@ -540,7 +535,7 @@
 	sadako.scrollToTop = function(id) {
 		// Scrolls HTML page to the top.
 
-		if (sadako.in_include || sadako.in_reveal) return;
+		if (sadako.in_include) return;
 
 		if (id) dom(id).scrollTop = 0;
 		else if (sadako.in_dialog) dom(sadako.dialog_ids.output).scrollTop = 0;
@@ -559,7 +554,7 @@
 
 			- Performs tag matching, so it will only return the markup of the
 			  outer most block.
-			- Only looksk for first instance of open tag, so 'after' text may
+			- Only looksk for first instance of open tag, so 'after' text may 
 			  contain more markup.
 
 			text (string): Text to be parsed.
@@ -905,7 +900,7 @@
 			if (scenes && a in scenes) sadako.scenes[a] = scenes[a];
 		}
 
-		sadako.var = copy(sadako.default_data.var, true);
+		sadako.var = copy(sadako.defaultData.var, true);
 		if (data) {
 			for (a in data) {
 				sadako.var[a] = data[a];
@@ -1390,11 +1385,8 @@
 				sadako.lines = [];
 				sadako.choices = [];
 				sadako.clear(id);
-				var reveal = sadako.in_reveal;
-				sadako.in_reveal = true;
 				sadako.doInclude(script);
 				writeOutput(id);
-				sadako.in_reveal = reveal;
 				sadako.choices = copy(choices, true);
 			});
 		}
@@ -1598,7 +1590,7 @@
 	};
 
 	sadako.doBeforeDisplay = function(id) {
-		sadako.scrollToTop();
+		sadako.scrollToTop(id);
 		sadako.clear(id);
 	};
 
@@ -2409,8 +2401,6 @@
 
 		page (string): page to render
 		start (string): section of page to start
-		part (integer): line of section to begin on (0 by default)
-		block_only (bolean): if true, will only render the block at this depth and won't continue to a lower depth
 		*/
 
 		var parseJump = function(text, page, start, part) {
@@ -2427,18 +2417,18 @@
 			}
 
 			var processReturn = function(temp) {
-				if (temp in list(CONTINUE, BREAK, END, ABORT)) {
-					if (sadako.in_loop) sadako.loop_result = temp;
-					if (temp in list(CONTINUE, BREAK, END)) return [END];
-					if (temp === ABORT) return [ABORT];
+				if (temp in list(END, ABORT, CONTINUE, BREAK)) {
+					sadako.loop_result = temp;
+					if (temp in list("CONTINUE", "BREAK", "END")) return [END];
+					if (temp === "ABORT") return [ABORT];
 					return [NEXT];
 				}
-				if (temp === RETURN || (temp === BACK && sadako.history_limit < 1)) {
+				if (temp === "RETURN" || (temp === "BACK" && sadako.history_limit < 1)) {
 					sadako.current = sadako.token.page_embed + page;
 					doJump(sadako.current);
 					return [END];
 				}
-				if (temp === BACK) {
+				if (temp === "BACK") {
 					back();
 					return [NEXT];
 				}
@@ -2450,7 +2440,7 @@
 			var processPageJump = function(label, include_text) {
 				if (!(label in sadako.story)) throw new Error("Can't find page '" + label + "'");
 				label = sadako.token.page_embed + label;
-
+				
 				if (include_text) {
 					doInclude(label);
 					return [NEXT];
@@ -2570,10 +2560,10 @@
 
 				if ((temp = isToken(text, "for"))) return processFor(temp);
 				else if ((temp = isToken(text, "while"))) return processWhile(temp);
-				else if ((temp = isToken(text, "if"))) return processIf(temp, active, label);
-				else if (!sadako.conditions[label]) {
-					if ((temp = isToken(text, "elseif"))) return processElseIf(temp, active, label);
-					else if (isToken(text, "else") !== false) return processElse(active);
+				else if ((temp = isToken(text, "if "))) return processIf(temp, active, label);
+				else if (!sadako.conditions[label] && (temp = isToken(text, "else")) !== false) {
+					if ((temp = isToken(temp, "if")) !== false) return processElseIf(temp, active, label);
+					return processElse(active);
 				}
 
 				return [NEXT];
@@ -2870,7 +2860,6 @@
 
 	sadako.init = function(story, id) {
 		var initializeData = function() {
-			sadako.depths = sadako.story.story_data.depths;
 
 			// remove story data from story object to avoid possible conflicts
 			delete sadako.story.story_data;
@@ -2880,8 +2869,6 @@
 			sadako.tags = {};
 			sadako.labels = {};
 			sadako.page_seen = {};
-			sadako.label_seen = {};
-
 			for (a in sadako.story) {
 				// set page seen
 				sadako.page_seen[a] = 0;
@@ -2904,6 +2891,9 @@
 			}
 		}
 
+		if (id) sadako.output_id = id;
+		else sadako.output_id = sadako.output_id || "#output";
+
 		// Edge browser calls trimStart "trimLeft" and IE doesn't have either
 		if (String.prototype.trimStart === undefined) {
 			String.prototype.trimStart = String.prototype.trimLeft || function() { return this.replace(/^\s*/, ''); };
@@ -2919,12 +2909,12 @@
 
 		checkLocalStorage();
 
-		initializeValues();
-
-		if (id) sadako.output_id = id;
-		else sadako.output_id = sadako.output_id || "#output";
-
-		if (sadako.story !== undefined) checkVersion();
+		if (sadako.story !== undefined) {
+			sadako.tags = sadako.story.story_data.tags;
+			sadako.labels = sadako.story.story_data.labels;
+			sadako.depths = sadako.story.story_data.depths;
+			checkVersion();
+		}
 		else {
 			if (isStr(story) && story.charAt(0) === "#") story = dom(story).value;
 			else if (dom("#source")) story = dom("#source").value;
@@ -2981,8 +2971,10 @@
 
 		if (page !== undefined) sadako.page = page;
 
-		if (sadako.default_data === undefined || isEmpty(sadako.default_data)) sadako.default_data = copy(getCurrentState(), true);
-		else loadState(sadako.default_data);
+		if (sadako.defaultData === undefined || isEmpty(sadako.defaultData)) {
+			sadako.defaultData = copy(getCurrentState(), true);
+		}
+		else loadState(sadako.defaultData);
 
 		if (!sadako.autosave_enabled) {
 			if (localStorage.getItem(sadako.savename + "_savedata_auto") !== null) {
@@ -3046,7 +3038,6 @@
 	sadako.parseLink = parseLink;
 	sadako.getMarkup = getMarkup;
 	sadako.parseMarkup = parseMarkup;
-	sadako.loadData = loadData;
 
 	// convenient utility functions
 	sadako.rollDice = rollDice;
