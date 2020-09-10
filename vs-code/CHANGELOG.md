@@ -1,5 +1,8 @@
 ## Change Log
 
+### 1.3
+- Reserved words are now case insensitive.
+
 ### 1.2
 - Any (or no) amount of space is allowed between `else` and `if` in `~ else if` conditionals.
 

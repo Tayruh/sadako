@@ -15,7 +15,7 @@
     },
     {
       "name": "keyword.operator.sadako",
-      "match": "(?<=^|\\n|;;)[~[\\t\\ ]]*(?=if|else[\\t\\ ]*if|else|for|while)"
+      "match": "(?<=^|\\n|;;)[~[\\t\\ ]]*(?i)(?=if|else[\\t\\ ]*if|else|for|while)"
     },
     {
       "name": "keyword.operator.sadako",
@@ -39,11 +39,11 @@
     },
     {
       "name": "keyword.control.sadako",
-      "match": "(?<=(^|\\n|;;)[\\t\\ ]*(~[\\t\\ ]*)+)(if|else[\\t \\ ]*if|else|for|while)"
+      "match": "(?<=(^|\\n|;;)[\\t\\ ]*(~[\\t\\ ]*)+)(?i)(if|else[\\t \\ ]*if|else|for|while)"
     },
     {
       "name": "support.constant.sadako",
-      "match": "(?<=(^|\\n|;;)[\\t\\ ]*<<[\\t\\ ]*)(END|CONTINUE|BREAK|ABORT|RETURN)"
+      "match": "(?<=(^|\\n|;;)[\\t\\ ]*<<[\\t\\ ]*)(?i)(END|CONTINUE|BREAK|ABORT|RETURN)"
     },
     {
       "name": "storage.type.sadako",

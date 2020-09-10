@@ -1,41 +1,40 @@
 {
-    "name": "sadako-script",
-    "displayName": "Sadako Script",
-    "description": "Syntax highlighting for Sadako scripting language.",
-    "version": "1.2.0",
-    "publisher": "Tayruh",
-    "engines": {
-        "vscode": "^1.45.0"
-    },
-    "categories": [
-        "Programming Languages"
-    ],
-    "repository": {
-
-    },
-    "contributes": {
-        "languages": [
-            {
-                "id": "sadako",
-                "aliases": [
-                    "Sadako",
-                    "sadako"
-                ],
-                "extensions": [
-                    ".sko"
-                ],
-                "configuration": "./language-configuration.json"
-            }
-        ],
-        "grammars": [
-            {
-                "language": "sadako",
-                "scopeName": "source.sadako",
-                "path": "./syntaxes/sadako.tmLanguage.json"
-            }
-        ]
-    },
-    "devDependencies": {
-        "js-yaml": "^3.13.1"
-    }
+	"name": "sadako-script",
+	"displayName": "Sadako Script",
+	"description": "Syntax highlighting for Sadako scripting language.",
+	"version": "1.3.0",
+	"publisher": "Tayruh",
+	"engines": {
+		"vscode": "^1.45.0"
+	},
+	"categories": [
+		"Programming Languages"
+	],
+	"repository": {},
+	"contributes": {
+		"languages": [
+			{
+				"id": "sadako",
+				"aliases": [
+					"Sadako",
+					"sadako"
+				],
+				"extensions": [
+					".sko"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "sadako",
+				"scopeName": "source.sadako",
+				"path": "./syntaxes/sadako.tmLanguage.json"
+			}
+		]
+	},
+	"devDependencies": {
+		"js-yaml": "^3.13.1"
+	},
+	"__metadata": {}
 }
