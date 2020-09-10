@@ -18,6 +18,12 @@ The engine is named after one of my favorite things, which is japanese horror. I
 
 * [JavaScript Reference](javascript_reference.md): The reference for Sadako specific JavaScript functions and variables.
 
+## Sandbox
+
+This is a sandbox tool that allows you to edit the game script in the browser so that you may mess around with test code without having to deal with a text editor or compiler. The sandbox also comes with a number of examples and a short game demo.
+
+* [Sandbox Tool](https://tayruh.github.io/sandbox/)
+
 ## Game Demos
 
 ### [Rainy Day](https://tayruh.github.io/rainy_day/)
