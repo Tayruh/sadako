@@ -266,13 +266,9 @@
     // Setting a delay to 0 will reset the delay.  Resetting the delay to 0 is
     // why the choices display before the preceding text.
     //
-    // Notice that it begins with the - depth token. Its use here is to prevent
-    // Sadako from thinking that this is a condition block which also begins
-    // with a ~ token. Conditions will also be described later.
-    //
     // The ~: tag token does not work with choices, which is why we need to
     // define the delay on the line before it and let it carry over.
-    - ~:delay:0
+    ~:delay:0
 
     = go_back
     
@@ -295,7 +291,7 @@
     >> living_room.erin_watching
 
     // This jump will only happen if the 'waiting_for_remote' scene is active.
-    - >> remote :: *.waiting_for_remote.isActive
+    >> remote :: *.waiting_for_remote.isActive
 
     // $:name with write the value of sadako.var.name into the text.
     //

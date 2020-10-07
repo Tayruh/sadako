@@ -65,7 +65,7 @@ patterns:
 
   # single line comment
   - name: comment.line.double-slash.sadako
-    match: \/\/.*
+    match: ^[\t\ ]*\/\/.*
 
   # comment block
   - name: comment.block.sadako

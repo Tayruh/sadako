@@ -1,4 +1,4 @@
-// version: 0.10.5
+// version: 0.10.9
 
 (function(sadako) {
 
@@ -116,147 +116,151 @@
 		}
 
 		return function() {
-			var items = [];
-
-			items = assignTokens(lines);
-
-			var data = assignDepths(items);
-
-			return data;
+			var items = assignTokens(lines);
+			return assignDepths(items);
 		}();
 	}
 
 	var parseLines = function(lines, page) {
 		var a, b;
 		var data = {};
-		var parts, line;
+		var parts, line, cond;
 
-		var choices = [];
+		var choices, choice_seen;
+
 		var text, label, full_label, temp, temp2;
 
-		var depth_seen, choice_seen;
+		var setDepths = function(depth) {
+			choice_seen = false;
+			if (choices.length < 1) return;
 
-		var setDepths = function(choices, depth) {
 			var a;
 			for (a = 0; a < choices.length; ++a) {
 				story_depths[choices[a]] = depth;
 			}
+			choices = [];
 		}
 
-		var addLabel = function() {
+		var addLabel = function(label) {
 			full_label = page + "." + label;
 			if (!data.labels) data.labels = {};
 			if (full_label in data.labels) {
 				console.error("Duplicate label for '" + full_label + "' found!");
+				return false;
 			}
-			else {
-				if (!data.labels) data.labels = {};
-				data.labels[label] = [page, a, b]
-			}
+			return label;
 		};
 
-		for (a in lines) {
-			parts = [];
+		var getConditions = function(script) {
+			var index = script.lastIndexOf(sadako.token.cond);
+			var inline_index = script.lastIndexOf(sadako.token.inline_close);
+			var span_index = script.lastIndexOf(sadako.token.span_close);
+			var macro_index = script.lastIndexOf(sadako.token.macro_close);
+			var script_index = script.lastIndexOf(sadako.token.script_close);
 
-			choices = [];
+			// make sure condition token is after all blocks
+			if (index < inline_index || index < span_index || index < macro_index || index < script_index) index = -1;
 
-			depth_seen = false;
-			choice_seen = false;
-
-			for (b = 0; b < lines[a].length; ++b) {
-				text = lines[a][b][3].trimStart();
-
-				label = null;
-
-				if ((temp = sadako.isToken(text, sadako.token.label_open)) !== false && checkConflicts(text, sadako.token.label_open)) {
-					label = temp.substring(0, temp.indexOf(sadako.token.label_close));
-					text = temp.substring(label.length + 1);
-					label = label.trim();
-				}
-
-				line = {"t": text.trim() };
-
-				if (lines[a][b][2] !== null) line.k = lines[a][b][2];
-
-				if (line.k === sadako.token.label) {
-					if (text.length < 1) continue;
-					if (!depth_seen) {
-						depth_seen = true;
-						setDepths(choices, [page, a, b]);
-						choices = [];
-						choice_seen = false;
-					}
-
-					label =  line.t.trim();
-				}
-				else if (line.k === sadako.token.choice || line.k === sadako.token.static) {
-					if (!choice_seen) {
-						setDepths(choices, [page, a, b]);
-						choices = [];
-					}
-					depth_seen = false;
-					choices.push(page + "." + a + "." + b);
-					choice_seen = true;
-
-					if (label && line.k === sadako.token.static && (temp = sadako.isToken(text, sadako.token.jump))) {
-						if ((temp = sadako.isToken(temp, sadako.token.eval_value))) {
-							console.error(sadako.format("Labels cannot be assigned to choice includes.\n[{0}] [{1}] [{2}]: {3}", page, a, b, lines[a][b][3].trim()));
-							label = null;
-						}
-					}
-				}
-				else if (line.k === sadako.token.cond_block) {
-					temp = text.match(RegExp("^(?:\\s*)(\\S+)", "g"))[0].toLowerCase();
-					text = text.substring(temp.length).trim();
-					temp = temp.trim();
-
-					if (temp === "else" && text.length) {
-						temp2 = text.match(RegExp("^(?:\\s*)(\\S+)", "g"))[0].toLowerCase();
-						if (temp2.trim() === "if") {
-							text = text.substring(temp2.length).trim();
-							temp = "elseif";
-						}
-						else console.error(sadako.format("Condition block must begin with: if, else, else if, for, or while.\n[{0}] [{1}] [{2}]: {3}", page, a, b, lines[a][b][3].trim()));
-					}
-					else if (!(temp in sadako.list("if", "else", "elseif", "for", "while"))) {
-						console.error(sadako.format("Condition block must begin with: if, else, else if, for, or while.\n[{0}] [{1}] [{2}]: {3}", page, a, b, lines[a][b][3].trim()));
-					}
-					line.t = temp + " " + text;
-
-					if (sadako.isToken(text, "if") !== false) {
-						setDepths(choices, [page, a, b]);
-						choices = [];
-						choice_seen = false;
-					}
-					depth_seen = false;
-					choices.push(page + "." + a + "." + b);
-
-					if (label) console.error(sadako.format("Labels cannot be assigned to conditon blocks.\n[{0}] [{1}] [{2}]: {3}", page, a, b, lines[a][b][3].trim()));
-					label = null;
-				}
-				else if (line.k === sadako.token.depth && !depth_seen) {
-					depth_seen = true;
-					setDepths(choices, [page, a, b]);
-					choices = [];
-					choice_seen = true;
-				}
-
-				if (label) {
-					addLabel(label);
-					line.l = full_label;
-				}
-
-				if (line.k === sadako.token.choice && !label && line.t.length > 1) console.error(sadako.format("Choice found without associated label.\n[{0}] [{1}] [{2}]: {3}", page, a, b, text));
-
-				if (line.t.length > 1 && line.k !== sadako.token.choice && line.k !== sadako.token.static && (temp = sadako.isToken(line.t, sadako.token.return))) line.t = sadako.token.return + " " + temp.toLowerCase();
-
-				parts.push(line);
+			if (index !== -1) {
+				return {
+					"script": script.substring(0, index).trim(), 
+					"cond": script.substring(index + sadako.token.cond.length).trim()
+				};
 			}
-
-			data[a] = parts;
+			return {"script": script, "cond": ""};
 		}
 
-		return data;
+		return function() {
+			for (a in lines) {
+				parts = [];
+				choice_seen = false;
+				choices = [];
+
+				for (b = 0; b < lines[a].length; ++b) {
+					text = lines[a][b][3].trimStart();
+
+					label = null;
+
+					if ((temp = sadako.isToken(text, sadako.token.label_open)) !== false && checkConflicts(text, sadako.token.label_open)) {
+						label = temp.substring(0, temp.indexOf(sadako.token.label_close));
+						text = temp.substring(label.length + 1);
+						label = label.trim();
+					}
+
+					line = {"t": text.trim() };
+
+					if (lines[a][b][2] !== null) line.k = lines[a][b][2];
+
+					if (line.k === sadako.token.label) {
+						if (text.length < 1) continue;
+						setDepths([page, a, b]);
+						label =  line.t.trim();
+					}
+					else if (line.k === sadako.token.choice || line.k === sadako.token.static) {
+						if (!choice_seen) {
+							setDepths([page, a, b]);
+							choice_seen = true;
+						}
+						choices.push(page + "." + a + "." + b);
+
+						if (label && line.k === sadako.token.static && (temp = sadako.isToken(text, sadako.token.jump))) {
+							if ((temp = sadako.isToken(temp, sadako.token.eval_value))) {
+								console.error(sadako.format("Labels cannot be assigned to choice includes.\n[{0}] [{1}] [{2}]: {3}", page, a, b, lines[a][b][3].trim()));
+								label = null;
+							}
+						}
+					}
+					else if (line.k === sadako.token.cond_block) {
+						temp = text.match(RegExp("^(?:\\s*)(\\S+)", "g"))[0].toLowerCase();
+						text = text.substring(temp.length).trim();
+						temp = temp.trim();
+
+						if (temp === "else" && text.length) {
+							temp2 = text.match(RegExp("^(?:\\s*)(\\S+)", "g"))[0].toLowerCase();
+							if (temp2.trim() === "if") {
+								text = text.substring(temp2.length).trim();
+								temp = "elseif";
+							}
+							else console.error(sadako.format("Condition block must begin with: if, else, else if, for, or while.\n[{0}] [{1}] [{2}]: {3}", page, a, b, lines[a][b][3].trim()));
+						}
+						else if (!(temp in sadako.list("if", "else", "elseif", "for", "while"))) {
+							console.error(sadako.format("Condition block must begin with: if, else, else if, for, or while.\n[{0}] [{1}] [{2}]: {3}", page, a, b, lines[a][b][3].trim()));
+						}
+						line.t = temp + " " + text;
+
+						if (temp !== "else" && temp !== "elseif") setDepths([page, a, b]);
+						choices.push(page + "." + a + "." + b);
+
+						if (label) console.error(sadako.format("Labels cannot be assigned to conditon blocks.\n[{0}] [{1}] [{2}]: {3}", page, a, b, lines[a][b][3].trim()));
+						label = null;
+					}
+					else if (line.k === sadako.token.depth) {
+						setDepths([page, a, b]);
+					}
+
+					if (label && (label = addLabel(label))) {
+						if (!data.labels) data.labels = {};
+						data.labels[label] = [page, a, b];
+						line.l = full_label;
+						if (line.k === sadako.token.label) line.t = label;
+					}
+
+					if (line.k === sadako.token.choice && !label && line.t.length > 1) console.error(sadako.format("Choice found without associated label.\n[{0}] [{1}] [{2}]: {3}", page, a, b, text));
+
+					if (line.t.length > 1 && line.k !== sadako.token.choice && line.k !== sadako.token.static && (temp = sadako.isToken(line.t, sadako.token.return))) line.t = sadako.token.return + " " + temp.toLowerCase();
+
+					cond = getConditions(line.t);
+					line.t = cond.script;
+					if (cond.cond) line.c = cond.cond;
+
+					parts.push(line);
+				}
+
+				data[a] = parts;
+			}
+
+			return data;
+		}();
 	}
 
 	var parseStory = function(text) {
@@ -361,10 +365,7 @@
 				// get title from first line of page
 				title = lines.shift().trim();
 
-				if (title.length < 1) {
-					console.error("page: ", pages[a]);
-					throw new Error("Invalid page title");
-				}
+				if (title.length < 1) console.error("Invalid page title\npage: ", pages[a]);
 
 				tags = getPageTags(title);
 				title = tags.shift();
@@ -375,7 +376,6 @@
 
 				if (title in story_data) console.error("Duplicate page '" + title + "' found!'");
 				else story_data[title] = data;
-				// sadako.page_seen[title] = 0;
 			}
 
 			return story_data;
@@ -387,15 +387,14 @@
 			// remove comment blocks
 			text = sadako.parseMarkup(text, sadako.token.comment_open, sadako.token.comment_close, function() { return ""; })
 
-			var a, line;
+			var a; //, line;
 			before = text.split("\n");
 			after = [];
 
 			// remove inline comments
 			for (a = 0; a < before.length; ++a) {
-				line = before[a].split(sadako.token.comment, 1)[0];
-				if (!line.trim().length) continue;
-				after.push(line);
+				if (sadako.isToken(before[a], sadako.token.comment)) continue;
+				after.push(before[a]);
 			}
 			text = after.join("\n");
 

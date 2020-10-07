@@ -1,7 +1,7 @@
 (function(sadako) {
 
-	sadako.version = "0.13.5";
-	sadako.kayako_version = "0.10.7";
+	sadako.version = "0.13.7";
+	sadako.kayako_version = "0.10.9";
 
 	var localStorage;
 
@@ -156,6 +156,20 @@
 		if ((temp = isToken(id, "#")) !== false) return document.getElementById(temp);
 		return document.getElementById(id);
 	};
+
+	var addKeyboardAccessibility = function (id) {
+		var links = dom(id).getElementsByTagName("a");
+		
+		var a;
+		for (a = 0; a < links.length; ++a) {
+			links[a].addEventListener('keydown', function(evt) { 
+				if(evt.keyCode == 13 || evt.keyCode == 32) {
+					evt.preventDefault();
+					this.click();
+				}
+			});
+		}
+	}
 
 	var copy = function(item, deep) {
 		/*
@@ -721,7 +735,6 @@
 
 		return items;
 	}
-
 
 	/* Saving & Loading */
 
@@ -1299,8 +1312,8 @@
 			if (!(temp in sadako.labels)) broken = true;
 		}
 
-		if (broken === undefined || broken === false) return "<span onclick='event.stopPropagation()'><a class='link' onClick='" + command + "'>" + name + "</a></span>";
-		return "<a class='link broken' title='" + command + "'>" + name + "</a>";
+		if (broken === undefined || broken === false) return "<span onclick='event.stopPropagation()'><a role='link' tabindex='0' class='link' onClick='" + command + "'>" + name + "</a></span>";
+		return "<a role='link' tabindex='0' class='link broken' title='" + command + "'>" + name + "</a>";
 	};
 
 	sadako.fadeIn = function(id, delay, text) {
@@ -1458,7 +1471,7 @@
 			});
 		}
 
-		return format("<span id='{0}' onclick='event.stopPropagation()'><a id='{0}A' class='link' onclick='sadako.evals[{1}]()'>{2}</a></span>", id, sadako.evals.length - 1, name);
+		return format("<span id='{0}' onclick='event.stopPropagation()'><a id='{0}A' role='link' tabindex='0' class='link' onclick='sadako.evals[{1}]()'>{2}</a></span>", id, sadako.evals.length - 1, name);
 	};
 
 	sadako.writeDialog = function(title, name, script) {
@@ -1656,6 +1669,8 @@
 					outputLine(choices[a]);
 				}
 			}
+
+			addKeyboardAccessibility(id);
 
 			sadako.doAfterDisplay(id);
 		}();
@@ -1999,12 +2014,12 @@
 		var doSimpleReplace = function(text, token, replacement) {
 			var regexp = new RegExp("(^|\\s*|[^a-zA-Z0-9]+)" + token + "([a-zA-Z0-9]+(?:[\\._]?[a-zA-Z0-9]+)*)", "g");
 			return text.replace(regexp, replacement);
-		}
+		};
 
 		var doComplexReplace = function(text, token, replacement) {
-			var regexp = new RegExp("(^|\\s*|[^a-zA-Z0-9]+)" + token + "([a-zA-Z0-9]+(\\_[a-zA-Z0-9]+)*(([\\.][a-zA-Z0-9]+(\\_[a-zA-Z0-9]+)*)|([\\[\\(]+([^\\[\\]\\(\\)\\s]*\\ *)*[\\)\\]]+))*)", "g");
+			var regexp = new RegExp("(^|\\s*|[^a-zA-Z0-9]+)" + token + "([a-zA-Z0-9]+(\\_[a-zA-Z0-9]+)*(([\\.][a-zA-Z0-9]+(\\_[a-zA-Z0-9]+)*)|([\\[\\(]+.*[\\)\\]]+))*)", "g");
 			return text.replace(regexp, replacement);
-		}
+		};
 
 		var replaceEnclosure = function(text, open, close, replacement) {
 			text = parseMarkup(text, open, close, function(markup) {
@@ -2012,7 +2027,7 @@
 				return replacement(inside);
 			});
 			return text;
-		}
+		};
 
 		var t = sadako.token;
 
@@ -2048,7 +2063,7 @@
 		text = text.replace(RegExp(t.write_embed, 'g'), 'sadako.text = ');
 		text = text.replace(RegExp(t.pluswrite_embed, 'g'), 'sadako.text += ');
 		return text;
-	}
+	};
 
 	var processScript = function(script) {
 		var doInline = function(text) {
@@ -2199,7 +2214,9 @@
 
 	var getLineByLabel = function(label) {
 		if (label.charAt(0) === "#") {
-			return [label.substring(1), 0, 0];
+			label = label.substring(1);
+			if (!(label in sadako.story)) throw new Error("Can't find page '" + label + "'");
+			return [label, 0, 0];
 		}
 		else {
 			label = localizeLabel(label, true);
@@ -2462,6 +2479,7 @@
 
 			var processLabelJump = function(label, include_text) {
 				var temp;
+
 				if ((temp = isToken(label, sadako.token.label_embed)) !== false) label = temp;
 
 				label = localizeLabel(label);
@@ -2580,25 +2598,11 @@
 			}();
 		};
 
-		var checkInlineCondition = function(script) {
-			var cond;
+		var checkInlineCondition = function(line) {
 			var cond_pass = true;
 
-			var index = script.lastIndexOf(sadako.token.cond);
-			var inline_index = script.lastIndexOf(sadako.token.inline_close);
-			var span_index = script.lastIndexOf(sadako.token.span_close);
-			var macro_index = script.lastIndexOf(sadako.token.macro_close);
-			var script_index = script.lastIndexOf(sadako.token.script_close);
-
-			// make sure condition token is after all blocks
-			if (index < inline_index || index < span_index || index < macro_index || index < script_index) index = -1;
-
-			if (index !== -1) {
-				cond = script.substring(index + sadako.token.cond.length);
-				cond_pass = eval(replaceVars(cond));
-				script = script.substring(0, index);
-			}
-			if (cond_pass) return script.trim();
+			if ("c" in line) cond_pass = eval(replaceVars(line.c));
+			if (cond_pass) return line.t;
 			return null;
 		}
 
@@ -2632,7 +2636,7 @@
 				// check and process scenes
 				checkScenes();
 
-				text = checkInlineCondition(this_page[a].t);
+				text = checkInlineCondition(this_page[a]);
 				if (text === null) continue;
 
 				// reset condition state if we are not in a condition at the momment
@@ -2859,11 +2863,11 @@
 
 		var a;
 		for (a = 0; a < sad_ver.length; ++a) {
-			if (sad_ver[a] > src_ver[a]) {
+			if (sad_ver[a] !== src_ver[a]) {
 				console.error("Sadako Version: " + sadako.version);
 				console.error("Kayako Version: " + sadako.kayako_version);
-				console.error("Source Version: " + sadako.story.story_data.version);
-				throw new Error("Compiled Sadako source is from an older version of Kayako. Please recompile.");
+				console.error("Story Version: " + sadako.story.story_data.version);
+				throw new Error("Compiled Sadako story is from an differing version of Kayako. Please recompile.");
 			}
 		}
 	};
@@ -3047,6 +3051,7 @@
 	sadako.getMarkup = getMarkup;
 	sadako.parseMarkup = parseMarkup;
 	sadako.loadData = loadData;
+	sadako.addKeyboardAccessibility = addKeyboardAccessibility;
 
 	// convenient utility functions
 	sadako.rollDice = rollDice;

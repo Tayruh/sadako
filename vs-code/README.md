@@ -11,6 +11,9 @@ Syntax highlighting for Sadako script. All grammar is accounted for.
 
 ## Change Log
 
+### 1.4
+- Inline comments using `//` token can only begin a line now.
+
 ### 1.3
 - Reserved words are now case insensitive.
 

@@ -63,7 +63,7 @@
     },
     {
       "name": "comment.line.double-slash.sadako",
-      "match": "\\/\\/.*"
+      "match": "^[\\t\\ ]*\\/\\/.*"
     },
     {
       "name": "comment.block.sadako",

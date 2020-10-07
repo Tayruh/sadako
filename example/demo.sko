@@ -89,7 +89,7 @@
 	A bolt lightning lights up the sky. ~:delay:2000
 	A soft crackle of thunder can be heard moments later. ~:delay:3000
 	The rain begins to pound the window harder.
-	- ~:delay:0
+	~:delay:0
 
 	= go_back
 	+ {gb} [Back];; << RETURN
@@ -97,7 +97,7 @@
 ## erin
 	>> living_room.erin_watching
 
-	- >> remote :: *.waiting_for_remote.isActive
+	>> remote :: *.waiting_for_remote.isActive
 
 	Erin looks up at you. "Hey, $:name."
 

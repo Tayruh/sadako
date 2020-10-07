@@ -89,11 +89,18 @@ So write whatever you want.
 
 `//`
 
-All text and scripting between this token and the end of the line will be ignored by **Sadako**.
+When a line begins with this token, the entire line will be ignored by **Sadako**. This only affects this one line.
 
 ```
-This text will display. // This text will not display.
+// This text will not display.
 This text will also display.
+This URL will also display correctly: http://www.bleh.com/
+```
+
+If you need to comment in the middle of a line, you should use the `/* */` block comments.
+
+```
+This text will display. /* This text will not display. */
 ```
 
 
