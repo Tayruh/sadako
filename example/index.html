@@ -17,7 +17,7 @@
 				<div id="banner-status"></div>
 				<div id="inventory-button">
 					<span class="banner-button">
-						<a class="link" onclick="game.showInventory()" tabindex="0">
+						<a role="link" tabindex="0" class="link" onclick="game.showInventory()" tabindex="0">
 							<img title="inventory" src="icons/inventory_hover.png">
 							<img src="icons/inventory.png">
 						</a>
@@ -25,19 +25,19 @@
 				</div>
 				<div id="banner-button-group">
 					<span id="back-button" class="banner-button">
-						<a class="link" onclick="sadako.back()" tabindex="0">
+						<a role="link" tabindex="0" class="link" onclick="sadako.back()" tabindex="0">
 							<img title="back" src="icons/back_hover.png">
 							<img src="icons/back.png">
 						</a>
 					</span>
 					<span class="banner-button">
-						<a class="link" onclick="game.openSaveMenu()" tabindex="0">
+						<a role="link" tabindex="0" class="link" onclick="game.openSaveMenu()" tabindex="0">
 							<img title="save / load" src="icons/save_hover.png">
 							<img src="icons/save.png">
 						</a>
 					</span>
 					<span class="banner-button">
-						<a class="link" onclick="sadako.restart()" tabindex="0">
+						<a role="link" tabindex="0" class="link" onclick="sadako.restart()" tabindex="0">
 							<img title="restart" src="icons/restart_hover.png">
 							<img src="icons/restart.png">
 						</a>
@@ -82,9 +82,9 @@
 								<option value="5">5</option>
 							</select>
 						</td>
-						<td class="choice save-menu-button"><a class="link" onclick="sadako.saveGame(); sadako.closeDialog()">Save</a></td>
+						<td class="choice save-menu-button"><a role="link" tabindex="0" class="link" onclick="sadako.saveGame(); sadako.closeDialog()">Save</a></td>
 					</tr>
-					<tr><td class="choice save-menu-button"><a class="link" onclick="sadako.loadGame(); sadako.closeDialog()">Load</a></td></tr>
+					<tr><td class="choice save-menu-button"><a role="link" tabindex="0" class="link" onclick="sadako.loadGame(); sadako.closeDialog()">Load</a></td></tr>
 				</table>
 			</div>
 		</div>

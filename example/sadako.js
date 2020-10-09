@@ -157,18 +157,17 @@
 		return document.getElementById(id);
 	};
 
-	var addKeyboardAccessibility = function (id) {
-		var links = dom(id).getElementsByTagName("a");
-		
-		var a;
-		for (a = 0; a < links.length; ++a) {
-			links[a].addEventListener('keydown', function(evt) { 
-				if(evt.keyCode == 13 || evt.keyCode == 32) {
-					evt.preventDefault();
-					this.click();
-				}
-			});
-		}
+	var enableKeyboard = function() {
+		document.addEventListener("keydown", function(event) {
+			var el = document.activeElement;
+			
+			if (event.code === "Space" || event.code === "Enter") {
+				if (el.tagName !== "A" && el.getAttribute("role") !== "link") return;
+				event.preventDefault();
+				el.click();
+			}
+			else if (event.code === "Escape") sadako.closeDialog();
+		});
 	}
 
 	var copy = function(item, deep) {
@@ -1670,8 +1669,6 @@
 				}
 			}
 
-			addKeyboardAccessibility(id);
-
 			sadako.doAfterDisplay(id);
 		}();
 	};
@@ -2016,9 +2013,42 @@
 			return text.replace(regexp, replacement);
 		};
 
-		var doComplexReplace = function(text, token, replacement) {
-			var regexp = new RegExp("(^|\\s*|[^a-zA-Z0-9]+)" + token + "([a-zA-Z0-9]+(\\_[a-zA-Z0-9]+)*(([\\.][a-zA-Z0-9]+(\\_[a-zA-Z0-9]+)*)|([\\[\\(]+.*[\\)\\]]+))*)", "g");
-			return text.replace(regexp, replacement);
+		var doComplexReplace = function(text, token, replace) {
+			var collected, leading, regexp, match, markup;
+			
+			var before = "";
+			var remaining = text;
+
+			while (remaining) {
+				leading = text.match(new RegExp("((?:^|\\s*|[^a-zA-Z0-9_]+))" + token + "([a-zA-Z0-9_]+)"));
+				
+				if (leading === null) {
+					before += text;
+					break;
+				}
+
+				before += text.substring(0, leading.index + leading[1].length);
+				text = text.substring(leading[0].length + leading.index);
+				collected = leading[2];
+
+				regexp = new RegExp(/^((\.[a-zA-Z0-9_]+)|\(|\[)/);
+				match = text.match(regexp);
+
+				while (match !== null) {
+					if (match[0] === "(") markup = getMarkup(text, "(", ")").markup;
+					else if (match[0] === "[") markup = getMarkup(text, "[", "]").markup;
+					else markup = match[0];
+
+					collected += markup;
+					text = text.substring(markup.length);
+					match = text.match(regexp);
+				}
+
+				before += eval(replace + collected);
+				remaining = text;
+			}
+
+			return before;
 		};
 
 		var replaceEnclosure = function(text, open, close, replacement) {
@@ -2046,8 +2076,8 @@
 		text = doSimpleReplace(text, t.label_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.label_seen[p2]; });
 		text = doSimpleReplace(text, t.page_embed + t.value_embed, function(match, p1, p2) { return p1 + sadako.page_seen[p2]; });
 
-		text = doComplexReplace(text, t.var_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.var." + p2); });
-		text = doComplexReplace(text, t.tmp_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.tmp." + p2); });
+		text = doComplexReplace(text, t.var_embed + t.value_embed, "sadako.var.");
+		text = doComplexReplace(text, t.tmp_embed + t.value_embed, "sadako.tmp.");
 		text = doSimpleReplace(text, t.scene_embed + t.value_embed, function(match, p1, p2) { return p1 + eval("sadako.scenes." + p2); });
 
 		text = doSimpleReplace(text, t.script_embed + t.value_embed, function(match, p1, p2) {
@@ -3051,7 +3081,7 @@
 	sadako.getMarkup = getMarkup;
 	sadako.parseMarkup = parseMarkup;
 	sadako.loadData = loadData;
-	sadako.addKeyboardAccessibility = addKeyboardAccessibility;
+	sadako.enableKeyboard = enableKeyboard;
 
 	// convenient utility functions
 	sadako.rollDice = rollDice;

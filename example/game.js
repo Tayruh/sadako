@@ -184,5 +184,8 @@
 			
 			// Begin the game starting with the 'init' page.
 			sadako.startGame();
+
+			// Enable keyboard navigation
+			sadako.enableKeyboard();
 		};
 	}(window.sadako, window.game = window.game || {}));
