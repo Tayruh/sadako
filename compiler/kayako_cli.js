@@ -40,6 +40,11 @@ global.window = {};
 		}
 
 		var story = sadako.parseStory(source);
+		if (story === false) {
+			console.log("\nCompile failed.")
+			return;
+		}
+
 		story = JSON.stringify(story);
 		story = "sadako.story = " + story + ";"
 
@@ -49,8 +54,7 @@ global.window = {};
 		catch (e) {
 			throw new Error(e);
 		}
-
-		console.log("Compile successful");
+		console.log("Compile succeeded.");
 	};
 }(window.sadako = window.sadako || {}));
 
