@@ -1,4 +1,4 @@
-// version: 0.10.10
+// version: 0.10.12
 
 (function(sadako) {
 
@@ -418,7 +418,7 @@
 		}
 
 		return function() {
-			text = text.replace("  ", " ");
+			while (text.indexOf("  ") !== -1) text = text.replace("  ", " ");
 			text = removeComments(text);
 			var data = parsePages(text);
 

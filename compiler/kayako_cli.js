@@ -54,7 +54,7 @@ global.window = {};
 		catch (e) {
 			throw new Error(e);
 		}
-		console.log("Compile succeeded.");
+		console.log("Compile succeeded. (" + source.match(RegExp(/\n/, 'g')).length + " lines)");
 	};
 }(window.sadako = window.sadako || {}));
 

@@ -3,8 +3,8 @@
 #### Table of Contents
 
 * [Comments](#comments)
-    *  [Comment Block](#comment-block) `/* */`
-    *  [Line Comment](#line-comment) `//`
+    * [Comment Block](#comment-block) `/* */`
+    * [Line Comment](#line-comment) `//`
     * [Escape](#escape) `\`
     * [Line Concatenation](#line-concatenation) `\`
 
@@ -13,6 +13,7 @@
         * [Tags](#tags) `~:`
     * [Inline Labels](#inline-labels) `{ }`
     * [Jumps](#jumps) `>>`
+        * [Arguments](#arguments)
     * [Returns](#returns) `<<`
         * [Includes](#includes) `>>=`
 
@@ -40,6 +41,7 @@
     * [Inline Text Options](#inline-text-options) `{: :}`
 * [Script Blocks](#script-blocks)
     * [Redirects](#redirects) `[: :]` `[:# :]` `[:% :]`
+    * [Arguments](#arguments-1)
     * [JavaScript](#javascript) `[:& :]` `[:= :]`
         * [Internal Script Blocks](#internal-script-blocks)
     * [Input Boxes](#input-boxes) `[:> :]` `[:>> :]`
@@ -267,6 +269,48 @@ Some display text.
 Hello!
 ```
 
+#### Arguments
+
+Arguments can be passed to a jump call via a `>>` jump token following the page or label.
+
+The arguments must be JavaScript and the value will be assigned to `sadako.args`, which can be easily accessed with `&.args` and `&:args`.
+
+```
+## page1
+    >> #greet >> "Bob"
+
+## greet
+    Hello, &:args!
+    
+// outputs
+Hello, Bob!
+```
+
+Any javascript is valid as an argument and arguments are unique to each jump.
+
+```
+## page1
+    >> #greet >> ["Bob", "Sam"]
+
+## greet
+    "Hello!" &:args[0] shouted.
+	>> reply >> "&:args[1]"
+	"Hi, &:args[1]. My name is &:args[0]."
+	<< END
+
+	= reply
+	"Hey there. I'm &:args"
+	<<
+    
+// outputs
+"Hello!" Bob shouted.
+"Hey there. I'm Sam"
+"Hi, Sam. My name is Bob."
+```
+
+Notice on the reply line that we put `&:args[1]` in quotes. `&:` prints out the value but it's not wrapped in quotes, and so we need to do this. 
+
+The important takeaway from this is that the arguments in the jump to "reply" holds a different value than when we jumped to the "greet" page. The values in the "greet" arguments are returned after jumping back.
 
 ### Returns
 
@@ -573,6 +617,7 @@ For convenience sake, there are tokens that allow easy embedding of **Sadako** v
 
 #### For use in Story Script
 
+* `&:foo` becomes the value of `sadako.foo`
 * `$:foo` becomes the value of `sadako.var.foo`
 * `_:foo` becomes the value of `sadako.tmp.foo`
 * `*:foo` becomes the value of `sadako.scenes.foo`
@@ -604,6 +649,7 @@ Test result: Success
 Script blocks will be described soon, but just know that the script inside the `[: :]` script block in this example is being executed, not displayed.
 
 #### For use in Script Blocks
+* `&.foo` becomes `sadako.foo`
 * `$.foo` becomes `sadako.var.foo`
 * `_.foo` becomes `sadako.tmp.foo`
 * `*.foo` becomes `sadako.scenes.foo`
@@ -853,6 +899,22 @@ You can lead the script block with a token and it will do things besides linking
 <a onclick='sadako.doLink("Page1.bleh")'>bleh</a>
 <a onclick='sadako.doLink("Page2.foo")'>bleh</a>
 ```
+
+#### Arguments
+
+`[: :]` redirects, `[:*# :]` and `[:* % :] `dialog links for pages and labels, and `[:+> :]` reveal include links all accept arguments. They follow the same logic as those in `>>` jumps and more info can be found in the [arguments](#arguments) section.
+
+You'd call them like this:
+
+```
+[:page_name >> ["item1", "item2"] @: link name:]
+
+[:* #dialog_page >> {name: "Bob", age: 30} @: link name:]
+
+[:+> #reveal_page >> "some text" @: link name:]
+```
+
+The link name isn't required and only provided for clarity. The page/label name will be used if not provided.
 
 #### JavaScript
 
@@ -1542,6 +1604,26 @@ Second choice.
 ```
 
 Also note that `{ }` inline labels are not allowed to be used with `+ >>=` choice includes and they will be stripped during compile time.
+
+You can also pass arguments to choice includes.
+
+```
+## page1
+    + Test
+    + >>= #test >> "Bob"
+    + Test 2
+
+## test
+	+ Just choose the choice, &:args.
+		You did it!
+    
+// outputs
+<Test>
+<Just choose the choice, Bob.>
+<Test 2>
+```
+
+See [arguments](#arguments) for more info.
 
 ## Depths
 
