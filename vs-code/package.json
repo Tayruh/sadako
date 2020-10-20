@@ -2,7 +2,7 @@
 	"name": "sadako-script",
 	"displayName": "Sadako Script",
 	"description": "Syntax highlighting for Sadako scripting language.",
-	"version": "1.4.0",
+	"version": "1.5.0",
 	"publisher": "Tayruh",
 	"engines": {
 		"vscode": "^1.45.0"

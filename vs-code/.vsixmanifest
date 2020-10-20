@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Language="en-US" Id="sadako-script" Version="1.4.0" Publisher="Tayruh"/>
+    <Identity Language="en-US" Id="sadako-script" Version="1.5.0" Publisher="Tayruh"/>
     <DisplayName>Sadako Script</DisplayName>
     <Description xml:space="preserve">Syntax highlighting for Sadako scripting language.</Description>
     <Tags>sadako,Sadako,__ext_sko</Tags>

@@ -37,7 +37,7 @@ patterns:
   
   # match anywhere
   - name: keyword.operator.sadako
-    match: (;;|::|@:([\t\ ]*=)?|##|~~\+|~~=|{{|}})+
+    match: (;;|::|>>|@:([\t\ ]*=)?|##|~~\+|~~=|{{|}})+
 
   # condition blocks key words
   - name: keyword.control.sadako
@@ -74,9 +74,9 @@ patterns:
 
   # simple embedded token
   - name: string.interpolated.sadako
-    match: (([\$_%#^*]\.)|([%#^*]\:))([a-zA-Z0-9]+(?:[\._]?[a-zA-Z0-9]+)*)
+    match: (([\&$_%#^*]\.)|([%#^*]\:))([a-zA-Z0-9]+(?:[\._]?[a-zA-Z0-9]+)*)
     
   # complex embedded token
   - name: string.interpolated.sadako
-    match: ([\$_]:([a-zA-Z0-9]+(\_[a-zA-Z0-9]+)*(([\.][a-zA-Z0-9]+(\_[a-zA-Z0-9]+)*)|([\[\(]+([^\[\]\(\)[\t\ ]]*\ *)*[\)\]]+))*))
+    match: ([&$_]:([a-zA-Z0-9]+(\_[a-zA-Z0-9]+)*(([\.][a-zA-Z0-9]+(\_[a-zA-Z0-9]+)*)|([\[\(]+([^\[\]\(\)[\t\ ]]*\ *)*[\)\]]+))*))
 ...

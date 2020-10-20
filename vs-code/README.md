@@ -7,9 +7,13 @@ Syntax highlighting for Sadako script. All grammar is accounted for.
 ## Known Issues
 
 * The `<>` attach token is able to be used inside a `::` line conditional. 
-* The `@:` name and `::` condition tokens highlight everywhere instead of just inside their respective blocks.
+* The `@:` name, `::` condition, and `>>` jump tokens highlight everywhere instead of just inside their respective blocks.
 
 ## Change Log
+
+### 1.5
+- Added highlighting for `>>` jump token to mark passing of arguments.
+- Added highlighting for `&.` and `&:` engine tokens. 
 
 ### 1.4
 - Inline comments using `//` token can only begin a line now.

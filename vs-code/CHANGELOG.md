@@ -1,5 +1,9 @@
 ## Change Log
 
+### 1.5
+- Added highlighting for `>>` jump token to mark passing of arguments.
+- Added highlighting for `&.` and `&:` engine tokens. 
+
 ### 1.4
 - Inline comments using `//` token can only begin a line now.
 
