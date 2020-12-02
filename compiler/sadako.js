@@ -1,7 +1,7 @@
 (function(sadako) {
 
-	sadako.version = "0.14.0";
-	sadako.kayako_version = "0.10.12";
+	sadako.version = "0.14.2";
+	sadako.kayako_version = "0.10.14";
 
 	var localStorage;
 
@@ -1198,8 +1198,8 @@
 
 			if (text !== null && text !== undefined) {
 				var temp;
-				if ((temp = sadako.isToken(text, sadako.token.page_embed))) doLink("#" + temp);
-				else if ((temp = sadako.isToken(text, sadako.token.label_embed))) doLink("%" + temp);
+				if ((temp = sadako.isToken(text, sadako.token.page_embed))) doLink(sadako.token.page_embed + temp);
+				else if ((temp = sadako.isToken(text, sadako.token.label_embed))) doLink(sadako.token.label_embed + temp);
 				else sadako.overwrite(text);
 			}
 		}
@@ -1303,21 +1303,35 @@
 		*/
 
 		var temp;
+		var t = sadako.token;
+		
+		if (command === undefined) {
+			if ((temp = isToken(name, t.page_embed))) {
+				name = temp;
+				command  = t.page_embed + temp;
+			}
+			else if ((temp = isToken(name, t.label_embed))) {
+				name = temp;
+				command  = t.label_embed + temp;
+			}
+		}
+
 		if (isFunc(command)) {
 			command = format("eval(sadako.evals[{0}])", sadako.evals.length);
 			sadako.evals.push(command);
 		}
 		else if ((temp = isToken(command, sadako.token.page_embed))) {
-			command = 'sadako.doLink("#' + temp + '")';
+			temp = prepareLabel(temp);
+			command = 'sadako.doLink("' + sadako.token.page_embed + temp + '")';
 			if (!(temp in sadako.story)) broken = true;
 		}
 		else if ((temp = isToken(command, sadako.token.label_embed))) {
 			temp = localizeLabel(temp);
-			command = 'sadako.doLink("%' + temp + '")';
+			command = 'sadako.doLink("' + sadako.token.label_embed + temp + '")';
 			if (!(temp in sadako.labels)) broken = true;
 		}
 
-		if (broken === undefined || broken === false) return "<span onclick='event.stopPropagation()'><a role='link' tabindex='0' class='link' onClick='" + command + "'>" + name + "</a></span>";
+		if (broken === undefined || broken === false) return "<span onclick='event.stopPropagation()'><a role='link' tabindex='0' class='link' onclick='" + command + "'>" + name + "</a></span>";
 		return "<a role='link' tabindex='0' class='link broken' title='" + command + "'>" + name + "</a>";
 	};
 
@@ -1403,23 +1417,23 @@
 			if ((temp = isToken(script, t.page_embed))) {
 				if ((temp2 = isToken(temp, t.eval_value)) !== false) temp = eval(temp2);
 				label = temp;
-				script = "#" + temp;
+				script = t.page_embed + prepareLabel(temp);
 			}
 			// label reveal
 			else if ((temp = isToken(script, t.label_embed))) {
 				if ((temp2 = isToken(temp, t.eval_value)) !== false) temp = eval(temp2);
 				label = temp;
-				script = "%" + localizeLabel(temp);
+				script = t.label_embed + localizeLabel(temp);
 			}
 
 			if (!name || !name.trim().length) name = label;
 
 			if ((temp = isToken(script, t.page_embed)) && !(temp in sadako.story)) {
-				return sadako.writeLink(name, 'sadako.doInclude("#' + temp + '")', true);
+				return sadako.writeLink(name, 'sadako.doInclude("' + t.page_embed + temp + '")', true);
 			}
 			
 			if ((temp = isToken(script, t.label_embed)) && !(temp in sadako.labels)) {
-				return sadako.writeLink(name, 'sadako.doInclude("%' + temp + '")', true);
+				return sadako.writeLink(name, 'sadako.doInclude("' + t.label_embed + temp + '")', true);
 			}
 
 			sadako.evals.push(function() {
@@ -1537,23 +1551,23 @@
 			if ((temp = isToken(script, t.page_embed))) {
 				if ((temp2 = isToken(temp, t.eval_value)) !== false) temp = eval(temp2);
 				label = temp;
-				script = "#" + temp;
+				script = t.page_embed + prepareLabel(temp);
 			}
 			// label reveal
 			else if ((temp = isToken(script, t.label_embed))) {
 				if ((temp2 = isToken(temp, t.eval_value)) !== false) temp = eval(temp2);
 				label = temp;
-				script = "%" + localizeLabel(temp);
+				script = t.label_embed + localizeLabel(temp);
 			}
 
 			if (!name_given) name = label;
 
 			if ((temp = isToken(script, t.page_embed)) && !(temp in sadako.story)) {
-				return sadako.writeLink(name, 'sadako.showDialog("#' + temp + '")', true);
+				return sadako.writeLink(name, 'sadako.showDialog("' + t.page_embed + temp + '")', true);
 			}
 			
 			if ((temp = isToken(script, t.label_embed)) && !(temp in sadako.labels)) {
-				return sadako.writeLink(name, 'sadako.showDialog("%' + temp + '")', true);
+				return sadako.writeLink(name, 'sadako.showDialog("' + t.label_embed + temp + '")', true);
 			}
 
 			return write(name, function() {
@@ -1866,7 +1880,7 @@
 	};
 
 	var doReturn = function() {
-		doLink("#" + sadako.page);
+		doLink("" + sadako.token.page_embed + sadako.page);
 	};
 
 	var isPageTop = function() {
@@ -1934,7 +1948,7 @@
 		var doValue = function(text) {
 			/* evaluates text marked with 'value' token */
 
-			eval("sadako.text += processScript(" + text + ")");
+			sadako.text += eval(processScript(text));
 		}
 
 		var doLabelLink = function(text) {
@@ -1945,28 +1959,20 @@
 			var args = getArgs(script);
 			script = args.label;
 
-			var name = items[1] || script;
-
 			var temp = isToken(script, sadako.token.label_embed);
 			if (temp !== false) script = temp;
 
-			var eval_script = isToken(script, sadako.token.eval_value);
-			if (eval_script === false) {
-				script = localizeLabel(script);
-				if (!(script in sadako.labels)) return sadako.writeLink(name, "%" + script, true);
-			}
+			if ((temp = isToken(script, sadako.token.eval_value))) script = eval(temp);
+			var name = items[1] || script;
+
+			script = localizeLabel(script);
+			if (!(script in sadako.labels)) return sadako.writeLink(name, sadako.token.label_embed + script, true);
 
 			var command = format("sadako.evals[{0}]()", sadako.evals.length);
 			sadako.evals.push(function() {
 				if (sadako.in_dialog) sadako.closeDialog();
 				eval("sadako.args = " + args.args);
-				if (eval_script) {
-					script = eval(eval_script);
-					script = localizeLabel(script, true);
-					var temp = isToken(script, sadako.token.page_embed);
-					if (temp !== false) script = temp;
-				}
-				doLink("%" + script);
+				doLink(sadako.token.label_embed + script);
 			});
 
 			return sadako.writeLink(name, command, false);
@@ -1980,26 +1986,20 @@
 			var args = getArgs(script);
 			script = args.label;
 
-			var name = items[1] || script;
-
 			var temp = isToken(script, sadako.token.page_embed);
 			if (temp !== false) script = temp;
 			
-			var eval_script = isToken(script, sadako.token.eval_value);
-			if (eval_script === false && !(script in sadako.story)) {
-				return sadako.writeLink(name, "#" + script, true);
-			}
+			if ((temp = isToken(script, sadako.token.eval_value))) script = eval(temp);
+			var name = items[1] || script;
+
+			script = prepareLabel(script);
+			if (!(script in sadako.story)) return sadako.writeLink(name, sadako.token.page_embed + script, true);
 
 			var command = format("sadako.evals[{0}]()", sadako.evals.length);
 			sadako.evals.push(function() {
 				if (sadako.in_dialog) sadako.closeDialog();
 				eval("sadako.args = " + args.args);
-				if (eval_script) {
-					script = eval(eval_script);
-					var temp = isToken(script, sadako.token.page_embed);
-					if (temp !== false) script = temp;
-				}
-				doLink("#" + script);
+				doLink(sadako.token.page_embed + script);
 			});
 
 			return sadako.writeLink(name, command, false);
@@ -2293,19 +2293,21 @@
 	};
 
 	var localizeLabel = function(label, throw_error) {
-		label = label.trim();
+		label = prepareLabel(label);
 		if (label.indexOf(".") === -1 || !(label in sadako.labels)) label = sadako.page + "." + label;
 		if (throw_error && !(label in sadako.labels)) throw new Error("Can't find label '" + label + "'");
 		return label;
 	}
 
 	var getLineByLabel = function(label) {
-		if (label.charAt(0) === "#") {
-			label = label.substring(1);
+		var temp;
+		if ((temp = isToken(label, sadako.token.page_embed)) !== false) {
+			label = prepareLabel(temp);
 			if (!(label in sadako.story)) throw new Error("Can't find page '" + label + "'");
 			return [label, 0, 0];
 		}
 		else {
+			if ((temp = isToken(label, sadako.token.label_embed))) label = temp;
 			label = localizeLabel(label, true);
 
 			var line = sadako.labels[label];
@@ -2382,10 +2384,20 @@
 		doJump(label);
 	};
 
+	var prepareLabel = function(label) {
+		label = label.trim();
+		label = label.replace(RegExp("^([" + sadako.token.page_embed + sadako.token.label_embed + "])[\\t\\ ]*(.*)"), "$1$2");
+		label = label.toLowerCase();
+		label = label.replace(/'/g, "_");
+		label = label.replace(/"/g, "");
+		return label;
+	}
+
 	var doJump = function(label, include) {
 		var line = getLineByLabel(label);
+		var temp;
 
-		if (label.charAt(0) === "#") sadako.page_seen[label.substring(1)] += 1;
+		if ((temp = isToken(label, sadako.token.page_embed))) sadako.page_seen[temp] += 1;
 		else {
 			var token = sadako.story[line[0]][line[1]][line[2]].k;
 			if (token === sadako.token.choice || token === sadako.token.static) {
@@ -2566,7 +2578,7 @@
 
 			var processPageJump = function(label, include_text) {
 				var temp = getArgs(label);
-				label = temp.label;
+				label = prepareLabel(temp.label);
 
 				if (!(label in sadako.story)) throw new Error("Can't find page '" + label + "'");
 				label = sadako.token.page_embed + label;
@@ -3151,6 +3163,7 @@
 	// sadako.displayText
 
 	// functions made available for use in overridden functions
+	sadako.prepareLabel = prepareLabel;
 	sadako.splitTags = splitTags
 	sadako.doChoice = doChoice;
 	sadako.processScript = processScript;

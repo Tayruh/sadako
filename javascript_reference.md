@@ -160,6 +160,8 @@ sadako.onDialogClose = function() {
 
 The page that the script is currently on.
 
+**Sadako** converts page names to lowercase, replaces apostrophes with underscores, and strips quotes. So `useless "Hope's Peak" pamphlet` becomes `useless hope_s peak pamplet`.` 
+
 #### sadako.var
 
 The variable object that holds the user variables and is saved to the save file.

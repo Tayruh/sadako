@@ -146,6 +146,25 @@ Later on you will read about the `<>` attach token which appears to do something
 
 ## Story Sections
 
+#### Naming
+
+Internally, page and label names are converted to lowercase, apostrophes are replaced with underscores, and quotes are stripped. So `useless "Hope's Peak" pamphlet` becomes `useless hope_s peak pamplet`. In fact, `useless "Hope's Peak" pamphlet`, `useless hope's peak pamphlet`, and `useless hope_s peak pamplet` are treated as synonyms. 
+
+You'll see how this works below, but what this means is that you can do this:
+
+```
+## Page1
+    // notice the two different cases to the links
+    [:Keys:] are sitting on the table. They're the [:keys:] to your car.
+    
+## keys
+    // both links direct here
+    They're your car keys!
+```
+    
+Without the case insensitivity in place, you would have had to type `[:keys @: Keys:] are sitting on the table.`, which is a bit awkward.
+
+
 ### Pages
 
 `##`
@@ -163,8 +182,6 @@ Later on you will read about the `<>` attach token which appears to do something
 When you redirect to a page, **Sadako** will proceed line by line through the script within that page. When it reaches the end, it will stop. A page can be written simply and only display a full screen of text, or it can be complex and full of links, choices, and jumps. The only way out of a page is through a jump of some sort, which will be explained shortly.
 
 Every time you're redirected to a page, the *seen* counter increases by 1. This is stored in `sadako.page_seen["Page1"]` (using "Page1" as an example). This value can be used to check whether a page has been visited and how many times.
-
-Because of the way that pages are handled by **Sadako**, it is recommended that you only include alphanumeric characters and underscores in their naming.
 
 #### Tags
 
@@ -872,6 +889,24 @@ If you follow the page name with the `@:` rename token, you can rename the link.
 // outputs
 <a onclick='sadako.doLink("#some_annoying_title")'>the next room</a>
 ```
+
+##### Naming
+
+Internally, page and label names are converted to lowercase, apostrophes are replaced with underscores, and quotes are stripped. So `useless "Hope's Peak" pamphlet` becomes `useless hope_s peak pamplet`. In fact, `useless "Hope's Peak" pamphlet`, `useless hope's peak pamphlet`, and `useless hope_s peak pamplet` are treated as synonyms. 
+
+```
+## Page1
+    // notice the two different cases to the links
+    [:Keys:] are sitting on the table. They're the [:keys:] to your car.
+    
+## keys
+    // both links direct here
+    They're your car keys!
+```
+    
+Without the case insensitivity in place, you would have had to type `[:keys @: Keys:] are sitting on the table.`, which is a bit awkward.
+
+##### Leading Tokens
 
 You can lead the script block with a token and it will do things besides linking to a page.
 

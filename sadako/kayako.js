@@ -1,4 +1,4 @@
-// version: 0.10.12
+// version: 0.10.14
 
 (function(sadako) {
 
@@ -151,6 +151,7 @@
 		}
 
 		var addLabel = function(label) {
+			label = sadako.prepareLabel(label);
 			full_label = page + "." + label;
 			if (!data.labels) data.labels = {};
 			if (label in data.labels) return doError("Duplicate label for '" + full_label + "' found.");
@@ -381,6 +382,7 @@
 				current_line = title;
 				tags = getPageTags(title);
 				title = tags.shift();
+				title = sadako.prepareLabel(title);
 				current_page = title;
 
 				if (!title.length) return doError("Invalid page title:\npage: " + current_line);
